@@ -84,7 +84,7 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
         return `${year}-${month}-${day}`;
       default:
         return dateString;
-    }
+    }  
   }
 
   const handleInputChange = (e) => {
