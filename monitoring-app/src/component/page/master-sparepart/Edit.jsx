@@ -26,7 +26,7 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
   });
 
   const userSchema = object({
-    idSparepart: string().optional(), // Tambahkan ini
+    idSparepart: string().optional(),
     namaSparepart: string()
       .max(50, "maksimum 50 karakter")
       .required("Nama sparepart harus diisi"),
@@ -84,7 +84,7 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
         return `${year}-${month}-${day}`;
       default:
         return dateString;
-    }  
+    }
   }
 
   const handleInputChange = (e) => {
@@ -130,20 +130,11 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
           formDataRef.current
         );
 
-        // Check for null or empty response
-        if (!data || data === "ERROR") {
-          console.log(formDataRef.current);
-          throw new Error(
-            "Terjadi kesalahan: Tidak ada respons atau terjadi kesalahan server null. + " +
-              formDataRef.current
-          );
-        }
-
-        if (data.success) {
-          SweetAlert("Sukses", "Data Sparepart berhasil disimpan", "success");
-          onChangePage("index");
+        if (!data) {
+          throw new Error("Terjadi kesalahan: Gagal menyimpan data produk.");
         } else {
-          throw new Error("Gagal menyimpan data: " + data.message);
+          SweetAlert("Sukses", "Data produk berhasil disimpan", "success");
+          onChangePage("index");
         }
       } catch (error) {
         window.scrollTo(0, 0);
@@ -156,7 +147,6 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
         setIsLoading(false);
       }
     } else window.scrollTo(0, 0);
-    console.log("Ini Error: ", validationErrors);
   };
 
   if (isLoading) return <Loading />;
