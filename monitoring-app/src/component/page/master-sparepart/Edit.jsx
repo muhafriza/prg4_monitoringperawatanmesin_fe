@@ -4,7 +4,6 @@ import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
 import SweetAlert from "../../util/SweetAlert";
 import UseFetch from "../../util/UseFetch";
-import UploadFile from "../../util/UploadFile";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
 import Loading from "../../part/Loading";
@@ -18,10 +17,9 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
   const formDataRef = useRef({
     idSparepart: "",
     namaSparepart: "",
-    deskripsiSparepart: "",
-    merkSparepart: "",
-    stokSparepart: "",
-    statusSparepart: 1,
+    deskripsi: "",
+    merk: "",
+    stok: "",
     tanggalMasuk: "",
   });
 
@@ -30,12 +28,11 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
     namaSparepart: string()
       .max(50, "maksimum 50 karakter")
       .required("Nama sparepart harus diisi"),
-    deskripsiSparepart: string()
+    deskripsi: string()
       .max(100, "maksimum 100 karakter")
       .required("Deskripsi sparepart harus diisi"),
-    merkSparepart: string().required("Merk sparepart harus diisi"),
-    stokSparepart: string().required("Stok sparepart harus diisi"),
-    statusSparepart: string(),
+    merk: string().required("Merk sparepart harus diisi"),
+    stok: string().required("Stok sparepart harus diisi"),
     tanggalMasuk: string().required("Tanggal masuk harus diisi"),
   });
 
@@ -45,11 +42,11 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
 
       try {
         const data = await UseFetch(
-          `${API_LINK}MasterSparepart/GetDataSparepartById`,
+          API_LINK + `MasterSparepart/DetailSparepart`,
           { id: withID }
         );
-
-        if (!data || data === "ERROR" || data.length === 0) {
+        console.log("ini data: " + data);
+        if (data === "ERROR" || data.length === 0) {
           throw new Error("Gagal mengambil data Sparepart.");
         }
 
@@ -58,6 +55,8 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
           sparepartData.tanggalMasuk,
           "YYYY-MM-DD"
         );
+        delete sparepartData.status;
+        delete sparepartData.spa_status;
 
         formDataRef.current = { ...formDataRef.current, ...sparepartData };
       } catch (error) {
@@ -70,7 +69,7 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
 
     fetchData();
   }, []);
-  function formatDate(dateString, format = "DD/MM/YYYY") {
+  function formatDate(dateString, format) {
     const date = new Date(dateString);
 
     const day = String(date.getDate()).padStart(2, "0");
@@ -90,8 +89,8 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    // Validasi hanya angka untuk field "stokSparepart"
-    if (name === "stokSparepart") {
+    // Validasi hanya angka untuk field "stok"
+    if (name === "stok") {
       if (!/^\d*$/.test(value)) {
         setErrors((prevErrors) => ({
           ...prevErrors,
@@ -116,6 +115,7 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
       userSchema,
       setErrors
     );
+    console.log("Data yang dikirimkan: ", validationErrors);
 
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
@@ -123,14 +123,13 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
       setErrors({});
 
       try {
-        console.log("Data yang dikirimkan: ", formDataRef.current);
-
         const data = await UseFetch(
           API_LINK + "MasterSparepart/EditSparepart",
           formDataRef.current
         );
 
-        if (!data) {
+        if (!data || data == "ERROR") {
+          console.log("ini data edit form nya: "+formDataRef.current);
           throw new Error("Terjadi kesalahan: Gagal menyimpan data produk.");
         } else {
           SweetAlert("Sukses", "Data produk berhasil disimpan", "success");
@@ -179,34 +178,34 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="deskripsiSparepart"
+                  forInput="deskripsi"
                   label="Deskripsi"
                   isRequired
-                  value={formDataRef.current.deskripsiSparepart}
+                  value={formDataRef.current.deskripsi}
                   onChange={handleInputChange}
-                  errorMessage={errors.deskripsiSparepart}
+                  errorMessage={errors.deskripsi}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="merkSparepart"
+                  forInput="merk"
                   label="Merk"
                   isRequired
-                  value={formDataRef.current.merkSparepart}
+                  value={formDataRef.current.merk}
                   onChange={handleInputChange}
-                  errorMessage={errors.merkSparepart}
+                  errorMessage={errors.merk}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="stokSparepart"
+                  forInput="stok"
                   label="Stok"
                   isRequired
-                  value={formDataRef.current.stokSparepart}
+                  value={formDataRef.current.stok}
                   onChange={handleInputChange}
-                  errorMessage={errors.stokSparepart}
+                  errorMessage={errors.stok}
                 />
               </div>
               <div className="col-lg-6">

@@ -17,7 +17,7 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
     merk: "",
     stok: "",
     tanggalMasuk: "",
-    statusSparepart: 0,
+    status: "",
   });
 
   useEffect(() => {
@@ -95,9 +95,9 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
             </div>
             <div className="col-lg-3">
               <Label
-                forLabel="statusSparepart"
+                forLabel="status"
                 title="Status"
-                data={formData.statusSparepart}
+                data={formData.status}
               />
             </div>
           </div>

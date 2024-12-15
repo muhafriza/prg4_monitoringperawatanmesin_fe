@@ -4,10 +4,8 @@ import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
 import SweetAlert from "../../util/SweetAlert";
 import UseFetch from "../../util/UseFetch";
-import UploadFile from "../../util/UploadFile";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
-import FileUpload from "../../part/FileUpload";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
@@ -17,30 +15,32 @@ export default function MasterSparepartAdd({ onChangePage }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const formDataRef = useRef({
-    nama_sparepart: "",
-    deskripsi: "",
-    merk: "",
-    stok: "",
-    status: 1,
+    spa_nama_sparepart: "",
+    spa_deskripsi: "",
+    spa_merk: "",
+    spa_stok: "",
+    spa_status: "Aktif",
+    spa_tanggal_masuk: "",
   });
 
   const userSchema = object({
-    nama_sparepart: string()
+    spa_nama_sparepart: string()
       .max(50, "maksimum 100 karakter")
       .required("harus diisi"),
-    deskripsi: string()
+    spa_deskripsi: string()
       .max(100, "maksimum 100 karakter")
       .required("harus diisi"),
-    merk: string(),
-    stok: string(),
-    status: string(),
+    spa_merk: string(),
+    spa_stok: string(),
+    spa_tanggal_masuk: string(),
+    spa_status: string(),
   });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    // Validasi hanya angka untuk field "stok"
-    if (name === "stok") {
+    // Validasi hanya angka untuk field "spa_stok"
+    if (name === "spa_stok") {
       if (!/^\d*$/.test(value)) {
         setErrors((prevErrors) => ({
           ...prevErrors,
@@ -73,6 +73,7 @@ export default function MasterSparepartAdd({ onChangePage }) {
       setErrors({});
 
       try {
+        // Call the stored procedure here, assuming the API endpoint is set up for this
         const data = await UseFetch(
           API_LINK + "MasterSparepart/CreateSparepart",
           formDataRef.current
@@ -116,45 +117,54 @@ export default function MasterSparepartAdd({ onChangePage }) {
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="nama_sparepart"
+                  forInput="spa_nama_sparepart"
                   label="Nama Sparepart"
                   isRequired
-                  value={formDataRef.current.nama_sparepart}
+                  value={formDataRef.current.spa_nama_sparepart}
                   onChange={handleInputChange}
-                  errorMessage={errors.nama_sparepart}
+                  errorMessage={errors.spa_nama_sparepart}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="deskripsi"
+                  forInput="spa_deskripsi"
                   label="Deskripsi"
                   isRequired
-                  value={formDataRef.current.deskripsi}
+                  value={formDataRef.current.spa_deskripsi}
                   onChange={handleInputChange}
-                  errorMessage={errors.deskripsi}
+                  errorMessage={errors.spa_deskripsi}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="merk"
+                  forInput="spa_merk"
                   label="Merk"
-                  isRequired
-                  value={formDataRef.current.merk}
+                  value={formDataRef.current.spa_merk}
                   onChange={handleInputChange}
-                  errorMessage={errors.merk}
+                  errorMessage={errors.spa_merk}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="stok"
+                  forInput="spa_stok"
                   label="Stok"
                   isRequired
-                  value={formDataRef.current.stok}
+                  value={formDataRef.current.spa_stok}
                   onChange={handleInputChange}
-                  errorMessage={errors.stok}
+                  errorMessage={errors.spa_stok}
+                />
+              </div>
+              <div className="col-lg-6">
+                <Input
+                  type="date"
+                  forInput="spa_tanggal_masuk"
+                  label="Tanggal Masuk"
+                  value={formDataRef.current.spa_tanggal_masuk}
+                  onChange={handleInputChange}
+                  errorMessage={errors.spa_tanggal_masuk}
                 />
               </div>
             </div>
