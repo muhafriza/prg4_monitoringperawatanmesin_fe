@@ -26,8 +26,8 @@ const dataFilterSort = [
 ];
 
 const dataFilterStatus = [
-  { Value: 1, Text: "Aktif" },
-  { Value: 0, Text: "Tidak Aktif" },
+  { Value: "Aktif", Text: "Aktif" },
+  { Value: "Tidak Aktif", Text: "Tidak Aktif" },
 ];
 
 export default function MasterSparepart({ onChangePage }) {
@@ -37,8 +37,8 @@ export default function MasterSparepart({ onChangePage }) {
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[nama_Sparepart] asc",
-    status: 1,
+    sort: "[spa_nama_Sparepart] asc",
+    spa_status: "Aktif",
     itemPerPage: 5,
   });
 
@@ -66,7 +66,7 @@ export default function MasterSparepart({ onChangePage }) {
     const year = date.getFullYear();
 
     switch (format) {
-      case "DD/MM/YYYY":
+      case "DD-MM-YYYY":
         return `${day}/${month}/${year}`;
       case "YYYY-MM-DD":
         return `${year}-${month}-${day}`;
@@ -83,7 +83,7 @@ export default function MasterSparepart({ onChangePage }) {
         page: 1,
         query: searchQuery.current.value,
         sort: searchFilterSort.current.value,
-        Status: searchFilterStatus.current.value,
+        status: searchFilterStatus.current.value,
       };
     });
   }
@@ -114,12 +114,12 @@ export default function MasterSparepart({ onChangePage }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "MasterSparepart/getDataSparepart",
+          API_LINK + "MasterSparepart/GetDataSparepart",
           currentFilter
         );
-        console.log(currentFilter);
         if (data === "ERROR") {
           setIsError(true);
+          console.log("Error nih");
         } else if (data.length === 0) {
           setCurrentData(inisialisasiData);
         } else {
@@ -157,7 +157,7 @@ export default function MasterSparepart({ onChangePage }) {
           <div className="flex-fill">
             <Alert
               type="warning"
-              message="Terjadi kesalahan: Gagal mengambil data Sparepart."
+              message="Terjadi kesalahan: Gagal mengambil data Sparepart. "
             />
           </div>
         )}
