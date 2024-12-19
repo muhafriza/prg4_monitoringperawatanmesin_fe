@@ -128,7 +128,7 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
           formDataRef.current
         );
 
-        if (!data || data == "ERROR") {
+        if (!data) {
           console.log("ini data edit form nya: "+formDataRef.current);
           throw new Error("Terjadi kesalahan: Gagal menyimpan data produk.");
         } else {

@@ -43,7 +43,7 @@ export default function MasterSparepart({ onChangePage }) {
   });
 
   const searchQuery = useRef();
-  const searchMerk = useRef();
+  const searchNama = useRef();
   const searchDeskripsi = useRef();
   const searchStok = useRef();
   const searchFilterSort = useRef();
