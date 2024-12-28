@@ -38,7 +38,7 @@ export default function MasterSparepart({ onChangePage }) {
     page: 1,
     query: "",
     sort: "[spa_nama_Sparepart] asc",
-    spa_status: "Aktif",
+    status: "Aktif",
     itemPerPage: 5,
   });
 

@@ -55,8 +55,10 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
           sparepartData.tanggalMasuk,
           "YYYY-MM-DD"
         );
+        sparepartData.idSparepart = withID;
         delete sparepartData.status;
         delete sparepartData.spa_status;
+
 
         formDataRef.current = { ...formDataRef.current, ...sparepartData };
       } catch (error) {
@@ -128,8 +130,10 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
           formDataRef.current
         );
 
+        console.log("Payload:", formDataRef.current);
+        console.log("API Response:", data);
+
         if (!data) {
-          console.log("ini data edit form nya: "+formDataRef.current);
           throw new Error("Terjadi kesalahan: Gagal menyimpan data produk.");
         } else {
           SweetAlert("Sukses", "Data produk berhasil disimpan", "success");
