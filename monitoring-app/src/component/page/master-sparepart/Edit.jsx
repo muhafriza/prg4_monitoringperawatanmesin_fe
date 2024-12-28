@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { object, string } from "yup";
-import { API_LINK } from "../../util/Constants";
+import { API_LINK, FILE_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
 import SweetAlert from "../../util/SweetAlert";
+import UploadFile from "../../util/UploadFile";
+import FileUpload from "../../part/FileUpload";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -13,28 +15,66 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
   const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
+  const [previewImage, setPreviewImage] = useState(null);
 
   const formDataRef = useRef({
     idSparepart: "",
     namaSparepart: "",
     deskripsi: "",
+    gambarSparepart: "",
     merk: "",
     stok: "",
     tanggalMasuk: "",
   });
 
+  const fileGambarRef = useRef(null);
+
   const userSchema = object({
-    idSparepart: string().optional(),
     namaSparepart: string()
-      .max(50, "maksimum 50 karakter")
-      .required("Nama sparepart harus diisi"),
+      .max(50, "maksimum 100 karakter")
+      .required("harus diisi"),
     deskripsi: string()
       .max(100, "maksimum 100 karakter")
-      .required("Deskripsi sparepart harus diisi"),
-    merk: string().required("Merk sparepart harus diisi"),
-    stok: string().required("Stok sparepart harus diisi"),
-    tanggalMasuk: string().required("Tanggal masuk harus diisi"),
+      .required("harus diisi"),
+    gambarSparepart: string(),
+    merk: string(),
+    stok: string(),
+    tanggalMasuk: string(),
   });
+
+  const handleFileChange = (ref, extAllowed) => {
+    const file = ref.current.files[0];
+
+    if (file) {
+      const fileExt = file.name.split(".").pop().toLowerCase();
+      const fileSize = file.size;
+      let error = "";
+
+      if (fileSize / 1024 / 1024 > 10) error = "Berkas terlalu besar";
+      else if (!extAllowed.split(",").includes(fileExt))
+        error = "Format berkas tidak valid";
+
+      if (error) {
+        ref.current.value = "";
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [ref.current.name]: error,
+        }));
+        setPreviewImage(null); // Reset preview jika ada error
+        return;
+      }
+
+      // Generate preview
+      const reader = new FileReader();
+      reader.onload = () => setPreviewImage(reader.result);
+      reader.readAsDataURL(file);
+
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [ref.current.name]: null,
+      }));
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,7 +98,6 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
         sparepartData.idSparepart = withID;
         delete sparepartData.status;
         delete sparepartData.spa_status;
-
 
         formDataRef.current = { ...formDataRef.current, ...sparepartData };
       } catch (error) {
@@ -117,14 +156,22 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
       userSchema,
       setErrors
     );
-    console.log("Data yang dikirimkan: ", validationErrors);
-
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
       setIsError((prevError) => ({ ...prevError, error: false }));
       setErrors({});
+      const uploadPromises = [];
 
+      if (fileGambarRef.current.files.length > 0) {
+        uploadPromises.push(
+          UploadFile(fileGambarRef.current).then(
+            (data) => (formDataRef.current["gambarSparepart"] = data.Hasil)
+          )
+        );
+      }
       try {
+        await Promise.all(uploadPromises);
+        
         const data = await UseFetch(
           API_LINK + "MasterSparepart/EditSparepart",
           formDataRef.current
@@ -150,6 +197,7 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
         setIsLoading(false);
       }
     } else window.scrollTo(0, 0);
+    console.log("ErrorSaat Simpan Data: ".formDataRef);
   };
 
   if (isLoading) return <Loading />;
@@ -212,6 +260,30 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
                   errorMessage={errors.stok}
                 />
               </div>
+              <div className="col-lg-4">
+                <FileUpload
+                  forInput="gambarSparepart"
+                  label="Gambar Sparepart (.jpg, .png)"
+                  formatFile=".jpg,.png"
+                  ref={fileGambarRef}
+                  onChange={() => handleFileChange(fileGambarRef, "jpg,png")}
+                  errorMessage={errors.gambarSparepart}
+                />
+                {previewImage && (
+                  <div className="mt-3">
+                    <img
+                      src={previewImage}
+                      alt="Preview Gambar"
+                      style={{
+                        maxWidth: "200px",
+                        maxHeight: "200px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+
               <div className="col-lg-6">
                 <Input
                   type="date"

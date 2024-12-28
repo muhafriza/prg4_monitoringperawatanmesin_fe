@@ -4,7 +4,9 @@ import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
 import SweetAlert from "../../util/SweetAlert";
 import UseFetch from "../../util/UseFetch";
+import UploadFile from "../../util/UploadFile";
 import Button from "../../part/Button";
+import FileUpload from "../../part/FileUpload";
 import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
@@ -17,11 +19,13 @@ export default function MasterSparepartAdd({ onChangePage }) {
   const formDataRef = useRef({
     spa_nama_sparepart: "",
     spa_deskripsi: "",
+    spa_gambar_sparepart: "",
     spa_merk: "",
     spa_stok: "",
     spa_status: "Aktif",
     spa_tanggal_masuk: "",
   });
+  const fileGambarRef = useRef(null);
 
   const userSchema = object({
     spa_nama_sparepart: string()
@@ -30,17 +34,44 @@ export default function MasterSparepartAdd({ onChangePage }) {
     spa_deskripsi: string()
       .max(100, "maksimum 100 karakter")
       .required("harus diisi"),
+      spa_gambar_sparepart: string(),
     spa_merk: string(),
     spa_stok: string(),
     spa_tanggal_masuk: string(),
     spa_status: string(),
   });
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  const handleFileChange = (ref, extAllowed) => {
+    const { name, value } = ref.current;
+    const file = ref.current.files[0];
+    const fileName = file.name;
+    const fileSize = file.size;
+    const fileExt = fileName.split(".").pop().toLowerCase();
+    const validationError = validateInput(name, value, userSchema);
+    let error = "";
 
-    // Validasi hanya angka untuk field "spa_stok"
-    if (name === "spa_stok") {
+    if (fileSize / 1024576 > 10) error = "berkas terlalu besar";
+    else if (!extAllowed.split(",").includes(fileExt))
+      error = "format berkas tidak valid";
+
+    if (error) ref.current.value = "";
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [validationError.name]: error,
+    }));
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;   
+    const validationError = validateInput(name, value, userSchema);
+    formDataRef.current[name] = value;
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [validationError.name]: validationError.error,
+    }));
+     // Validasi hanya angka untuk field "spa_stok"
+     if (name === "spa_stok") {
       if (!/^\d*$/.test(value)) {
         setErrors((prevErrors) => ({
           ...prevErrors,
@@ -49,13 +80,6 @@ export default function MasterSparepartAdd({ onChangePage }) {
         return;
       }
     }
-
-    const validationError = validateInput(name, value, userSchema);
-    formDataRef.current[name] = value;
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      [validationError.name]: validationError.error,
-    }));
   };
 
   const handleAdd = async (e) => {
@@ -72,7 +96,20 @@ export default function MasterSparepartAdd({ onChangePage }) {
       setIsError((prevError) => ({ ...prevError, error: false }));
       setErrors({});
 
+      const uploadPromises = [];
+
+      if (fileGambarRef.current.files.length > 0) {
+        uploadPromises.push(
+          UploadFile(fileGambarRef.current).then(
+            (data) => (formDataRef.current["spa_gambar_sparepart"] = data.Hasil)
+          )
+        );
+      }
+      
+
       try {
+        await Promise.all(uploadPromises);
+
         // Call the stored procedure here, assuming the API endpoint is set up for this
         const data = await UseFetch(
           API_LINK + "MasterSparepart/CreateSparepart",
@@ -155,6 +192,18 @@ export default function MasterSparepartAdd({ onChangePage }) {
                   value={formDataRef.current.spa_stok}
                   onChange={handleInputChange}
                   errorMessage={errors.spa_stok}
+                />
+              </div>
+              <div className="col-lg-4">
+                <FileUpload
+                  forInput="spa_gambar_sparepart"
+                  label="Gambar Sparepart (.jpg, .png)"
+                  formatFile=".jpg,.png"
+                  ref={fileGambarRef}
+                  onChange={() =>
+                    handleFileChange(fileGambarRef, "jpg,png")
+                  }
+                  errorMessage={errors.spa_gambar_sparepart}
                 />
               </div>
               <div className="col-lg-6">
