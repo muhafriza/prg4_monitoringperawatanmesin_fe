@@ -21,8 +21,10 @@ const inisialisasiData = [
 ];
 
 const dataFilterSort = [
-  { Value: "[stok] asc", Text: "Stok [↑]" },
-  { Value: "[stok] desc", Text: "Stok [↓]" },
+  { Value: "[mes_nama_mesin] asc", Text: "Nama Mesin [↑]" },
+  { Value: "[mes_nama_mesin] desc", Text: "Nama Mesin [↓]" },
+  { Value: "[mes_daya_mesin] asc", Text: "Daya Mesin [↑]" },
+  { Value: "[mes_daya_mesin] desc", Text: "Daya Mesin [↓]" },
 ];
 
 const dataFilterStatus = [
@@ -30,82 +32,59 @@ const dataFilterStatus = [
   { Value: "Tidak Aktif", Text: "Tidak Aktif" },
 ];
 
-export default function MasterSparepart({ onChangePage }) {
+export default function MasterMesin({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[spa_nama_Sparepart] asc",
-    spa_status: "Aktif",
-    itemPerPage: 5,
+    sort: "[mes_nama_mesin] asc",
+    status: "Aktif",
+    itemPerPage: 10,
   });
 
   const searchQuery = useRef();
-  const searchMerk = useRef();
-  const searchDeskripsi = useRef();
-  const searchStok = useRef();
   const searchFilterSort = useRef();
   const searchFilterStatus = useRef();
 
   function handleSetCurrentPage(newCurrentPage) {
     setIsLoading(true);
-    setCurrentFilter((prevFilter) => {
-      return {
-        ...prevFilter,
-        page: newCurrentPage,
-      };
-    });
-  }
-  function formatDate(dateString, format = "DD/MM/YYYY") {
-    const date = new Date(dateString);
-
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-
-    switch (format) {
-      case "DD-MM-YYYY":
-        return `${day}/${month}/${year}`;
-      case "YYYY-MM-DD":
-        return `${year}-${month}-${day}`;
-      default:
-        return dateString;
-    }
+    setCurrentFilter((prevFilter) => ({
+      ...prevFilter,
+      page: newCurrentPage,
+    }));
   }
 
   function handleSearch() {
     setIsLoading(true);
-    setCurrentFilter((prevFilter) => {
-      return {
-        ...prevFilter,
-        page: 1,
-        query: searchQuery.current.value,
-        sort: searchFilterSort.current.value,
-        status: searchFilterStatus.current.value,
-      };
-    });
+    setCurrentFilter((prevFilter) => ({
+      ...prevFilter,
+      page: 1,
+      query: searchQuery.current.value,
+      sort: searchFilterSort.current.value,
+      status: searchFilterStatus.current.value,
+    }));
   }
 
   function handleSetStatus(id) {
     setIsLoading(true);
     setIsError(false);
-    UseFetch(API_LINK + "MasterSparepart/SetStatusSparepart", {
-      idSparepart: id,
+    UseFetch(API_LINK + "MasterMesin/SetStatusMesin", {
+      mes_id_mesin: id,
     })
       .then((data) => {
         if (data === "ERROR" || data.length === 0) setIsError(true);
         else {
           SweetAlert(
             "Sukses",
-            "Status data Sparepart berhasil diubah menjadi " + data[0].Status,
+            "Status data Mesin berhasil diubah menjadi " + data[0].Status,
             "success"
           );
           handleSetCurrentPage(currentFilter.page);
         }
       })
-      .then(() => setIsLoading(false));
+      .finally(() => setIsLoading(false));
   }
 
   useEffect(() => {
@@ -114,12 +93,11 @@ export default function MasterSparepart({ onChangePage }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "MasterSparepart/GetDataSparepart",
+          API_LINK + "MasterMesin/GetDataMesin",
           currentFilter
         );
         if (data === "ERROR") {
           setIsError(true);
-          console.log("Error nih");
         } else if (data.length === 0) {
           setCurrentData(inisialisasiData);
         } else {
@@ -128,16 +106,18 @@ export default function MasterSparepart({ onChangePage }) {
             Aksi: ["Toggle", "Detail", "Edit"],
             Alignment: [
               "center",
-              "Center",
+              "center",
+              "left",
               "left",
               "left",
               "right",
               "center",
               "center",
+              "left",
               "center",
+              "left",
             ],
           }));
-          console.log(formattedData);
           setCurrentData(formattedData);
         }
       } catch {
@@ -148,6 +128,7 @@ export default function MasterSparepart({ onChangePage }) {
     };
 
     fetchData();
+
   }, [currentFilter]);
 
   return (
@@ -157,7 +138,7 @@ export default function MasterSparepart({ onChangePage }) {
           <div className="flex-fill">
             <Alert
               type="warning"
-              message="Terjadi kesalahan: Gagal mengambil data Sparepart. "
+              message="Terjadi kesalahan: Gagal mengambil data Mesin."
             />
           </div>
         )}
@@ -171,8 +152,8 @@ export default function MasterSparepart({ onChangePage }) {
             />
             <Input
               ref={searchQuery}
-              forInput="pencarianSparepart"
-              placeholder="Cari"
+              forInput="pencarianMesin"
+              placeholder="Cari Nama Mesin"
             />
             <Button
               iconName="search"
@@ -187,7 +168,7 @@ export default function MasterSparepart({ onChangePage }) {
                 label="Urut Berdasarkan"
                 type="none"
                 arrData={dataFilterSort}
-                defaultValue="[spa_nama_sparepart] asc"
+                defaultValue="[mes_nama_mesin] asc"
               />
               <DropDown
                 ref={searchFilterStatus}
@@ -202,7 +183,7 @@ export default function MasterSparepart({ onChangePage }) {
         </div>
         <div className="mt-3">
           {isLoading ? (
-            <Loading /> 
+            <Loading />
           ) : (
             <div className="d-flex flex-column">
               <Table
@@ -210,6 +191,17 @@ export default function MasterSparepart({ onChangePage }) {
                 onToggle={handleSetStatus}
                 onDetail={onChangePage}
                 onEdit={onChangePage}
+                columns={[
+                  { title: "Nama Mesin", key: "mes_nama_mesin", align: "left" },
+                  { title: "Kondisi", key: "mes_kondisi_operasional", align: "left" },
+                  { title: "No. Panel", key: "mes_no_panel", align: "left" },
+                  { title: "Lab", key: "mes_lab", align: "left" },
+                  { title: "Daya Mesin", key: "mes_daya_mesin", align: "right" },
+                  { title: "Jumlah", key: "mes_jumlah", align: "center" },
+                  { title: "Kapasitas", key: "mes_kapasitas", align: "center" },
+                  { title: "Tipe", key: "mes_tipe", align: "center" },
+                  { title: "Status", key: "mes_status", align: "center" },
+                ]}
               />
               <Paging
                 pageSize={PAGE_SIZE}
