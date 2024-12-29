@@ -48,9 +48,6 @@ export default function MasterSparepart({ onChangePage }) {
   });
 
   const searchQuery = useRef();
-  const searchNama = useRef();
-  const searchDeskripsi = useRef();
-  const searchStok = useRef();
   const searchFilterSort = useRef();
   const searchFilterStatus = useRef();
 
@@ -101,16 +98,6 @@ export default function MasterSparepart({ onChangePage }) {
         return dateString;
     }
   }
-  const columns = [
-    { Header: "No", accessor: "No" },
-    { Header: "Nama Sparepart", accessor: "Nama Sparepart" },
-    { Header: "Deskripsi", accessor: "Deskripsi" },
-    { Header: "Merk", accessor: "Merk" },
-    { Header: "Stok", accessor: "Stok" },
-    { Header: "Status", accessor: "Status" },
-    { Header: "Tanggal Masuk", accessor: "tanggal_masuk" }, // Ini adalah header yang diubah
-    { Header: "Aksi", accessor: "Aksi" },
-  ];
 
   function handleSearch() {
     setIsLoading(true);
