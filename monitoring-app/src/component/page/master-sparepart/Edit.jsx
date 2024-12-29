@@ -30,16 +30,27 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
   const fileGambarRef = useRef(null);
 
   const userSchema = object({
+    idSparepart: string(),
     namaSparepart: string()
-      .max(50, "maksimum 100 karakter")
+      .max(50, "maksimum 50 karakter")
       .required("harus diisi"),
     deskripsi: string()
       .max(100, "maksimum 100 karakter")
       .required("harus diisi"),
-    gambarSparepart: string(),
-    merk: string(),
-    stok: string(),
-    tanggalMasuk: string(),
+    gambarSparepart: string().nullable(),
+    merk: string().nullable(),
+    stok: string()
+    .matches(/^\d*$/, "Hanya angka yang diperbolehkan") // Validasi angka
+    .min(0, "Stok tidak boleh kurang dari 0") // Menambahkan validasi minimal 0
+    .required("harus diisi"), // Harus diisi
+    tanggalMasuk: string().test(
+      "is-valid-date",
+      "Tanggal masuk tidak boleh kurang dari hari ini",
+      (value) => {
+        const today = new Date().toISOString().split("T")[0];
+        return value >= today;
+      }
+    ),
   });
 
   const handleFileChange = (ref, extAllowed) => {
@@ -61,10 +72,10 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
           [ref.current.name]: error,
         }));
         setPreviewImage(null); // Reset preview jika ada error
-        return;
+        console.log("Error File:", error); // Debug log
+        return; // Hentikan eksekusi jika error
       }
 
-      // Generate preview
       const reader = new FileReader();
       reader.onload = () => setPreviewImage(reader.result);
       reader.readAsDataURL(file);
@@ -85,8 +96,7 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
           API_LINK + `MasterSparepart/DetailSparepart`,
           { id: withID }
         );
-        console.log("ini data: " + data);
-        if (data === "ERROR" || data.length === 0) {
+        if (!data || data === "ERROR" || data.length === 0) {
           throw new Error("Gagal mengambil data Sparepart.");
         }
 
@@ -100,6 +110,11 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
         delete sparepartData.spa_status;
 
         formDataRef.current = { ...formDataRef.current, ...sparepartData };
+
+        // Jika gambar tersedia, buat preview
+        if (sparepartData.gambarSparepart) {
+          setPreviewImage(FILE_LINK + sparepartData.gambarSparepart); // FILE_LINK berisi URL path ke file
+        }
       } catch (error) {
         window.scrollTo(0, 0);
         setIsError({ error: true, message: error.message });
@@ -140,6 +155,7 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
         return;
       }
     }
+
     const validationError = validateInput(name, value, userSchema);
     formDataRef.current[name] = value;
     setErrors((prevErrors) => ({
@@ -156,22 +172,32 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
       userSchema,
       setErrors
     );
+
+    console.error("Validation :", validationErrors);
+
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
       setIsError((prevError) => ({ ...prevError, error: false }));
       setErrors({});
+
       const uploadPromises = [];
 
       if (fileGambarRef.current.files.length > 0) {
         uploadPromises.push(
-          UploadFile(fileGambarRef.current).then(
-            (data) => (formDataRef.current["gambarSparepart"] = data.Hasil)
-          )
+          UploadFile(fileGambarRef.current)
+            .then((data) => {
+              formDataRef.current["gambarSparepart"] = data.Hasil;
+              console.log("Hasil upload file:", data);
+            })
+            .catch((error) => {
+              console.error("Error upload file:", error);
+            })
         );
       }
+      console.log("Data gambar dikirim:", formDataRef.current.gambarSparepart);
       try {
         await Promise.all(uploadPromises);
-        
+
         const data = await UseFetch(
           API_LINK + "MasterSparepart/EditSparepart",
           formDataRef.current
@@ -197,7 +223,7 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
         setIsLoading(false);
       }
     } else window.scrollTo(0, 0);
-    console.log("ErrorSaat Simpan Data: ".formDataRef);
+    console.log("ErrorSaat Simpan Data: ".formDataRef.gambarSparepart);
   };
 
   if (isLoading) return <Loading />;

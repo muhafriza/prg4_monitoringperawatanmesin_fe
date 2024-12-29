@@ -95,7 +95,7 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
             <div className="col-md-4 mb-3">
               <Label
                 forLabel="gambarSparepart"
-                title="Gambar Alat/Mesin"
+                title="Gambar Sparepart"
                 data={
                   formData.gambarSparepart &&
                   formData.gambarSparepart !== "" ? (
