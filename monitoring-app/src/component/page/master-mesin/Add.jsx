@@ -19,16 +19,17 @@ export default function MasterMesinAdd({ onChangePage }) {
 
 
   const formDataRef = useRef({
+    
+    nama_mesin: "",
     kondisi: "",
     no_panel: "",
+    mes_gambar: "", // File gambar
     lab: "",
-    nama_mesin: "",
     daya_mesin: "",
     jumlah: "",
     kapasitas: "",
     tipe: "",
     status: "Aktif", // Default "Aktif"
-    mes_gambar: "", // File gambar
   });
 
   const fileGambarRef = useRef(null); // Reference for file upload input
