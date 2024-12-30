@@ -17,42 +17,42 @@ export default function MasterMesinAdd({ onChangePage }) {
   const [isLoading, setIsLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
 
-
   const formDataRef = useRef({
-    
-    nama_mesin: "",
-    kondisi: "",
-    no_panel: "",
+    mes_kondisi_operasional: "",
+    mes_no_panel: "",
+    mes_lab: "",
+    mes_nama_mesin: "",
+    mes_daya_mesin: "",
+    mes_jumlah: "",
+    mes_kapasitas: "",
+    mes_tipe: "",
+    mes_status: "Aktif",
     mes_gambar: "", // File gambar
-    lab: "",
-    daya_mesin: "",
-    jumlah: "",
-    kapasitas: "",
-    tipe: "",
-    status: "Aktif", // Default "Aktif"
   });
 
   const fileGambarRef = useRef(null); // Reference for file upload input
   const userSchema = object({
-    kondisi: string().max(50, "Maksimum 50 karakter").required("Kondisi harus diisi"),
-    no_panel: string().max(25, "Maksimum 25 karakter"),
-    lab: string().max(50, "Maksimum 50 karakter"),
-    nama_mesin: string().max(100, "Maksimum 100 karakter").required("Nama Mesin harus diisi"),
-    daya_mesin: number()
+    mes_kondisi_operasional: string()
+      .max(50, "Maksimum 50 karakter")
+      .required("mes_kondisi_operasional harus diisi"),
+    mes_no_panel: string().max(25, "Maksimum 25 karakter"),
+    mes_lab: string().max(50, "Maksimum 50 karakter"),
+    mes_nama_mesin: string()
+      .max(100, "Maksimum 100 karakter")
+      .required("Nama Mesin harus diisi"),
+    mes_daya_mesin: number()
       .typeError("Daya Mesin harus berupa angka")
-      .positive("Harus angka positif")
       .required("Daya Mesin harus diisi"),
-    jumlah: number()
-      .typeError("Jumlah harus berupa angka")
-      .positive("Harus angka positif")
+    mes_jumlah: number()
+      .typeError("mes_jumlah harus berupa angka")
       .integer("Harus bilangan bulat")
-      .required("Jumlah harus diisi"),
-    kapasitas: string().max(25, "Maksimum 25 karakter"),
-    tipe: string().max(25, "Maksimum 25 karakter"),
-    status: string(),
-    mes_gambar: string()
+      .required("mes_jumlah harus diisi"),
+    mes_kapasitas: string().max(25, "Maksimum 25 karakter"),
+    mes_tipe: string().max(25, "Maksimum 25 karakter"),
+    mes_status: string(),
+    mes_gambar: string(),
   });
-  
+
   const handleFileChange = (ref, extAllowed) => {
     const file = ref.current.files[0];
 
@@ -100,8 +100,11 @@ export default function MasterMesinAdd({ onChangePage }) {
   const handleAdd = async (e) => {
     e.preventDefault();
 
-    // Validate all inputs
-    const validationErrors = await validateAllInputs(formDataRef.current, userSchema, setErrors);
+    const validationErrors = await validateAllInputs(
+      formDataRef.current,
+      userSchema,
+      setErrors
+    );
 
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
@@ -110,30 +113,32 @@ export default function MasterMesinAdd({ onChangePage }) {
 
       const uploadPromises = [];
 
+      // Handle file upload if present
       if (fileGambarRef.current.files.length > 0) {
         uploadPromises.push(
-          UploadFile(fileGambarRef.current).then(
-            (data) => (formDataRef.current["mes_gambar"] = data.Hasil)
-          )
+          UploadFile(fileGambarRef.current).then((data) => {
+            // Store the file URL (assuming data.Hasil contains the file URL or path)
+            formDataRef.current["mes_gambar"] = data.Hasil;
+          })
         );
       }
 
       try {
-        // // Handle file upload if there's a file
-        // if (fileGambarRef.current && fileGambarRef.current.files.length > 0) {
-        //   const fileUploadResult = await UploadFile(fileGambarRef.current);
-        //   formDataRef.current["mes_gambar"] = fileUploadResult.Hasil;
-        // }
-
-        // Send data to API
+        // Wait for all uploads to complete
         await Promise.all(uploadPromises);
 
+        // Prepare FormData for API request
+        const formData = new FormData();
+
+        console.log(formData);
+
+        // Send data to API using FormData
         const data = await UseFetch(
-          API_LINK + "MasterMesin/CreateMesin",
+          API_LINK + "Mesin/CreateMesin",
           formDataRef.current
         );
 
-        if (data === "ERROR") {
+        if (!data) {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data Mesin.");
         } else {
           SweetAlert("Sukses", "Data Mesin berhasil disimpan", "success");
@@ -148,7 +153,6 @@ export default function MasterMesinAdd({ onChangePage }) {
       window.scrollTo(0, 0);
     }
   };
-  
 
   if (isLoading) return <Loading />;
 
@@ -169,85 +173,85 @@ export default function MasterMesinAdd({ onChangePage }) {
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="kondisi"
-                  label="Kondisi Operasional (%)"
+                  forInput="mes_kondisi_operasional"
+                  label="mes_kondisi_operasional Operasional (%)"
                   isRequired
-                  value={formDataRef.current.kondisi}
+                  value={formDataRef.current.mes_kondisi_operasional}
                   onChange={handleInputChange}
-                  errorMessage={errors.kondisi}
+                  errorMessage={errors.mes_kondisi_operasional}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="no_panel"
+                  forInput="mes_no_panel"
                   label="No Panel"
-                  value={formDataRef.current.no_panel}
+                  value={formDataRef.current.mes_no_panel}
                   onChange={handleInputChange}
-                  errorMessage={errors.no_panel}
+                  errorMessage={errors.mes_no_panel}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="lab"
+                  forInput="mes_lab"
                   label="Lab"
-                  value={formDataRef.current.lab}
+                  value={formDataRef.current.mes_lab}
                   onChange={handleInputChange}
-                  errorMessage={errors.lab}
+                  errorMessage={errors.mes_lab}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="nama_mesin"
+                  forInput="mes_nama_mesin"
                   label="Nama Mesin"
                   isRequired
-                  value={formDataRef.current.nama_mesin}
+                  value={formDataRef.current.mes_nama_mesin}
                   onChange={handleInputChange}
-                  errorMessage={errors.nama_mesin}
+                  errorMessage={errors.mes_nama_mesin}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="daya_mesin"
+                  forInput="mes_daya_mesin"
                   label="Daya Mesin (W)"
                   isRequired
-                  value={formDataRef.current.daya_mesin}
+                  value={formDataRef.current.mes_daya_mesin}
                   onChange={handleInputChange}
-                  errorMessage={errors.daya_mesin}
+                  errorMessage={errors.mes_daya_mesin}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="jumlah"
-                  label="Jumlah"
+                  forInput="mes_jumlah"
+                  label="mes_jumlah"
                   isRequired
-                  value={formDataRef.current.jumlah}
+                  value={formDataRef.current.mes_jumlah}
                   onChange={handleInputChange}
-                  errorMessage={errors.jumlah}
+                  errorMessage={errors.mes_jumlah}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="kapasitas"
-                  label="Kapasitas"
-                  value={formDataRef.current.kapasitas}
+                  forInput="mes_kapasitas"
+                  label="mes_kapasitas"
+                  value={formDataRef.current.mes_kapasitas}
                   onChange={handleInputChange}
-                  errorMessage={errors.kapasitas}
+                  errorMessage={errors.mes_kapasitas}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="tipe"
-                  label="Tipe"
-                  value={formDataRef.current.tipe}
+                  forInput="mes_tipe"
+                  label="mes_tipe"
+                  value={formDataRef.current.mes_tipe}
                   onChange={handleInputChange}
-                  errorMessage={errors.tipe}
+                  errorMessage={errors.mes_tipe}
                 />
               </div>
               <div className="col-lg-4">

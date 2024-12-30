@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { object, string, number } from "yup"; // Adjusted for new schema validation
-import { API_LINK } from "../../util/Constants";
+import { API_LINK, FILE_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
 import SweetAlert from "../../util/SweetAlert";
+import UploadFile from "../../util/UploadFile";
+import FileUpload from "../../part/FileUpload";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -13,19 +15,21 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
   const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
+  const [previewImage, setPreviewImage] = useState(null);
 
   const formDataRef = useRef({
     mes_id_mesin: "",
+    mes_kondisi_operasional: "",
+    mes_no_panel: "",
+    mes_lab: "",
     mes_nama_mesin: "",
     mes_daya_mesin: "",
     mes_jumlah: "",
     mes_kapasitas: "",
     mes_tipe: "",
-    mes_status: "",
-    mes_kondisi_operasional: "",
-    mes_no_panel: "",
-    mes_lab: "",
+    mes_gambar: "",
   });
+  const fileGambarRef = useRef(null);
 
   const userSchema = object({
     mes_id_mesin: string().optional(),
@@ -44,29 +48,69 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
       .required("Jumlah Mesin harus diisi"),
     mes_kapasitas: string().optional(),
     mes_tipe: string().optional(),
-    mes_status: string().optional(),
+    mes_gambar: string(),
   });
+
+  const handleFileChange = (ref, extAllowed) => {
+    const file = ref.current.files[0];
+
+    if (file) {
+      const fileExt = file.name.split(".").pop().toLowerCase();
+      const fileSize = file.size;
+      let error = "";
+
+      if (fileSize / 1024 / 1024 > 10) error = "Berkas terlalu besar";
+      else if (!extAllowed.split(",").includes(fileExt))
+        error = "Format berkas tidak valid";
+
+      if (error) {
+        ref.current.value = "";
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [ref.current.name]: error,
+        }));
+        setPreviewImage(null); // Reset preview jika ada error
+        console.log("Error File:", error); // Debug log
+        return; // Hentikan eksekusi jika error
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => setPreviewImage(reader.result);
+      reader.readAsDataURL(file);
+
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [ref.current.name]: null,
+      }));
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       setIsError({ error: false, message: "" });
 
       try {
-        const data = await UseFetch(
-          `${API_LINK}MasterMesin/DetailMesin`,
-          { id: withID }
-        );
+        const data = await UseFetch(`${API_LINK}Mesin/DetailMesin`, {
+          id: withID,
+        });
 
         if (data === "ERROR" || data.length === 0) {
           throw new Error("Gagal mengambil data Mesin.");
         }
 
         const MesinData = data[0];
-        MesinData.mes_created_date = formatDate(MesinData.mes_created_date, "YYYY-MM-DD");
-        MesinData.mes_modi_date = formatDate(MesinData.mes_modi_date, "YYYY-MM-DD");
+        MesinData.mes_id_mesin = withID;
+        delete MesinData.status;
+        delete MesinData.mes_status1;
+        delete MesinData.mes_status;
 
         // Initialize formDataRef with the fetched data
         formDataRef.current = { ...formDataRef.current, ...MesinData };
+
+        // Jika gambar tersedia, buat preview
+        if (MesinData.mes_gambar) {
+          setPreviewImage(FILE_LINK + MesinData.mes_gambar); // FILE_LINK berisi URL path ke file
+        }
       } catch (error) {
         setIsError({ error: true, message: error.message });
       } finally {
@@ -136,14 +180,34 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
       setIsLoading(true);
       setIsError({ error: false, message: "" });
       setErrors({});
+      const uploadPromises = [];
+
+      if (fileGambarRef.current.files.length > 0) {
+        uploadPromises.push(
+          UploadFile(fileGambarRef.current)
+            .then((data) => {
+              formDataRef.current["mes_gambar"] = data.Hasil;
+              console.log("Hasil upload file:", data);
+            })
+            .catch((error) => {
+              console.error("Error upload file:", error);
+            })
+        );
+      }
+      console.log("Data gambar dikirim:", formDataRef.current.mes_gambar);
 
       try {
+        await Promise.all(uploadPromises);
+
         const data = await UseFetch(
-          `${API_LINK}MasterMesin/EditMesin`,
+          API_LINK + 'Mesin/EditMesin',
           formDataRef.current
         );
 
-        if (!data || data === "ERROR") {
+        console.log("Payload:", formDataRef.current);
+        console.log("API Response:", data);
+
+        if (!data) {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data mesin.");
         } else {
           SweetAlert("Sukses", "Data mesin berhasil disimpan", "success");
@@ -156,7 +220,7 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
         setIsLoading(false);
       }
     } else {
-      window.scrollTo(0, 0);  // Scroll to the top of the page if validation fails
+      window.scrollTo(0, 0); // Scroll to the top of the page if validation fails
       console.log("Form validation failed, scrolling to top.");
     }
   };
@@ -259,6 +323,29 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
                   onChange={handleInputChange}
                   errorMessage={errors.mes_lab}
                 />
+              </div>
+              <div className="col-lg-4">
+                <FileUpload
+                  forInput="mes_gambar"
+                  label="Gambar Mesin (.jpg, .png)"
+                  formatFile=".jpg,.png"
+                  ref={fileGambarRef}
+                  onChange={() => handleFileChange(fileGambarRef, "jpg,png")}
+                  errorMessage={errors.mes_gambar}
+                />
+                {previewImage && (
+                  <div className="mt-3">
+                    <img
+                      src={previewImage}
+                      alt="Preview Gambar"
+                      style={{
+                        maxWidth: "200px",
+                        maxHeight: "200px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>

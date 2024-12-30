@@ -35,8 +35,8 @@ export default function MasterMesinDetail({ onChangePage, withID }) {
 
       try {
         // Call API to fetch the details of the machine
-        const data = await UseFetch(API_LINK + "MasterMesin/DetailMesin", {
-          id: withID,  // Pass the machine ID to the API
+        const data = await UseFetch(API_LINK + "Mesin/DetailMesin", {
+          id: withID, // Pass the machine ID to the API
         });
 
         if (data === "ERROR" || !data || data.length === 0) {
@@ -74,67 +74,102 @@ export default function MasterMesinDetail({ onChangePage, withID }) {
         </div>
         <div className="card-body p-4">
           <div className="row">
-            <div className="col-lg-3">
-              <Label forLabel="mes_id_mesin" title="ID Mesin" data={formData.mes_id_mesin} />
-            </div>
-            <div className="col-lg-3">
-              <Label forLabel="mes_kondisi_operasional" title="Kondisi Operasional" data={formData.mes_kondisi_operasional} />
-            </div>
-            <div className="col-lg-3">
-              <Label forLabel="mes_no_panel" title="No. Panel" data={formData.mes_no_panel} />
-            </div>
-            <div className="col-lg-3">
-              <Label forLabel="mes_lab" title="Lab" data={formData.mes_lab} />
-            </div>
-            <div className="col-lg-3">
-              <Label forLabel="mes_nama_mesin" title="Nama Mesin" data={formData.mes_nama_mesin} />
-            </div>
-            <div className="col-lg-3">
-              <Label forLabel="mes_daya_mesin" title="Daya Mesin" data={formData.mes_daya_mesin} />
-            </div>
-            <div className="col-lg-3">
-              <Label forLabel="mes_jumlah" title="Jumlah" data={formData.mes_jumlah} />
-            </div>
-            <div className="col-lg-3">
-              <Label forLabel="mes_kapasitas" title="Kapasitas" data={formData.mes_kapasitas} />
-            </div>
-            <div className="col-lg-3">
-              <Label forLabel="mes_tipe" title="Tipe" data={formData.mes_tipe} />
-            </div>
-            <div className="col-lg-3">
-              <Label forLabel="mes_status" title="Status" data={formData.mes_status} />
-            </div>
-            <div className="col-lg-3">
-              <Label forLabel="mes_created_by" title="Created By" data={formData.mes_created_by} />
-            </div>
-            <div className="col-lg-3">
-              <Label forLabel="mes_created_date" title="Created Date" data={formData.mes_created_date} />
-            </div>
-            <div className="col-lg-3">
-              <Label forLabel="mes_modi_by" title="Modified By" data={formData.mes_modi_by} />
-            </div>
-            <div className="col-lg-3">
-              <Label forLabel="mes_modi_date" title="Modified Date" data={formData.mes_modi_date} />
-            </div>
-            <div className="col-lg-4">
+            <div className="col-md-4 mb-3">
               <Label
                 forLabel="mes_gambar"
-                title="Gambar Alat/Mesin"
+                title="Gambar Mesin"
                 data={
-                  formData.mes_gambar ? (
-                    <a
-                      href={FILE_LINK + formData.mes_gambar}
-                      className="text-decoration-none"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Unduh berkas
-                    </a>
+                  formData.mes_gambar && formData.mes_gambar !== "" ? (
+                    <img
+                      src={FILE_LINK + formData.mes_gambar}
+                      alt="Gambar Mesin"
+                      className="img-fluid"
+                      style={{
+                        objectFit: "cover",
+                        width: "100%",
+                        height: "300px",
+                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                      }}
+                    />
                   ) : (
                     "-"
                   )
                 }
               />
+            </div>
+            <div className="col-lg-8">
+              <div className="row">
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="mes_id_mesin"
+                    title="ID Mesin"
+                    data={formData.mes_id_mesin}
+                  />
+                </div>
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="mes_kondisi_operasional"
+                    title="Kondisi Operasional"
+                    data={formData.mes_kondisi_operasional}
+                  />
+                </div>
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="mes_no_panel"
+                    title="No. Panel"
+                    data={formData.mes_no_panel}
+                  />
+                </div>
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="mes_lab"
+                    title="Lab"
+                    data={formData.mes_lab}
+                  />
+                </div>
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="mes_nama_mesin"
+                    title="Nama Mesin"
+                    data={formData.mes_nama_mesin}
+                  />
+                </div>
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="mes_daya_mesin"
+                    title="Daya Mesin"
+                    data={formData.mes_daya_mesin}
+                  />
+                </div>
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="mes_jumlah"
+                    title="Jumlah"
+                    data={formData.mes_jumlah}
+                  />
+                </div>
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="mes_kapasitas"
+                    title="Kapasitas"
+                    data={formData.mes_kapasitas}
+                  />
+                </div>
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="mes_tipe"
+                    title="Tipe"
+                    data={formData.mes_tipe}
+                  />
+                </div>
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="mes_status"
+                    title="Status"
+                    data={formData.mes_status}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
