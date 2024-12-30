@@ -15,6 +15,8 @@ export default function MasterMesinAdd({ onChangePage }) {
   const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
+
 
   const formDataRef = useRef({
     kondisi: "",
@@ -26,7 +28,7 @@ export default function MasterMesinAdd({ onChangePage }) {
     kapasitas: "",
     tipe: "",
     status: "Aktif", // Default "Aktif"
-    //mes_gambar: "", // File gambar
+    mes_gambar: "", // File gambar
   });
 
   const fileGambarRef = useRef(null); // Reference for file upload input
@@ -47,20 +49,42 @@ export default function MasterMesinAdd({ onChangePage }) {
     kapasitas: string().max(25, "Maksimum 25 karakter"),
     tipe: string().max(25, "Maksimum 25 karakter"),
     status: string(),
-    mes_gambar: string().test(
-      "mes_gambar",
-      "File harus berupa gambar (.jpg, .png, .pdf)",
-      (value) => {
-        // Optional: Validate if it's a valid file
-        if (value) {
-          const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
-          return allowedTypes.includes(value.type);
-        }
-        return true; // Allow if no file is uploaded
-      }
-    ),
+    mes_gambar: string()
   });
   
+  const handleFileChange = (ref, extAllowed) => {
+    const file = ref.current.files[0];
+
+    if (file) {
+      const fileExt = file.name.split(".").pop().toLowerCase();
+      const fileSize = file.size;
+      let error = "";
+
+      if (fileSize / 1024 / 1024 > 10) error = "Berkas terlalu besar";
+      else if (!extAllowed.split(",").includes(fileExt))
+        error = "Format berkas tidak valid";
+
+      if (error) {
+        ref.current.value = "";
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [ref.current.name]: error,
+        }));
+        setPreviewImage(null); // Reset preview jika ada error
+        console.log("Error File:", error); // Debug log
+        return; // Hentikan eksekusi jika error
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => setPreviewImage(reader.result);
+      reader.readAsDataURL(file);
+
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [ref.current.name]: null,
+      }));
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -83,14 +107,26 @@ export default function MasterMesinAdd({ onChangePage }) {
       setIsError({ error: false, message: "" });
       setErrors({});
 
+      const uploadPromises = [];
+
+      if (fileGambarRef.current.files.length > 0) {
+        uploadPromises.push(
+          UploadFile(fileGambarRef.current).then(
+            (data) => (formDataRef.current["mes_gambar"] = data.Hasil)
+          )
+        );
+      }
+
       try {
-        // Handle file upload if there's a file
-        if (fileGambarRef.current && fileGambarRef.current.files.length > 0) {
-          const fileUploadResult = await UploadFile(fileGambarRef.current);
-          formDataRef.current["mes_gambar"] = fileUploadResult.Hasil;
-        }
+        // // Handle file upload if there's a file
+        // if (fileGambarRef.current && fileGambarRef.current.files.length > 0) {
+        //   const fileUploadResult = await UploadFile(fileGambarRef.current);
+        //   formDataRef.current["mes_gambar"] = fileUploadResult.Hasil;
+        // }
 
         // Send data to API
+        await Promise.all(uploadPromises);
+
         const data = await UseFetch(
           API_LINK + "MasterMesin/CreateMesin",
           formDataRef.current
@@ -111,6 +147,7 @@ export default function MasterMesinAdd({ onChangePage }) {
       window.scrollTo(0, 0);
     }
   };
+  
 
   if (isLoading) return <Loading />;
 
@@ -215,11 +252,25 @@ export default function MasterMesinAdd({ onChangePage }) {
               <div className="col-lg-4">
                 <FileUpload
                   forInput="mes_gambar"
-                  label="Gambar Alat/Mesin (.pdf, .jpg, .png)"
-                  formatFile=".pdf,.jpg,.png"
+                  label="Gambar Mesin (.jpg, .png)"
+                  formatFile=".jpg,.png"
                   ref={fileGambarRef}
+                  onChange={() => handleFileChange(fileGambarRef, "jpg,png")}
                   errorMessage={errors.mes_gambar}
                 />
+                {previewImage && (
+                  <div className="mt-3">
+                    <img
+                      src={previewImage}
+                      alt="Preview Gambar"
+                      style={{
+                        maxWidth: "200px",
+                        maxHeight: "200px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
