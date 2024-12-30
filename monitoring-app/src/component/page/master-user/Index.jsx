@@ -21,7 +21,7 @@ const inisialisasiData = [
 ];
 
 const dataFilterSort = [
-  { Value: "[rol_id] asc", Text: "NPK [↑]" }, //rol id
+  { Value: "[rol_id] asc", Text: "NPK [↑]" }, 
   { Value: "[rol_id] desc", Text: "NPK [↓]" },
 ];
 
