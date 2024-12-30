@@ -1,39 +1,46 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { object, string } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
 import SweetAlert from "../../util/SweetAlert";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
-import Input from "../../part/Input";
-import DropDown from "../../part/Dropdown";
+import Input from "../../part/Input"; // Importing the Input component
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
-export default function MasterUserAdd({ onChangePage }) {
+export default function MasterKaryawanAdd({ onChangePage }) {
   const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(false);
-
+  const [usernames, setUsernames] = useState([]);
+  
   const formDataRef = useRef({
-    use_npk: "",
-    use_role: "",
-    // use_created_by: "",
-    // use_status: "Aktif",
+    kry_username: "",
+    kry_role: "Admin UPT", // Default "Admin UPT"
   });
 
   const userSchema = object({
-    use_npk: string()
-      .required("NPK harus diisi")
-      .max(20, "NPK maksimum 20 karakter"),
-    use_role: string().required("Role harus dipilih"),
-    // use_created_by: string().max(50, "Maksimum 50 karakter"),
-    // use_status: string().required("Status harus dipilih"),
+    kry_username: string().required("Username harus diisi"),
+    kry_role: string().required("Role harus dipilih"),
   });
+
+  // Fetch usernames from the database when the component mounts
+  useEffect(() => {
+    const fetchUsernames = async () => {
+      try {
+        const data = await UseFetch(API_LINK + "MasterUser/GetDataAlatMesin");
+        setUsernames(data);  // Assume this returns an array of usernames
+      } catch (error) {
+        setIsError({ error: true, message: "Gagal memuat data username" });
+      }
+    };
+    
+    fetchUsernames();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
     const validationError = validateInput(name, value, userSchema);
     formDataRef.current[name] = value;
     setErrors((prevErrors) => ({
@@ -45,36 +52,29 @@ export default function MasterUserAdd({ onChangePage }) {
   const handleAdd = async (e) => {
     e.preventDefault();
 
-    const validationErrors = await validateAllInputs(
-      formDataRef.current,
-      userSchema,
-      setErrors
-    );
+    // Validate all inputs
+    const validationErrors = await validateAllInputs(formDataRef.current, userSchema, setErrors);
 
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
-      setIsError((prevError) => ({ ...prevError, error: false }));
+      setIsError({ error: false, message: "" });
       setErrors({});
 
       try {
+        // Send data to API
         const data = await UseFetch(
-          API_LINK + "MasterUser/CreateUser",
+          API_LINK + "MasterKaryawan/CreateKaryawan",
           formDataRef.current
         );
 
         if (data === "ERROR") {
-          throw new Error("Terjadi kesalahan: Gagal menyimpan data User.");
+          throw new Error("Terjadi kesalahan: Gagal menyimpan data Karyawan.");
         } else {
-          SweetAlert("Sukses", "Data User berhasil disimpan", "success");
+          SweetAlert("Sukses", "Data Karyawan berhasil disimpan", "success");
           onChangePage("index");
         }
       } catch (error) {
-        window.scrollTo(0, 0);
-        setIsError((prevError) => ({
-          ...prevError,
-          error: true,
-          message: error.message,
-        }));
+        setIsError({ error: true, message: error.message });
       } finally {
         setIsLoading(false);
       }
@@ -95,64 +95,39 @@ export default function MasterUserAdd({ onChangePage }) {
       <form onSubmit={handleAdd}>
         <div className="card">
           <div className="card-header bg-primary fw-medium text-white">
-            Tambah Data User Baru
+            Tambah Data Karyawan Baru
           </div>
           <div className="card-body p-4">
             <div className="row">
-              <div className="col-lg-4">
+              <div className="col-lg-6">
                 <Input
-                  type="text"
-                  forInput="use_npk"
-                  label="NPK"
-                  isRequired
-                  value={formDataRef.current.use_npk}
+                  type="select" // Using the Input component for the dropdown
+                  forInput="kry_username"
+                  label="Pilih Username"
+                  value={formDataRef.current.kry_username}
                   onChange={handleInputChange}
-                  errorMessage={errors.use_npk}
-                />
+                  errorMessage={errors.kry_username}
+                >
+                  <option value="">Pilih Username</option>
+                  {usernames.map((username, index) => (
+                    <option key={index} value={username}>{username}</option>
+                  ))}
+                </Input>
               </div>
-              <div className="col-lg-4">
-                <DropDown
-                  forInput="use_role"
-                  label="Role"
-                  isRequired
-                  value={formDataRef.current.use_role}
-                  onChange={(e) =>
-                    (formDataRef.current.use_role = e.target.value)
-                  }
-                  errorMessage={errors.use_role}
-                  arrData={[
-                    { Value: "Admin", Text: "1" },
-                    { Value: "User", Text: "User" },
-                    { Value: "Manager", Text: "Manager" },
-                  ]}
-                />
-              </div>
-              {/* <div className="col-lg-4">
+              <div className="col-lg-6">
                 <Input
-                  type="text"
-                  forInput="use_created_by"
-                  label="Dibuat Oleh"
-                  value={formDataRef.current.use_created_by}
+                  type="select" // Using the Input component for the dropdown
+                  forInput="kry_role"
+                  label="Pilih Role"
+                  value={formDataRef.current.kry_role}
                   onChange={handleInputChange}
-                  errorMessage={errors.use_created_by}
-                />
-              </div> */}
-              {/* <div className="col-lg-4">
-                <DropDown
-                  forInput="use_status"
-                  label="Status"
-                  isRequired
-                  value={formDataRef.current.use_status}
-                  onChange={(e) =>
-                    (formDataRef.current.use_status = e.target.value)
-                  }
-                  errorMessage={errors.use_status}
-                  arrData={[
-                    { Value: "Aktif", Text: "Aktif" },
-                    { Value: "Tidak Aktif", Text: "Tidak Aktif" },
-                  ]}
-                />
-              </div> */}
+                  errorMessage={errors.kry_role}
+                >
+                  <option value="Admin UPT">Admin UPT</option>
+                  <option value="Teknisi">Teknisi</option>
+                  <option value="PIC UPT">PIC UPT</option>
+                </Input>
+              </div>
             </div>
           </div>
         </div>
