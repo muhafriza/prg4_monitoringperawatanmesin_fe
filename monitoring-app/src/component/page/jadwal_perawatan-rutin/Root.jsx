@@ -1,5 +1,5 @@
 import { useState } from "react";
-import JadwalPerawatan from "./jadwalPerawatan";
+import JadwalPerawatan from "./Index";
 
 
 import MasterSparepartAdd from "./Add";

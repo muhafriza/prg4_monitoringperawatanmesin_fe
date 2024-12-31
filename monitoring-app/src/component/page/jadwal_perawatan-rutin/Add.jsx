@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { object, string } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
@@ -11,13 +11,18 @@ import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
-export default function MasterSparepartAdd({ onChangePage }) {
+export default function Add({ onChangePage }) {
   const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+  const [currentFilter, setCurrentFilter] = useState({
+    name: "",
+    status: "Aktif",
+  })
 
   const formDataRef = useRef({
+    mes_id_mesin: "",
     spa_nama_sparepart: "",
     spa_deskripsi: "",
     spa_gambar_sparepart: "",
@@ -29,6 +34,7 @@ export default function MasterSparepartAdd({ onChangePage }) {
   const fileGambarRef = useRef(null);
 
   const userSchema = object({
+    mes_id_mesin: string().required("Pilih Mesin yang ingin di rawat"),
     spa_nama_sparepart: string()
       .max(50, "maksimum 100 karakter")
       .required("harus diisi"),
@@ -51,6 +57,37 @@ export default function MasterSparepartAdd({ onChangePage }) {
     ),
     spa_status: string(),
   });
+  const [mesinOptions, setmesinOptions] = useState([]); // State untuk menyimpan data pengguna
+
+
+  useEffect(() => {
+    const fetchDataMesin = async () => {
+      setIsError((prevError) => ({ ...prevError, error: false }));
+
+      try {
+        const data = await UseFetch(
+          API_LINK + "TransaksiPreventif/getNamaMesin",
+          currentFilter
+        );
+        console.log(data);
+        if (data === "ERROR" || data.length === 0) {
+          throw new Error("Terjadi kesalahan: Gagal mengambil data Mesin.");
+        } else {
+          setmesinOptions(data); // Set data yang diterima ke dalam mesinOptions
+        }
+      } catch (error) {
+        window.scrollTo(0, 0);
+        setIsError((prevError) => ({
+          ...prevError,
+          error: true,
+          message: error.message,
+        }));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDataMesin();
+  }, [currentFilter]);
 
   const handleFileChange = (ref, extAllowed) => {
     const file = ref.current.files[0];
@@ -174,16 +211,28 @@ export default function MasterSparepartAdd({ onChangePage }) {
           </div>
           <div className="card-body p-4">
             <div className="row">
-              <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="spa_nama_sparepart"
-                  label="Nama Sparepart"
+            <div className="col-lg-3">
+                <label htmlFor="userDropdown" className="form-label fw-bold">
+                  Pilih Mesin <span style={{color: "red"}}>* </span>{errors.mes_id_mesin && (
+                  <div className="text-danger">{errors.mes_id_mesin}</div>
+                )}
+                </label>
+                <select
+                  id="userDropdown"
+                  name="mes_id_mesin"
+                  className="form-select"
+                  value={formDataRef.current.mes_id_mesin}
+                  onChange={(e) => handleInputChange(e)}
                   isRequired
-                  value={formDataRef.current.spa_nama_sparepart}
-                  onChange={handleInputChange}
-                  errorMessage={errors.spa_nama_sparepart}
-                />
+                >
+                  <option value="">-- Pilih Mesin --</option>
+                  {mesinOptions.map((option) => (
+                    <option key={option.ID_Mesin} value={option.ID_Mesin}>
+                      {option.ID_Mesin},  {option.Nama_Mesin}
+                    </option>
+                  ))}
+                </select>
+                
               </div>
               <div className="col-lg-3">
                 <Input

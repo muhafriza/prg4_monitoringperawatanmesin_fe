@@ -4,7 +4,7 @@ import MasterUserAdd from "./Add";
 import MasterUserEdit from "./Edit";
 import MasterUserDetail from "./Detail";
 
-export default function MasterProses() {
+export default function MasterUser() {
   const [pageMode, setPageMode] = useState("index");
   const [dataID, setDataID] = useState();
 
