@@ -12,13 +12,18 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
 
   // Use state instead of useRef for form data
   const [formData, setFormData] = useState({
-    namaSparepart: "",
-    deskripsi: "",
+    ID_Mesin: "",
+    Nama_Mesin: "",
     gambarSparepart: "",
-    merk: "",
-    stok: "",
-    tanggalMasuk: "",
-    status: "",
+    Tanggal_Penjadwalan: "",
+    Tanggal_Aktual: "",
+    Tanggal_Selesai: "",
+    Tindakan_Perbaikan: "",
+    Catatan_Tambahan: "",
+    Status_Pemeliharaan: "",
+    Created_By: "",
+    Created_Date: "",
+    Modified_By: "",
   });
   function formatDate(dateString, format) {
     const date = new Date(dateString);
@@ -28,8 +33,18 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
     const year = date.getFullYear();
 
     const months = [
-      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember",
     ];
 
     switch (format) {
@@ -37,8 +52,8 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
         return `${day}/${month}/${year}`;
       case "YYYY-MM-DD":
         return `${year}-${month}-${day}`;
-        case "D MMMM YYYY":
-          return `${day} ${months[month]} ${year}`;
+      case "D MMMM YYYY":
+        return `${day} ${months[month]} ${year}`;
       default:
         return dateString;
     }
@@ -50,7 +65,7 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "MasterSparepart/DetailSparepart",
+          API_LINK + "TransaksiPreventif/DetailPerawatanMesin",
           {
             id: withID,
           }
@@ -92,67 +107,82 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
         </div>
         <div className="card-body p-4">
           <div className="row">
-            <div className="col-md-4 mb-3">
+            <div className="col-lg-3">
               <Label
-                forLabel="gambarSparepart"
-                title="Gambar Sparepart"
-                data={
-                  formData.gambarSparepart &&
-                  formData.gambarSparepart !== "" ? (
-                    <img
-                      src={FILE_LINK + formData.gambarSparepart}
-                      alt="Gambar Sparepart"
-                      className="img-fluid"
-                      style={{
-                        objectFit: "cover",
-                        width: "100%",
-                        height: "300px",
-                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-                      }}
-                    />
-                  ) : (
-                    "-"
-                  )
-                }
+                forLabel="ID_Mesin"
+                title="ID Mesin"
+                data={formData.ID_Mesin}
               />
             </div>
-            <div class="col-md-8">
-              <div class="row">
-                <div className="col-lg-3">
-                  <Label
-                    forLabel="namaSparepart"
-                    title="Nama Sparepart"
-                    data={formData.namaSparepart}
-                  />
-                </div>
-                <div className="col-lg-5">
-                  <Label
-                    forLabel="deskripsi"
-                    title="Deskripsi"
-                    data={formData.deskripsi}
-                  />
-                </div>
-                <div className="col-lg-4">
-                  <Label forLabel="merk" title="Merk" data={formData.merk} />
-                </div>
-                <div className="col-lg-3">
-                  <Label forLabel="stok" title="Stok" data={formData.stok} />
-                </div>
-                <div className="col-lg-5">
-                  <Label
-                    forLabel="tanggalMasuk"
-                    title="Tanggal Masuk"
-                    data={formatDate(formData.tanggalMasuk, "D MMMM YYYY")}
-                  />
-                </div>
-                <div className="col-lg-3">
-                  <Label
-                    forLabel="status"
-                    title="Status"
-                    data={formData.status}
-                  />
-                </div>
-              </div>
+            <div className="col-lg-4">
+              <Label
+                forLabel="Nama_Mesin"
+                title="Nama Mesin"
+                data={formData.Nama_Mesin}
+              />
+            </div>
+            <div className="col-lg-3">
+              <Label
+                forLabel="Tanggal_Penjadwalan"
+                title="Tanggal Penjadwalan"
+                data={formData.Tanggal_Penjadwalan}
+              />
+            </div>
+            <div className="col-lg-3">
+              <Label
+                forLabel="Tindakan_Perbaikan"
+                title="TindakanPerbaikan"
+                data={formData.Tindakan_Perbaikan}
+              />
+            </div>
+            <div className="col-lg-4">
+              <Label
+                forLabel="Tanggal_Aktual"
+                title="Tanggal Aktual"
+                data={formData.Tanggal_Aktual}
+              />
+            </div>
+            <div className="col-lg-3">
+              <Label
+                forLabel="Created_By"
+                title="Dibuat Oleh"
+                data={formData.Created_By}
+              />
+            </div>
+            <div className="col-lg-3">
+              <Label
+                forLabel="Created_Date"
+                title="Tanggal Dibuat"
+                data={formData.Created_Date}
+              />
+            </div>
+            <div className="col-lg-4">
+              <Label
+                forLabel="Tanggal_Selesai"
+                title="Tanggal Selesai"
+                data={formData.Tanggal_Selesai}
+              />
+            </div>
+            <div className="col-lg-3">
+              <Label
+                forLabel="Catatan_Tambahan"
+                title="Catatan Tambahan"
+                data={formData.Catatan_Tambahan}
+              />
+            </div>
+            <div className="col-lg-3">
+              <Label
+                forLabel="Modified_By"
+                title="Teknisi"
+                data={formData.Modified_By}
+              />
+            </div>
+            <div className="col-lg-3">
+              <Label
+                forLabel="Status_Pemeliharaan"
+                title="Status Pemeliharaan"
+                data={formData.Status_Pemeliharaan}
+              />
             </div>
           </div>
           <div className="float-end my-4 mx-1">

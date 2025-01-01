@@ -12,12 +12,17 @@ export default function MasterUserDetail({ onChangePage, withID }) {
 
   // Use state instead of useRef for form data
   const [formData, setFormData] = useState({
-    usr_id: "",
-    rol_id: "",
-    app_id: "",
-    usr_status: "",
-    usr_created_by: "",
-    usr_created_date: "",
+    Nama_Depan: "",
+    Nama_Belakang: "",
+    Email: "",
+    Nomor_HP: "",
+    Alamat: "",
+    Username: "",
+    Jenis_Kelamin: "",
+    Tempat_Lahir: "",
+    Tanggal_Lahir: "",
+    Status: "",
+    Role: "",
   });
 
   useEffect(() => {
@@ -25,19 +30,15 @@ export default function MasterUserDetail({ onChangePage, withID }) {
       setIsError((prevError) => ({ ...prevError, error: false }));
 
       try {
-        const data = await UseFetch(
-          API_LINK + "MasterUser/DetailUser",
-          {
-            id: withID,
-          }
-        );
-        console.log(data);
+        const data = await UseFetch(API_LINK + "MasterUser/DetailUser", {
+          id: withID,
+        });
+    console.log(formData);
 
 
         if (data === "ERROR" || data.length === 0) {
           throw new Error("Terjadi kesalahan: Gagal mengambil data User.");
         } else {
-          // Update state with the fetched data
           setFormData(data[0]); // Assuming data[0] is the correct object with the fields
         }
       } catch (error) {
@@ -72,26 +73,64 @@ export default function MasterUserDetail({ onChangePage, withID }) {
           <div className="row">
             <div className="col-lg-3">
               <Label
-                forLabel="namaKaryawan"
-                title="Nama Karyawan"
-                data={formData.namaKaryawan}
+                forLabel="Nama_Depan"
+                title="Nama Depan"
+                data={formData.Nama_Depan}
               />
             </div>
             <div className="col-lg-3">
               <Label
-                forLabel="nik"
-                title="NIK"
-                data={formData.NIK}
+                forLabel="Nama_Belakang"
+                title="Nama Belakang"
+                data={formData.Nama_Belakang}
               />
-             </div>
-            <div className="col-lg-6">
-              <Label forLabel="tanggalLahir" title="Tanggal Lahir" data={formData.tanggalLahir} />
+            </div>
+            <div className="col-lg-3">
+              <Label
+                forLabel="Username"
+                title="Username"
+                data={formData.Username}
+              />
+            </div>
+            <div className="col-lg-3">
+              <Label
+                forLabel="tempat_lahir"
+                title="Tempat Lahir"
+                data={formData.tempat_lahir}
+              />
+            </div>
+            <div className="col-lg-3">
+              <Label
+                forLabel="Tanggal_Lahir"
+                title="Tanggal Lahir"
+                data={formData.Tanggal_Lahir}
+              />
             </div>
             <div className="col-lg-6">
-              <Label forLabel="notelp" title="NoTelp" data={formData.noTelp} />
+              <Label forLabel="Alamat" title="Alamat" data={formData.Alamat} />
             </div>
-            <div className="col-lg-6">
-              <Label forLabel="alamat" title="Alamat" data={formData.alamat} />
+            <div className="col-lg-3">
+              <Label
+                forLabel="Nomor_HP"
+                title="Nomor HP"
+                data={formData.Nomor_HP}
+              />
+            </div>
+            <div className="col-lg-3">
+              <Label forLabel="Email" title="Email" data={formData.Email} />
+            </div>
+            <div className="col-lg-3">
+              <Label forLabel="Role" title="Peran" data={formData.Role} />
+            </div>
+            <div className="col-lg-3">
+              <Label
+                forLabel="Jenis_Kelamin"
+                title="Jenis Kelamin"
+                data={formData.Jenis_Kelamin}
+              />
+            </div>
+            <div className="col-lg-3">
+              <Label forLabel="Status" title="Status" data={formData.Status} />
             </div>
           </div>
         </div>

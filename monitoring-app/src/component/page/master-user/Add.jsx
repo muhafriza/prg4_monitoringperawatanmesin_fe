@@ -20,7 +20,7 @@ export default function MasterKaryawanAdd({ onChangePage }) {
   const formDataRef = useRef({
     usr_id: "",
     rol_id: "",
-    app_id: "",
+    app_id: "APP60",
     usr_status: "Aktif",
   });
 
@@ -129,20 +129,6 @@ export default function MasterKaryawanAdd({ onChangePage }) {
             Tambah Data User Baru
           </div>
 
-          <div className="form-group">
-            <label htmlFor="role">Role</label>
-            <select
-              id="role"
-              name="rol_id"
-              className="form-control"
-              onChange={handleInputChange}
-            >
-              <option value="ROL60">Administrator UPT</option>
-              <option value="ROL61">PIC UPT</option>
-              <option value="ROL62">TEKNISI</option>
-            </select>
-          </div>
-
           <div className="card-body p-4">
             <div className="row">
               <div className="col-lg-3">
@@ -168,8 +154,24 @@ export default function MasterKaryawanAdd({ onChangePage }) {
                   <div className="text-danger">{errors.usr_id}</div>
                 )}
               </div>
+
+              <div className="form-group">
+                <label htmlFor="role">Role</label>
+                <select
+                  id="role"
+                  name="rol_id"
+                  className="form-control"
+                  onChange={handleInputChange}
+                >
+                  <option value="ROL60">Administrator UPT</option>
+                  <option value="ROL61">PIC UPT</option>
+                  <option value="ROL62">TEKNISI</option>
+                </select>
+              </div>
             </div>
           </div>
+
+          
 
           <div className="float-end my-4 mx-1">
             <Button

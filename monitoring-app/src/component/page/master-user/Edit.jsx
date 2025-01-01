@@ -39,7 +39,7 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + `MasterKaryawan/DetailKaryawan`,
+          API_LINK + `MasterUser/DetailUser`,
           { id: withID }
         );
         console.log("ini data: " + data);
@@ -48,15 +48,10 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
         }
 
         const karyawanData = data[0];
-        karyawanData.tanggalLahir = formatDate(
-          karyawanData.tanggalLahir,
-          "YYYY-MM-DD"
-        );
-        // nanya
         delete sparepartData.status;
-        delete sparepartData.spa_status;
+        delete sparepartData.Status;
 
-        formDataRef.current = { ...formDataRef.current, ...sparepartData };
+        formDataRef.current = { ...formDataRef.current, ...karyawanData };
       } catch (error) {
         window.scrollTo(0, 0);
         setIsError({ error: true, message: error.message });
@@ -162,63 +157,20 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
           </div>
           <div className="card-body p-4">
             <div className="row">
-              <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="namaKaryawan"
-                  label="Nama Karyawan"
-                  isRequired
-                  value={formDataRef.current.namaKaryawan}
+            <div className="form-group">
+                <label htmlFor="role">Role</label>
+                <select
+                  id="role"
+                  name="rol_id"
+                  className="form-control"
+                  value={formDataRef.current.rol_id}
                   onChange={handleInputChange}
-                  errorMessage={errors.namaKaryawan}
-                />
+                >
+                  <option value="ROL60">Administrator UPT</option>
+                  <option value="ROL61">PIC UPT</option>
+                  <option value="ROL62">TEKNISI</option>
+                </select>
               </div>
-              <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="nik"
-                  label="NIK"
-                  isRequired
-                  value={formDataRef.current.NIK}
-                  onChange={handleInputChange}
-                  errorMessage={errors.deskripsi}
-                />
-              </div>
-              <div className="col-lg-6">
-                <Input
-                  type="date"
-                  forInput="tanggalLahir"
-                  label="Tanggal Lahir"
-                  value={formDataRef.current.tanggalLahir}
-                  onChange={handleInputChange}
-                  errorMessage={errors.tanggalLahir}
-                />
-              </div>
-              {/* nanya */}
-              <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="notelp"
-                  label="No Telepon"
-                  isRequired
-                  value={formDataRef.current.merk}
-                  onChange={handleInputChange}
-                  errorMessage={errors.merk}
-                />
-              </div>
-              {/* nanya */}
-              <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="alamat"
-                  label="Alamat"
-                  isRequired
-                  value={formDataRef.current.alamat}
-                  onChange={handleInputChange}
-                  errorMessage={errors.alamat}
-                />
-              </div>
-           
             </div>
           </div>
         </div>

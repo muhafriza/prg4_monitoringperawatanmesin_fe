@@ -21,7 +21,7 @@ const inisialisasiData = [
 ];
 
 const dataFilterSort = [
-  { Value: "[rol_id] asc", Text: "NPK [↑]" }, 
+  { Value: "[rol_id] asc", Text: "NPK [↑]" },
   { Value: "[rol_id] desc", Text: "NPK [↓]" },
 ];
 
@@ -30,22 +30,23 @@ const dataFilterStatus = [
   { Value: "Tidak Aktif", Text: "Tidak Aktif" },
 ];
 
-export default function MasterSparepart({ onChangePage }) {
+export default function MasterUser({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[usr_id] asc", //usr_id
-    spa_status: "Aktif",
-    itemPerPage: 5,
+    sort: "kry_nama_depan",
+    status: "Aktif",
+    APP: "APP60",
+  });
+  const [filterIdRole, setfilterIdRole] = useState({
+    rol_deskripsi: "",
+    status: "Aktif",
   });
 
   const searchQuery = useRef();
-  const searchMerk = useRef();
-  const searchDeskripsi = useRef();
-  const searchStok = useRef();
   const searchFilterSort = useRef();
   const searchFilterStatus = useRef();
 
@@ -88,11 +89,13 @@ export default function MasterSparepart({ onChangePage }) {
     });
   }
 
-  function handleSetStatus(id) {
+  function handleSetStatus(id, peran, status) {
     setIsLoading(true);
     setIsError(false);
-    UseFetch(API_LINK + "MasterSparepart/SetStatusSparepart", {
-      idSparepart: id,
+    UseFetch(API_LINK + "MasterUser/SetStatusUser", {
+      id: id,
+      peran: peran,
+      status: status
     })
       .then((data) => {
         if (data === "ERROR" || data.length === 0) setIsError(true);
@@ -114,9 +117,10 @@ export default function MasterSparepart({ onChangePage }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "MasterSparepart/GetDataSparepart",
+          API_LINK + "MasterUser/GetDataKaryawanByUser",
           currentFilter
         );
+        console.log(filterIdRole);
         if (data === "ERROR") {
           setIsError(true);
           console.log("Error nih");
@@ -145,6 +149,12 @@ export default function MasterSparepart({ onChangePage }) {
       } finally {
         setIsLoading(false);
       }
+    };
+    const getIdRole = async () => {
+      const data = await UseFetch(
+        API_LINK + "MasterUser/GetIdRole",
+        currentFilter
+      );
     };
 
     fetchData();
@@ -207,10 +217,26 @@ export default function MasterSparepart({ onChangePage }) {
             <div className="d-flex flex-column">
               <Table
                 data={currentData}
-                onToggle={handleSetStatus}
+                onToggle={(id) => {
+                  const selectedRow = currentData.find((row) => row.Key === id); // Cari row berdasarkan ID
+                  const peran = selectedRow ? selectedRow.Peran : null; // Ambil nilai Peran
+                  const status = selectedRow ? selectedRow.Status : null; // Ambil nilai Peran
+
+                  if (!selectedRow || !peran) {
+                    SweetAlert(
+                      "Error",
+                      "Data Peran atau Row tidak ditemukan!",
+                      "error"
+                    );
+                    return;
+                  }
+
+                  handleSetStatus(id, peran, status); // Panggil fungsi dengan ID dan Peran
+                }}
                 onDetail={onChangePage}
                 onEdit={onChangePage}
               />
+
               <Paging
                 pageSize={PAGE_SIZE}
                 pageCurrent={currentFilter.page}
