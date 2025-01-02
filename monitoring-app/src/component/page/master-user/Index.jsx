@@ -30,14 +30,14 @@ const dataFilterStatus = [
   { Value: "Tidak Aktif", Text: "Tidak Aktif" },
 ];
 
-export default function MasterSparepart({ onChangePage }) {
+export default function MasterUser({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[usr_id] asc", //usr_id
+    sort: "[usr_id] asc", 
     spa_status: "Aktif",
     itemPerPage: 5,
   });
@@ -91,7 +91,7 @@ export default function MasterSparepart({ onChangePage }) {
   function handleSetStatus(id) {
     setIsLoading(true);
     setIsError(false);
-    UseFetch(API_LINK + "MasterSparepart/SetStatusSparepart", {
+    UseFetch(API_LINK + "MasterUser/SetStatusUser", {
       idSparepart: id,
     })
       .then((data) => {
@@ -99,7 +99,7 @@ export default function MasterSparepart({ onChangePage }) {
         else {
           SweetAlert(
             "Sukses",
-            "Status data Sparepart berhasil diubah menjadi " + data[0].Status,
+            "Status data User berhasil diubah menjadi " + data[0].Status,
             "success"
           );
           handleSetCurrentPage(currentFilter.page);
@@ -114,7 +114,7 @@ export default function MasterSparepart({ onChangePage }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "MasterSparepart/GetDataSparepart",
+          API_LINK + "MasterUser/GetDataKaryawanByUser",
           currentFilter
         );
         if (data === "ERROR") {
@@ -157,7 +157,7 @@ export default function MasterSparepart({ onChangePage }) {
           <div className="flex-fill">
             <Alert
               type="warning"
-              message="Terjadi kesalahan: Gagal mengambil data Sparepart. "
+              message="Terjadi kesalahan: Gagal mengambil data User. "
             />
           </div>
         )}
@@ -171,7 +171,7 @@ export default function MasterSparepart({ onChangePage }) {
             />
             <Input
               ref={searchQuery}
-              forInput="pencarianSparepart"
+              forInput="pencarianUser"
               placeholder="Cari"
             />
             <Button
