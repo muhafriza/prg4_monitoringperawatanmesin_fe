@@ -9,28 +9,31 @@ import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
-export default function MasterKaryawanEdit({ onChangePage, withID }) {
+export default function MasterSparepartEdit({ onChangePage, withID }) {
   const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
 
   const formDataRef = useRef({
-    idRole: "",
-    namaKaryawan: "",
-    NIK: "",
-    tanggalLahir: "",
-    noTelp: "",
-    alamat: "",
+    idSparepart: "",
+    namaSparepart: "",
+    deskripsi: "",
+    merk: "",
+    stok: "",
+    tanggalMasuk: "",
   });
 
   const userSchema = object({
-    idRole: string().optional(),
-    namaKaryawan: string()
+    idSparepart: string().optional(),
+    namaSparepart: string()
       .max(50, "maksimum 50 karakter")
-      .required("Nama karyawan harus diisi"),
-    NIK: string().required("NIK harus diisi"),
-    tanggalLahir: string().required("Tanggal Lahir harus diisi"),
-    noTelp: string().required("No Telepon harus diisi"),
+      .required("Nama sparepart harus diisi"),
+    deskripsi: string()
+      .max(100, "maksimum 100 karakter")
+      .required("Deskripsi sparepart harus diisi"),
+    merk: string().required("Merk sparepart harus diisi"),
+    stok: string().required("Stok sparepart harus diisi"),
+    tanggalMasuk: string().required("Tanggal masuk harus diisi"),
   });
 
   useEffect(() => {
@@ -39,19 +42,23 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + `MasterUser/DetailUser`,
+          API_LINK + `MasterSparepart/DetailSparepart`,
           { id: withID }
         );
         console.log("ini data: " + data);
         if (data === "ERROR" || data.length === 0) {
-          throw new Error("Gagal mengambil data Karyawan.");
+          throw new Error("Gagal mengambil data Sparepart.");
         }
 
-        const karyawanData = data[0];
+        const sparepartData = data[0];
+        sparepartData.tanggalMasuk = formatDate(
+          sparepartData.tanggalMasuk,
+          "YYYY-MM-DD"
+        );
         delete sparepartData.status;
-        delete sparepartData.Status;
+        delete sparepartData.spa_status;
 
-        formDataRef.current = { ...formDataRef.current, ...karyawanData };
+        formDataRef.current = { ...formDataRef.current, ...sparepartData };
       } catch (error) {
         window.scrollTo(0, 0);
         setIsError({ error: true, message: error.message });
@@ -82,7 +89,7 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    // Validasi hanya angka untuk field "NIK"
+    // Validasi hanya angka untuk field "stok"
     if (name === "stok") {
       if (!/^\d*$/.test(value)) {
         setErrors((prevErrors) => ({
@@ -117,15 +124,15 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "MasterKaryawan/EditKaryawan",
+          API_LINK + "MasterSparepart/EditSparepart",
           formDataRef.current
         );
 
         if (!data || data == "ERROR") {
           console.log("ini data edit form nya: "+formDataRef.current);
-          throw new Error("Terjadi kesalahan: Gagal menyimpan data karyawan.");
+          throw new Error("Terjadi kesalahan: Gagal menyimpan data produk.");
         } else {
-          SweetAlert("Sukses", "Data karyawan berhasil disimpan", "success");
+          SweetAlert("Sukses", "Data produk berhasil disimpan", "success");
           onChangePage("index");
         }
       } catch (error) {
@@ -153,23 +160,63 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
       <form onSubmit={handleAdd}>
         <div className="card">
           <div className="card-header bg-primary fw-medium text-white">
-            Ubah Data Karyawan
+            Ubah Data Sparepart
           </div>
           <div className="card-body p-4">
             <div className="row">
-            <div className="form-group">
-                <label htmlFor="role">Role</label>
-                <select
-                  id="role"
-                  name="rol_id"
-                  className="form-control"
-                  value={formDataRef.current.rol_id}
+              <div className="col-lg-3">
+                <Input
+                  type="text"
+                  forInput="namaSparepart"
+                  label="Nama Sparepart"
+                  isRequired
+                  value={formDataRef.current.namaSparepart}
                   onChange={handleInputChange}
-                >
-                  <option value="ROL60">Administrator UPT</option>
-                  <option value="ROL61">PIC UPT</option>
-                  <option value="ROL62">TEKNISI</option>
-                </select>
+                  errorMessage={errors.namaSparepart}
+                />
+              </div>
+              <div className="col-lg-3">
+                <Input
+                  type="text"
+                  forInput="deskripsi"
+                  label="Deskripsi"
+                  isRequired
+                  value={formDataRef.current.deskripsi}
+                  onChange={handleInputChange}
+                  errorMessage={errors.deskripsi}
+                />
+              </div>
+              <div className="col-lg-3">
+                <Input
+                  type="text"
+                  forInput="merk"
+                  label="Merk"
+                  isRequired
+                  value={formDataRef.current.merk}
+                  onChange={handleInputChange}
+                  errorMessage={errors.merk}
+                />
+              </div>
+              <div className="col-lg-3">
+                <Input
+                  type="text"
+                  forInput="stok"
+                  label="Stok"
+                  isRequired
+                  value={formDataRef.current.stok}
+                  onChange={handleInputChange}
+                  errorMessage={errors.stok}
+                />
+              </div>
+              <div className="col-lg-6">
+                <Input
+                  type="date"
+                  forInput="tanggalMasuk"
+                  label="Tanggal Masuk"
+                  value={formDataRef.current.tanggalMasuk}
+                  onChange={handleInputChange}
+                  errorMessage={errors.tanggalMasuk}
+                />
               </div>
             </div>
           </div>
