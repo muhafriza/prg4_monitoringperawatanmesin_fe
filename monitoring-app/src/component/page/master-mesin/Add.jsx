@@ -23,7 +23,7 @@ export default function MasterMesinAdd({ onChangePage }) {
     nama_mesin: "",
     kondisi: "",
     no_panel: "",
-    mes_gambar: "", // File gambar
+    // mes_gambar: "", // File gambar
     lab: "",
     daya_mesin: "",
     jumlah: "",
