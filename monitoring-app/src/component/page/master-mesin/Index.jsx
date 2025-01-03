@@ -70,7 +70,7 @@ export default function MasterMesin({ onChangePage }) {
   function handleSetStatus(id) {
     setIsLoading(true);
     setIsError(false);
-    UseFetch(API_LINK + "MasterMesin/SetStatusMesin", {
+    UseFetch(API_LINK + "Mesin/SetStatusMesin", {
       mes_id_mesin: id,
     })
       .then((data) => {
@@ -93,7 +93,7 @@ export default function MasterMesin({ onChangePage }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "MasterMesin/GetDataMesin",
+          API_LINK + "Mesin/GetDataMesin",
           currentFilter
         );
         if (data === "ERROR") {
@@ -108,16 +108,15 @@ export default function MasterMesin({ onChangePage }) {
               "center",
               "center",
               "left",
-              "left",
+              "center",
               "left",
               "right",
-              "center",
-              "center",
               "left",
               "center",
-              "left",
+              "center",
             ],
           }));
+          console.log(formattedData);
           setCurrentData(formattedData);
         }
       } catch {
@@ -191,17 +190,6 @@ export default function MasterMesin({ onChangePage }) {
                 onToggle={handleSetStatus}
                 onDetail={onChangePage}
                 onEdit={onChangePage}
-                columns={[
-                  { title: "Nama Mesin", key: "mes_nama_mesin", align: "left" },
-                  { title: "Kondisi", key: "mes_kondisi_operasional", align: "left" },
-                  { title: "No. Panel", key: "mes_no_panel", align: "left" },
-                  { title: "Lab", key: "mes_lab", align: "left" },
-                  { title: "Daya Mesin", key: "mes_daya_mesin", align: "right" },
-                  { title: "Jumlah", key: "mes_jumlah", align: "center" },
-                  { title: "Kapasitas", key: "mes_kapasitas", align: "center" },
-                  { title: "Tipe", key: "mes_tipe", align: "center" },
-                  { title: "Status", key: "mes_status", align: "center" },
-                ]}
               />
               <Paging
                 pageSize={PAGE_SIZE}
