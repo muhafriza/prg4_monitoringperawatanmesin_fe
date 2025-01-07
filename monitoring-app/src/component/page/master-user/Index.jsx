@@ -30,7 +30,7 @@ const dataFilterStatus = [
   { Value: "Tidak Aktif", Text: "Tidak Aktif" },
 ];
 
-export default function MasterUser({ onChangePage }) {
+export default function MasterUserIndex({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
@@ -59,23 +59,6 @@ export default function MasterUser({ onChangePage }) {
       };
     });
   }
-  function formatDate(dateString, format = "DD/MM/YYYY") {
-    const date = new Date(dateString);
-
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-
-    switch (format) {
-      case "DD-MM-YYYY":
-        return `${day}/${month}/${year}`;
-      case "YYYY-MM-DD":
-        return `${year}-${month}-${day}`;
-      default:
-        return dateString;
-    }
-  }
-
   function handleSearch() {
     setIsLoading(true);
     setCurrentFilter((prevFilter) => {
@@ -89,27 +72,29 @@ export default function MasterUser({ onChangePage }) {
     });
   }
 
-  function handleSetStatus(id, peran, status) {
+  // function handleSetStatus(id, peran, status) {
+    function handleSetStatus(id) {
     setIsLoading(true);
     setIsError(false);
+    console.log(id);
+  
     UseFetch(API_LINK + "MasterUser/SetStatusUser", {
-      id: id,
-      peran: peran,
-      status: status
+      idPeran: id,
     })
-      .then((data) => {
-        if (data === "ERROR" || data.length === 0) setIsError(true);
-        else {
-          SweetAlert(
-            "Sukses",
-            "Status data User berhasil diubah menjadi " + data[0].Status,
-            "success"
-          );
-          handleSetCurrentPage(currentFilter.page);
-        }
-      })
-      .then(() => setIsLoading(false));
+    .then((data) => {
+      if (data === "ERROR" || data.length === 0) setIsError(true);
+      else {
+        SweetAlert(
+          "Sukses",
+          "Status data User berhasil diubah menjadi " + data[0].Status,
+          "success"
+        );
+        handleSetCurrentPage(currentFilter.page);
+      }
+    })
+    .then(() => setIsLoading(false));
   }
+  
 
   useEffect(() => {
     const fetchData = async () => {

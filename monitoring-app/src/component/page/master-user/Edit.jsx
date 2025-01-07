@@ -15,23 +15,10 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const formDataRef = useRef({
-    idRole: "",
-    namaKaryawan: "",
-    NIK: "",
-    tanggalLahir: "",
-    noTelp: "",
-    alamat: "",
+    usr_id: "",
+    rol_id: "",
   });
 
-  const userSchema = object({
-    idRole: string().optional(),
-    namaKaryawan: string()
-      .max(50, "maksimum 50 karakter")
-      .required("Nama karyawan harus diisi"),
-    NIK: string().required("NIK harus diisi"),
-    tanggalLahir: string().required("Tanggal Lahir harus diisi"),
-    noTelp: string().required("No Telepon harus diisi"),
-  });
 
   useEffect(() => {
     const fetchData = async () => {
