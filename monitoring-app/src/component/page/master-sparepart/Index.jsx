@@ -187,7 +187,7 @@ export default function MasterSparepart({ onChangePage }) {
                 label="Urut Berdasarkan"
                 type="none"
                 arrData={dataFilterSort}
-                defaultValue="[Nama Sparepart] asc"
+                defaultValue="[spa_nama_sparepart] asc"
               />
               <DropDown
                 ref={searchFilterStatus}
@@ -202,7 +202,7 @@ export default function MasterSparepart({ onChangePage }) {
         </div>
         <div className="mt-3">
           {isLoading ? (
-            <Loading />
+            <Loading /> 
           ) : (
             <div className="d-flex flex-column">
               <Table

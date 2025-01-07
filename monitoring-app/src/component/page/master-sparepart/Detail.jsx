@@ -18,6 +18,7 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
     stok: "",
     tanggalMasuk: "",
     status: "",
+    gambar: "",
   });
 
   useEffect(() => {
@@ -99,6 +100,16 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
                 title="Status"
                 data={formData.status}
               />
+            </div>
+            <div className="col-lg-12 text-center mt-4">
+              {formData.gambar && (
+                <img
+                  src={`${FILE_LINK}${formData.gambar}`}
+                  alt="Gambar Sparepart"
+                  className="img-fluid"
+                  style={{ maxHeight: "300px", objectFit: "contain" }}
+                />
+              )}
             </div>
           </div>
         </div>

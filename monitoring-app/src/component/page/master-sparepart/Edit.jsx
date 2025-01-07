@@ -39,14 +39,14 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
   useEffect(() => {
     const fetchData = async () => {
       setIsError({ error: false, message: "" });
+      setIsLoading(true);
 
       try {
-        const data = await UseFetch(
-          API_LINK + `MasterSparepart/DetailSparepart`,
-          { id: withID }
-        );
-        console.log("ini data: " + data);
-        if (data === "ERROR" || data.length === 0) {
+        const data = await UseFetch(`${API_LINK}MasterSparepart/DetailSparepart`, {
+          id: withID,
+        });
+
+        if (!data || data === "ERROR" || data.length === 0) {
           throw new Error("Gagal mengambil data Sparepart.");
         }
 
@@ -55,12 +55,9 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
           sparepartData.tanggalMasuk,
           "YYYY-MM-DD"
         );
-        delete sparepartData.status;
-        delete sparepartData.spa_status;
 
         formDataRef.current = { ...formDataRef.current, ...sparepartData };
       } catch (error) {
-        window.scrollTo(0, 0);
         setIsError({ error: true, message: error.message });
       } finally {
         setIsLoading(false);
@@ -68,41 +65,32 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
     };
 
     fetchData();
-  }, []);
-  function formatDate(dateString, format) {
-    const date = new Date(dateString);
+  }, [withID]);
 
+  const formatDate = (dateString, format) => {
+    const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
 
-    switch (format) {
-      case "DD/MM/YYYY":
-        return `${day}/${month}/${year}`;
-      case "YYYY-MM-DD":
-        return `${year}-${month}-${day}`;
-      default:
-        return dateString;
-    }
-  }
+    return format === "YYYY-MM-DD" ? `${year}-${month}-${day}` : dateString;
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    // Validasi hanya angka untuk field "stok"
-    if (name === "stok") {
-      if (!/^\d*$/.test(value)) {
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          [name]: "Hanya angka yang diperbolehkan",
-        }));
-        return;
-      }
+    if (name === "stok" && !/^\d*$/.test(value)) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "Hanya angka yang diperbolehkan",
+      }));
+      return;
     }
+
     const validationError = validateInput(name, value, userSchema);
     formDataRef.current[name] = value;
-    setErrors((prevErrors) => ({
-      ...prevErrors,
+    setErrors((prev) => ({
+      ...prev,
       [validationError.name]: validationError.error,
     }));
   };
@@ -115,48 +103,39 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
       userSchema,
       setErrors
     );
-    console.log("Data yang dikirimkan: ", validationErrors);
 
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
-      setIsError((prevError) => ({ ...prevError, error: false }));
-      setErrors({});
+      setIsError({ error: false, message: "" });
 
       try {
-        const data = await UseFetch(
-          API_LINK + "MasterSparepart/EditSparepart",
-          formDataRef.current
-        );
+        const data = await UseFetch(`${API_LINK}MasterSparepart/EditSparepart`, {
+          method: "POST",
+          body: JSON.stringify(formDataRef.current),
+          headers: { "Content-Type": "application/json" },
+        });
 
-        if (!data || data == "ERROR") {
-          console.log("ini data edit form nya: "+formDataRef.current);
+        if (!data || data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data produk.");
-        } else {
-          SweetAlert("Sukses", "Data produk berhasil disimpan", "success");
-          onChangePage("index");
         }
+
+        SweetAlert("Sukses", "Data produk berhasil disimpan", "success");
+        onChangePage("index");
       } catch (error) {
-        window.scrollTo(0, 0);
-        setIsError((prevError) => ({
-          ...prevError,
-          error: true,
-          message: error.message,
-        }));
+        setIsError({ error: true, message: error.message });
       } finally {
         setIsLoading(false);
       }
-    } else window.scrollTo(0, 0);
+    } else {
+      window.scrollTo(0, 0);
+    }
   };
 
   if (isLoading) return <Loading />;
 
   return (
     <>
-      {isError.error && (
-        <div className="flex-fill">
-          <Alert type="danger" message={isError.message} />
-        </div>
-      )}
+      {isError.error && <Alert type="danger" message={isError.message} />}
       <form onSubmit={handleAdd}>
         <div className="card">
           <div className="card-header bg-primary fw-medium text-white">
@@ -164,50 +143,19 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
           </div>
           <div className="card-body p-4">
             <div className="row">
-              <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="namaSparepart"
-                  label="Nama Sparepart"
-                  isRequired
-                  value={formDataRef.current.namaSparepart}
-                  onChange={handleInputChange}
-                  errorMessage={errors.namaSparepart}
-                />
-              </div>
-              <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="deskripsi"
-                  label="Deskripsi"
-                  isRequired
-                  value={formDataRef.current.deskripsi}
-                  onChange={handleInputChange}
-                  errorMessage={errors.deskripsi}
-                />
-              </div>
-              <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="merk"
-                  label="Merk"
-                  isRequired
-                  value={formDataRef.current.merk}
-                  onChange={handleInputChange}
-                  errorMessage={errors.merk}
-                />
-              </div>
-              <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="stok"
-                  label="Stok"
-                  isRequired
-                  value={formDataRef.current.stok}
-                  onChange={handleInputChange}
-                  errorMessage={errors.stok}
-                />
-              </div>
+              {["namaSparepart", "deskripsi", "merk", "stok"].map((field, idx) => (
+                <div className="col-lg-3" key={idx}>
+                  <Input
+                    type="text"
+                    forInput={field}
+                    label={field.charAt(0).toUpperCase() + field.slice(1)}
+                    isRequired
+                    value={formDataRef.current[field]}
+                    onChange={handleInputChange}
+                    errorMessage={errors[field]}
+                  />
+                </div>
+              ))}
               <div className="col-lg-6">
                 <Input
                   type="date"
@@ -231,6 +179,7 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
             classType="primary ms-2 px-4 py-2"
             type="submit"
             label="SIMPAN"
+            disabled={isLoading}
           />
         </div>
       </form>
