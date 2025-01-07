@@ -90,7 +90,6 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
   useEffect(() => {
     const fetchData = async () => {
       setIsError({ error: false, message: "" });
-      setIsLoading(true);
 
       try {
         const data = await UseFetch(
@@ -117,6 +116,7 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
           setPreviewImage(FILE_LINK + sparepartData.gambarSparepart); // FILE_LINK berisi URL path ke file
         }
       } catch (error) {
+        window.scrollTo(0, 0);
         setIsError({ error: true, message: error.message });
       } finally {
         setIsLoading(false);
@@ -124,32 +124,42 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
     };
 
     fetchData();
-  }, [withID]);
-
-  const formatDate = (dateString, format) => {
+  }, []);
+  function formatDate(dateString, format) {
     const date = new Date(dateString);
+
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
 
-    return format === "YYYY-MM-DD" ? `${year}-${month}-${day}` : dateString;
-  };
+    switch (format) {
+      case "DD/MM/YYYY":
+        return `${day}/${month}/${year}`;
+      case "YYYY-MM-DD":
+        return `${year}-${month}-${day}`;
+      default:
+        return dateString;
+    }
+  }
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "stok" && !/^\d*$/.test(value)) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "Hanya angka yang diperbolehkan",
-      }));
-      return;
+    // Validasi hanya angka untuk field "stok"
+    if (name === "stok") {
+      if (!/^\d*$/.test(value)) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [name]: "Hanya angka yang diperbolehkan",
+        }));
+        return;
+      }
     }
 
     const validationError = validateInput(name, value, userSchema);
     formDataRef.current[name] = value;
-    setErrors((prev) => ({
-      ...prev,
+    setErrors((prevErrors) => ({
+      ...prevErrors,
       [validationError.name]: validationError.error,
     }));
   };
@@ -167,7 +177,8 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
 
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
-      setIsError({ error: false, message: "" });
+      setIsError((prevError) => ({ ...prevError, error: false }));
+      setErrors({});
 
       const uploadPromises = [];
 
@@ -197,12 +208,17 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
 
         if (!data) {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data produk.");
+        } else {
+          SweetAlert("Sukses", "Data produk berhasil disimpan", "success");
+          onChangePage("index");
         }
-
-        SweetAlert("Sukses", "Data produk berhasil disimpan", "success");
-        onChangePage("index");
       } catch (error) {
-        setIsError({ error: true, message: error.message });
+        window.scrollTo(0, 0);
+        setIsError((prevError) => ({
+          ...prevError,
+          error: true,
+          message: error.message,
+        }));
       } finally {
         setIsLoading(false);
       }
@@ -214,7 +230,11 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
 
   return (
     <>
-      {isError.error && <Alert type="danger" message={isError.message} />}
+      {isError.error && (
+        <div className="flex-fill">
+          <Alert type="danger" message={isError.message} />
+        </div>
+      )}
       <form onSubmit={handleAdd}>
         <div className="card">
           <div className="card-header bg-primary fw-medium text-white">
@@ -313,7 +333,6 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
             classType="primary ms-2 px-4 py-2"
             type="submit"
             label="SIMPAN"
-            disabled={isLoading}
           />
         </div>
       </form>

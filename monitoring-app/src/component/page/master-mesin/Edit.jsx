@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { object, string } from "yup";
+import { object, string, number } from "yup"; // Adjusted for new schema validation
 import { API_LINK, FILE_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
 import SweetAlert from "../../util/SweetAlert";
@@ -11,46 +11,44 @@ import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
-export default function MasterSparepartEdit({ onChangePage, withID }) {
+export default function MasterMesinEdit({ onChangePage, withID }) {
   const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState(null);
 
   const formDataRef = useRef({
-    idSparepart: "",
-    namaSparepart: "",
-    deskripsi: "",
-    gambarSparepart: "",
-    merk: "",
-    stok: "",
-    tanggalMasuk: "",
+    mes_id_mesin: "",
+    mes_kondisi_operasional: "",
+    mes_no_panel: "",
+    mes_lab: "",
+    mes_nama_mesin: "",
+    mes_daya_mesin: "",
+    mes_jumlah: "",
+    mes_kapasitas: "",
+    mes_tipe: "",
+    mes_gambar: "",
   });
-
   const fileGambarRef = useRef(null);
 
   const userSchema = object({
-    idSparepart: string(),
-    namaSparepart: string()
-      .max(50, "maksimum 50 karakter")
-      .required("harus diisi"),
-    deskripsi: string()
-      .max(100, "maksimum 100 karakter")
-      .required("harus diisi"),
-    gambarSparepart: string().nullable(),
-    merk: string().nullable(),
-    stok: string()
-    .matches(/^\d*$/, "Hanya angka yang diperbolehkan") // Validasi angka
-    .min(0, "Stok tidak boleh kurang dari 0") // Menambahkan validasi minimal 0
-    .required("harus diisi"), // Harus diisi
-    tanggalMasuk: string().test(
-      "is-valid-date",
-      "Tanggal masuk tidak boleh kurang dari hari ini",
-      (value) => {
-        const today = new Date().toISOString().split("T")[0];
-        return value >= today;
-      }
-    ),
+    mes_id_mesin: string().optional(),
+    mes_nama_mesin: string()
+      .max(100, "Maksimum 100 karakter")
+      .required("Nama Mesin harus diisi"),
+    mes_kondisi_operasional: string().optional(),
+    mes_no_panel: string().optional(),
+    mes_lab: string().optional(),
+    mes_daya_mesin: number()
+      .positive("Daya Mesin harus lebih besar dari 0")
+      .required("Daya Mesin harus diisi"),
+    mes_jumlah: number()
+      .integer("Jumlah harus berupa angka bulat")
+      .positive("Jumlah harus lebih besar dari 0")
+      .required("Jumlah Mesin harus diisi"),
+    mes_kapasitas: string().optional(),
+    mes_tipe: string().optional(),
+    mes_gambar: string(),
   });
 
   const handleFileChange = (ref, extAllowed) => {
@@ -90,31 +88,28 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
   useEffect(() => {
     const fetchData = async () => {
       setIsError({ error: false, message: "" });
-      setIsLoading(true);
 
       try {
-        const data = await UseFetch(
-          API_LINK + `MasterSparepart/DetailSparepart`,
-          { id: withID }
-        );
-        if (!data || data === "ERROR" || data.length === 0) {
-          throw new Error("Gagal mengambil data Sparepart.");
+        const data = await UseFetch(`${API_LINK}Mesin/DetailMesin`, {
+          id: withID,
+        });
+
+        if (data === "ERROR" || data.length === 0) {
+          throw new Error("Gagal mengambil data Mesin.");
         }
 
-        const sparepartData = data[0];
-        sparepartData.tanggalMasuk = formatDate(
-          sparepartData.tanggalMasuk,
-          "YYYY-MM-DD"
-        );
-        sparepartData.idSparepart = withID;
-        delete sparepartData.status;
-        delete sparepartData.spa_status;
+        const MesinData = data[0];
+        MesinData.mes_id_mesin = withID;
+        delete MesinData.status;
+        delete MesinData.mes_status1;
+        delete MesinData.mes_status;
 
-        formDataRef.current = { ...formDataRef.current, ...sparepartData };
+        // Initialize formDataRef with the fetched data
+        formDataRef.current = { ...formDataRef.current, ...MesinData };
 
         // Jika gambar tersedia, buat preview
-        if (sparepartData.gambarSparepart) {
-          setPreviewImage(FILE_LINK + sparepartData.gambarSparepart); // FILE_LINK berisi URL path ke file
+        if (MesinData.mes_gambar) {
+          setPreviewImage(FILE_LINK + MesinData.mes_gambar); // FILE_LINK berisi URL path ke file
         }
       } catch (error) {
         setIsError({ error: true, message: error.message });
@@ -132,24 +127,34 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
 
-    return format === "YYYY-MM-DD" ? `${year}-${month}-${day}` : dateString;
+    switch (format) {
+      case "DD/MM/YYYY":
+        return `${day}/${month}/${year}`;
+      case "YYYY-MM-DD":
+        return `${year}-${month}-${day}`;
+      default:
+        return dateString;
+    }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "stok" && !/^\d*$/.test(value)) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "Hanya angka yang diperbolehkan",
-      }));
-      return;
+    // Validasi hanya angka untuk field "mes_jumlah" and "mes_daya_mesin"
+    if (name === "mes_jumlah" || name === "mes_daya_mesin") {
+      if (!/^\d*\.?\d*$/.test(value)) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [name]: "Hanya angka yang diperbolehkan",
+        }));
+        return;
+      }
     }
 
     const validationError = validateInput(name, value, userSchema);
     formDataRef.current[name] = value;
-    setErrors((prev) => ({
-      ...prev,
+    setErrors((prevErrors) => ({
+      ...prevErrors,
       [validationError.name]: validationError.error,
     }));
   };
@@ -157,25 +162,31 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
   const handleAdd = async (e) => {
     e.preventDefault();
 
+    // Log the data before validation
+    console.log("Attempting to submit form with data:", formDataRef.current);
+
+    // Validate the form inputs
     const validationErrors = await validateAllInputs(
       formDataRef.current,
       userSchema,
       setErrors
     );
 
-    console.error("Validation :", validationErrors);
+    // Log the validation errors
+    console.log("Validation Errors:", validationErrors);
 
+    // If there are no validation errors
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
       setIsError({ error: false, message: "" });
-
+      setErrors({});
       const uploadPromises = [];
 
       if (fileGambarRef.current.files.length > 0) {
         uploadPromises.push(
           UploadFile(fileGambarRef.current)
             .then((data) => {
-              formDataRef.current["gambarSparepart"] = data.Hasil;
+              formDataRef.current["mes_gambar"] = data.Hasil;
               console.log("Hasil upload file:", data);
             })
             .catch((error) => {
@@ -183,12 +194,13 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
             })
         );
       }
-      console.log("Data gambar dikirim:", formDataRef.current.gambarSparepart);
+      console.log("Data gambar dikirim:", formDataRef.current.mes_gambar);
+
       try {
         await Promise.all(uploadPromises);
 
         const data = await UseFetch(
-          API_LINK + "MasterSparepart/EditSparepart",
+          API_LINK + 'Mesin/EditMesin',
           formDataRef.current
         );
 
@@ -196,84 +208,130 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
         console.log("API Response:", data);
 
         if (!data) {
-          throw new Error("Terjadi kesalahan: Gagal menyimpan data produk.");
+          throw new Error("Terjadi kesalahan: Gagal menyimpan data mesin.");
+        } else {
+          SweetAlert("Sukses", "Data mesin berhasil disimpan", "success");
+          onChangePage("index");
         }
-
-        SweetAlert("Sukses", "Data produk berhasil disimpan", "success");
-        onChangePage("index");
       } catch (error) {
+        console.error("Error saving data:", error.message);
         setIsError({ error: true, message: error.message });
       } finally {
         setIsLoading(false);
       }
-    } else window.scrollTo(0, 0);
-    console.log("ErrorSaat Simpan Data: ".formDataRef.gambarSparepart);
+    } else {
+      window.scrollTo(0, 0); // Scroll to the top of the page if validation fails
+      console.log("Form validation failed, scrolling to top.");
+    }
   };
 
   if (isLoading) return <Loading />;
 
   return (
     <>
-      {isError.error && <Alert type="danger" message={isError.message} />}
+      {isError.error && (
+        <div className="flex-fill">
+          <Alert type="danger" message={isError.message} />
+        </div>
+      )}
       <form onSubmit={handleAdd}>
         <div className="card">
           <div className="card-header bg-primary fw-medium text-white">
-            Ubah Data Sparepart
+            Ubah Data Mesin
           </div>
           <div className="card-body p-4">
             <div className="row">
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="namaSparepart"
-                  label="Nama Sparepart"
+                  forInput="mes_nama_mesin"
+                  label="Nama Mesin"
                   isRequired
-                  value={formDataRef.current.namaSparepart}
+                  value={formDataRef.current.mes_nama_mesin}
                   onChange={handleInputChange}
-                  errorMessage={errors.namaSparepart}
+                  errorMessage={errors.mes_nama_mesin}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="deskripsi"
-                  label="Deskripsi"
-                  isRequired
-                  value={formDataRef.current.deskripsi}
+                  forInput="mes_kondisi_operasional"
+                  label="Kondisi Operasional"
+                  value={formDataRef.current.mes_kondisi_operasional}
                   onChange={handleInputChange}
-                  errorMessage={errors.deskripsi}
+                  errorMessage={errors.mes_kondisi_operasional}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="merk"
-                  label="Merk"
-                  isRequired
-                  value={formDataRef.current.merk}
+                  forInput="mes_no_panel"
+                  label="No Panel"
+                  value={formDataRef.current.mes_no_panel}
                   onChange={handleInputChange}
-                  errorMessage={errors.merk}
+                  errorMessage={errors.mes_no_panel}
+                />
+              </div>
+              <div className="col-lg-3">
+                <Input
+                  type="number"
+                  forInput="mes_daya_mesin"
+                  label="Daya Mesin"
+                  isRequired
+                  value={formDataRef.current.mes_daya_mesin}
+                  onChange={handleInputChange}
+                  errorMessage={errors.mes_daya_mesin}
+                />
+              </div>
+              <div className="col-lg-3">
+                <Input
+                  type="number"
+                  forInput="mes_jumlah"
+                  label="Jumlah Mesin"
+                  isRequired
+                  value={formDataRef.current.mes_jumlah}
+                  onChange={handleInputChange}
+                  errorMessage={errors.mes_jumlah}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="stok"
-                  label="Stok"
-                  isRequired
-                  value={formDataRef.current.stok}
+                  forInput="mes_kapasitas"
+                  label="Kapasitas"
+                  value={formDataRef.current.mes_kapasitas}
                   onChange={handleInputChange}
-                  errorMessage={errors.stok}
+                  errorMessage={errors.mes_kapasitas}
+                />
+              </div>
+              <div className="col-lg-3">
+                <Input
+                  type="text"
+                  forInput="mes_tipe"
+                  label="Tipe"
+                  value={formDataRef.current.mes_tipe}
+                  onChange={handleInputChange}
+                  errorMessage={errors.mes_tipe}
+                />
+              </div>
+              <div className="col-lg-3">
+                <Input
+                  type="text"
+                  forInput="mes_lab"
+                  label="Lab"
+                  value={formDataRef.current.mes_lab}
+                  onChange={handleInputChange}
+                  errorMessage={errors.mes_lab}
                 />
               </div>
               <div className="col-lg-4">
                 <FileUpload
-                  forInput="gambarSparepart"
-                  label="Gambar Sparepart (.jpg, .png)"
+                  forInput="mes_gambar"
+                  label="Gambar Mesin (.jpg, .png)"
                   formatFile=".jpg,.png"
                   ref={fileGambarRef}
                   onChange={() => handleFileChange(fileGambarRef, "jpg,png")}
-                  errorMessage={errors.gambarSparepart}
+                  errorMessage={errors.mes_gambar}
                 />
                 {previewImage && (
                   <div className="mt-3">
@@ -289,17 +347,6 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
                   </div>
                 )}
               </div>
-
-              <div className="col-lg-6">
-                <Input
-                  type="date"
-                  forInput="tanggalMasuk"
-                  label="Tanggal Masuk"
-                  value={formDataRef.current.tanggalMasuk}
-                  onChange={handleInputChange}
-                  errorMessage={errors.tanggalMasuk}
-                />
-              </div>
             </div>
           </div>
         </div>
@@ -313,7 +360,6 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
             classType="primary ms-2 px-4 py-2"
             type="submit"
             label="SIMPAN"
-            disabled={isLoading}
           />
         </div>
       </form>

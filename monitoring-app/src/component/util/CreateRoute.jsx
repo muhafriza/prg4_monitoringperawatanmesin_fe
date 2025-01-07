@@ -9,6 +9,9 @@ const MasterKursProses = lazy(() => import("../page/master-kurs-proses/Root"));
 const MasterAlatMesin = lazy(() => import("../page/master-alat-mesin/Root"));
 const MasterOperator = lazy(() => import("../page/master-operator/Root"));
 const MasterSparepart = lazy(() => import("../page/master-sparepart/Root"));
+const MasterUser = lazy(() => import ("../page/master-user/Root"));
+const JadwalPerawatan = lazy(() => import ("../page/jadwal_perawatan-rutin/Root"));
+const MasterMesin = lazy(() => import ("../page/master-mesin/Root"));
 
 const PermintaanPelanggan = lazy(() =>
   import("../page/permintaan-pelanggan/Root")
@@ -20,6 +23,7 @@ const SuratPenawaran = lazy(() => import("../page/surat-penawaran/Root"));
 const SuratPerintahKerja = lazy(() =>
   import("../page/surat-perintah-kerja/Root")
 );
+
 
 const routeList = [
   { 
@@ -73,7 +77,19 @@ const routeList = [
   {
     path: "/master_sparepart",
     element: <MasterSparepart />,
+   },
+   {
+    path: "/jadwal_perawatanrutin",
+    element: <JadwalPerawatan />,
+   },
+  {
+    path: "/master_mesin",
+    element: <MasterMesin />,
   },
+  {
+    path: "/master_user",
+    element: <MasterUser />,
+  }
 ];
 
 export default routeList;

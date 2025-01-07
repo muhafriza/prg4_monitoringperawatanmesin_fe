@@ -15,19 +15,14 @@ const inisialisasiData = [
   {
     Key: null,
     No: null,
-    "Nama Sparepart": null,
-    Merk: null,
-    "Tanggal Masuk": null,
-    Stok: null,
     Status: null,
-    Aksi: null,
     Count: 0,
   },
 ];
 
 const dataFilterSort = [
-  { Value: "[spa_stok] asc", Text: "Stok [↑]" },
-  { Value: "[spa_stok] desc", Text: "Stok [↓]" },
+  { Value: "[rol_id] asc", Text: "NPK [↑]" },
+  { Value: "[rol_id] desc", Text: "NPK [↓]" },
 ];
 
 const dataFilterStatus = [
@@ -35,16 +30,20 @@ const dataFilterStatus = [
   { Value: "Tidak Aktif", Text: "Tidak Aktif" },
 ];
 
-export default function MasterSparepart({ onChangePage }) {
+export default function MasterUser({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[spa_nama_Sparepart] asc",
+    sort: "kry_nama_depan",
     status: "Aktif",
-    itemPerPage: 5,
+    APP: "APP60",
+  });
+  const [filterIdRole, setfilterIdRole] = useState({
+    rol_deskripsi: "",
+    status: "Aktif",
   });
 
   const searchQuery = useRef();
@@ -60,40 +59,18 @@ export default function MasterSparepart({ onChangePage }) {
       };
     });
   }
-  function formatDate(dateString, format) {
+  function formatDate(dateString, format = "DD/MM/YYYY") {
     const date = new Date(dateString);
 
-    const day = date.getDate();
-    const month = date.getMonth(); // Get month as number (0-based)
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
 
-    const months = [
-      "Januari",
-      "Februari",
-      "Maret",
-      "April",
-      "Mei",
-      "Juni",
-      "Juli",
-      "Agustus",
-      "September",
-      "Oktober",
-      "November",
-      "Desember",
-    ];
-
     switch (format) {
-      case "DD/MM/YYYY":
-        return `${String(day).padStart(2, "0")}/${String(month + 1).padStart(
-          2,
-          "0"
-        )}/${year}`;
+      case "DD-MM-YYYY":
+        return `${day}/${month}/${year}`;
       case "YYYY-MM-DD":
-        return `${year}-${String(month + 1).padStart(2, "0")}-${String(
-          day
-        ).padStart(2, "0")}`;
-      case "D MMMM YYYY":
-        return `${day} ${months[month]} ${year}`;
+        return `${year}-${month}-${day}`;
       default:
         return dateString;
     }
@@ -112,11 +89,13 @@ export default function MasterSparepart({ onChangePage }) {
     });
   }
 
-  function handleSetStatus(id) {
+  function handleSetStatus(id, peran, status) {
     setIsLoading(true);
     setIsError(false);
-    UseFetch(API_LINK + "MasterSparepart/SetStatusSparepart", {
-      idSparepart: id,
+    UseFetch(API_LINK + "MasterUser/SetStatusUser", {
+      id: id,
+      peran: peran,
+      status: status
     })
       .then((data) => {
         if (data === "ERROR" || data.length === 0) setIsError(true);
@@ -135,37 +114,33 @@ export default function MasterSparepart({ onChangePage }) {
   useEffect(() => {
     const fetchData = async () => {
       setIsError(false);
-    
+
       try {
         const data = await UseFetch(
-          API_LINK + "MasterSparepart/GetDataSparepart",
+          API_LINK + "MasterUser/GetDataKaryawanByUser",
           currentFilter
         );
-    
+        console.log(filterIdRole);
         if (data === "ERROR") {
           setIsError(true);
-          console.log("Error nih Line 147");
+          console.log("Error nih");
         } else if (data.length === 0) {
           setCurrentData(inisialisasiData);
         } else {
-          const formattedData = data.map((value) => {
-            const { tanggal_masuk,Deskripsi,Status, ...rest } = value; // Menghapus tanggal_masuk
-            return {
-              ...rest, // Menyalin sisa properti
-              "Tanggal Masuk": formatDate(tanggal_masuk, "D MMMM YYYY"),
-              Status: Status,
-              Aksi: ["Toggle", "Detail", "Edit"],
-              Alignment: [
-                "center",
-                "left",
-                "left",
-                "right",
-                "center",
-                "center",
-                "center",
-              ],
-            };
-          });
+          const formattedData = data.map((value) => ({
+            ...value,
+            Aksi: ["Toggle", "Detail", "Edit"],
+            Alignment: [
+              "center",
+              "Center",
+              "left",
+              "left",
+              "right",
+              "center",
+              "center",
+              "center",
+            ],
+          }));
           console.log(formattedData);
           setCurrentData(formattedData);
         }
@@ -175,7 +150,12 @@ export default function MasterSparepart({ onChangePage }) {
         setIsLoading(false);
       }
     };
-    
+    const getIdRole = async () => {
+      const data = await UseFetch(
+        API_LINK + "MasterUser/GetIdRole",
+        currentFilter
+      );
+    };
 
     fetchData();
   }, [currentFilter]);
@@ -217,7 +197,7 @@ export default function MasterSparepart({ onChangePage }) {
                 label="Urut Berdasarkan"
                 type="none"
                 arrData={dataFilterSort}
-                defaultValue="[spa_nama_sparepart] asc"
+                defaultValue="[Nama Sparepart] asc"
               />
               <DropDown
                 ref={searchFilterStatus}
@@ -232,16 +212,31 @@ export default function MasterSparepart({ onChangePage }) {
         </div>
         <div className="mt-3">
           {isLoading ? (
-            <Loading /> 
+            <Loading />
           ) : (
             <div className="d-flex flex-column">
               <Table
-              // columns={columns}
                 data={currentData}
-                onToggle={handleSetStatus}
+                onToggle={(id) => {
+                  const selectedRow = currentData.find((row) => row.Key === id); // Cari row berdasarkan ID
+                  const peran = selectedRow ? selectedRow.Peran : null; // Ambil nilai Peran
+                  const status = selectedRow ? selectedRow.Status : null; // Ambil nilai Peran
+
+                  if (!selectedRow || !peran) {
+                    SweetAlert(
+                      "Error",
+                      "Data Peran atau Row tidak ditemukan!",
+                      "error"
+                    );
+                    return;
+                  }
+
+                  handleSetStatus(id, peran, status); // Panggil fungsi dengan ID dan Peran
+                }}
                 onDetail={onChangePage}
                 onEdit={onChangePage}
               />
+
               <Paging
                 pageSize={PAGE_SIZE}
                 pageCurrent={currentFilter.page}
