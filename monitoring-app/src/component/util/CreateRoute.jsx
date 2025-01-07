@@ -1,4 +1,5 @@
 import { lazy } from "react";
+import PerawatanPreventifTeknisi from "../page/perawatan-preventif-teknisi/Root";
 
 const Beranda = lazy(() => import("../page/beranda/Root"));
 const Notifikasi = lazy(() => import("../page/notifikasi/Root"));
@@ -11,6 +12,7 @@ const MasterOperator = lazy(() => import("../page/master-operator/Root"));
 const MasterSparepart = lazy(() => import("../page/master-sparepart/Root"));
 const MasterUser = lazy(() => import ("../page/master-user/Root"));
 const JadwalPerawatan = lazy(() => import ("../page/jadwal_perawatan-rutin/Root"));
+const LaporanKerusakan = lazy(() => import ("../page/laporan-kerusakan-teknisi/Root"));
 const MasterMesin = lazy(() => import ("../page/master-mesin/Root"));
 
 const PermintaanPelanggan = lazy(() =>
@@ -89,6 +91,14 @@ const routeList = [
   {
     path: "/master_user",
     element: <MasterUser />,
+  },
+  {
+    path: "/laporan_kerusakan",
+    element: <LaporanKerusakan />,
+  },
+  {
+    path: "/perawatan_preventif",
+    element: <PerawatanPreventifTeknisi />,
   }
 ];
 

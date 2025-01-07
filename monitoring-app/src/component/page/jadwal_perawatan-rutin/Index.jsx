@@ -46,8 +46,8 @@ export default function JadwalPerawatan({ onChangePage }) {
     page: 1,
     query: "",
     sort: "[pre_tanggal_penjadwalan] asc",
-    status: "Menunggu Perbaikan",
-    itemPerPage: 5,
+    status: "",
+    itemPerPage: 10,
   });
 
   const searchQuery = useRef();
@@ -169,6 +169,7 @@ export default function JadwalPerawatan({ onChangePage }) {
                 "left",
                 "center",
                 "center",
+                "center"
               ],
             };
           });

@@ -21,8 +21,8 @@ const inisialisasiData = [
 ];
 
 const dataFilterSort = [
-  { Value: "[rol_id] asc", Text: "NPK [↑]" },
-  { Value: "[rol_id] desc", Text: "NPK [↓]" },
+  { Value: "[kry_id] asc", Text: "NPK [↑]" },
+  { Value: "[kry_id] desc", Text: "NPK [↓]" },
 ];
 
 const dataFilterStatus = [
@@ -30,7 +30,7 @@ const dataFilterStatus = [
   { Value: "Tidak Aktif", Text: "Tidak Aktif" },
 ];
 
-export default function MasterUser({ onChangePage }) {
+export default function MasterUserIndex({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
@@ -38,12 +38,8 @@ export default function MasterUser({ onChangePage }) {
     page: 1,
     query: "",
     sort: "kry_nama_depan",
-    status: "Aktif",
+    status: "",
     APP: "APP60",
-  });
-  const [filterIdRole, setfilterIdRole] = useState({
-    rol_deskripsi: "",
-    status: "Aktif",
   });
 
   const searchQuery = useRef();
@@ -59,22 +55,6 @@ export default function MasterUser({ onChangePage }) {
       };
     });
   }
-  function formatDate(dateString, format = "DD/MM/YYYY") {
-    const date = new Date(dateString);
-
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-
-    switch (format) {
-      case "DD-MM-YYYY":
-        return `${day}/${month}/${year}`;
-      case "YYYY-MM-DD":
-        return `${year}-${month}-${day}`;
-      default:
-        return dateString;
-    }
-  }
 
   function handleSearch() {
     setIsLoading(true);
@@ -89,13 +69,13 @@ export default function MasterUser({ onChangePage }) {
     });
   }
 
-  function handleSetStatus(id, peran, status) {
+  function handleSetStatus(id, peran) {
+    console.log(id, peran);
     setIsLoading(true);
     setIsError(false);
     UseFetch(API_LINK + "MasterUser/SetStatusUser", {
       id: id,
       peran: peran,
-      status: status
     })
       .then((data) => {
         if (data === "ERROR" || data.length === 0) setIsError(true);
@@ -105,6 +85,7 @@ export default function MasterUser({ onChangePage }) {
             "Status data Sparepart berhasil diubah menjadi " + data[0].Status,
             "success"
           );
+          setIsLoading(false);
           handleSetCurrentPage(currentFilter.page);
         }
       })
@@ -120,7 +101,7 @@ export default function MasterUser({ onChangePage }) {
           API_LINK + "MasterUser/GetDataKaryawanByUser",
           currentFilter
         );
-        console.log(filterIdRole);
+
         if (data === "ERROR") {
           setIsError(true);
           console.log("Error nih");
@@ -150,13 +131,6 @@ export default function MasterUser({ onChangePage }) {
         setIsLoading(false);
       }
     };
-    const getIdRole = async () => {
-      const data = await UseFetch(
-        API_LINK + "MasterUser/GetIdRole",
-        currentFilter
-      );
-    };
-
     fetchData();
   }, [currentFilter]);
 
@@ -219,6 +193,7 @@ export default function MasterUser({ onChangePage }) {
                 data={currentData}
                 onToggle={(id) => {
                   const selectedRow = currentData.find((row) => row.Key === id); // Cari row berdasarkan ID
+                  const username = selectedRow ? selectedRow.Username : null;
                   const peran = selectedRow ? selectedRow.Peran : null; // Ambil nilai Peran
                   const status = selectedRow ? selectedRow.Status : null; // Ambil nilai Peran
 
@@ -231,7 +206,7 @@ export default function MasterUser({ onChangePage }) {
                     return;
                   }
 
-                  handleSetStatus(id, peran, status); // Panggil fungsi dengan ID dan Peran
+                  handleSetStatus(username, peran, status); // Panggil fungsi dengan ID dan Peran
                 }}
                 onDetail={onChangePage}
                 onEdit={onChangePage}
