@@ -11,6 +11,7 @@ const MasterOperator = lazy(() => import("../page/master-operator/Root"));
 const MasterSparepart = lazy(() => import("../page/master-sparepart/Root"));
 const MasterMesin = lazy(() => import("../page/master-mesin/Root"));
 const MasterKaryawan = lazy(() => import("../page/master-karyawan/Root"));
+const TransaksiKoreftif = lazy(() => import("../page/transaksi-korektif/Root"));
 
 
 const PermintaanPelanggan = lazy(() =>
@@ -85,6 +86,10 @@ const routeList = [
   {
     path: "/master_karyawan",
     element: <MasterKaryawan />,
+  },
+  {
+    path: "/transaksi_korektif",
+    element: <TransaksiKoreftif />,
   },
 ];
 
