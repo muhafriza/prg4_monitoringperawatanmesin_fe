@@ -15,10 +15,10 @@ const inisialisasiData = [
   {
     Key: null,
     No: null,
-    "Nama Sparepart": null,
-    Merk: null,
-    "Tanggal Masuk": null,
-    Stok: null,
+    "Nama Mesin": null,
+    "Tanggal Perawatan": null,
+    Tindakan: null,
+    "Dibuat Oleh": null,
     Status: null,
     Aksi: null,
     Count: 0,
@@ -26,24 +26,27 @@ const inisialisasiData = [
 ];
 
 const dataFilterSort = [
-  { Value: "[spa_stok] asc", Text: "Stok [↑]" },
-  { Value: "[spa_stok] desc", Text: "Stok [↓]" },
+  { Value: "[pre_tanggal_penjadwalan] asc", Text: "Tanggal Penjadwalan [↑]" },
+  { Value: "[pre_tanggal_penjadwalan] desc", Text: "Tanggal Penjadawalan [↓]" },
 ];
 
 const dataFilterStatus = [
-  { Value: "Aktif", Text: "Aktif" },
-  { Value: "Tidak Aktif", Text: "Tidak Aktif" },
+  { Value: "Menunggu Perbaikan", Text: "Menunggu Perbaikan" },
+  { Value: "Dalam Pengerjaan", Text: "Dalam Pengerjaan" },
+  { Value: "Tertunda", Text: "Tertunda" },
+  { Value: "Selesai", Text: "Selesai" },
+  { Value: "Batal", Text: "Batal" },
 ];
 
-export default function MasterSparepartIndex({ onChangePage }) {
+export default function LaporanKerusakan({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[spa_nama_Sparepart] asc",
-    status: "Aktif",
+    sort: "[pre_tanggal_penjadwalan] asc",
+    status: "",
     itemPerPage: 5,
   });
 
@@ -135,121 +138,127 @@ export default function MasterSparepartIndex({ onChangePage }) {
   useEffect(() => {
     const fetchData = async () => {
       setIsError(false);
-    
+
       try {
         const data = await UseFetch(
-          API_LINK + "MasterSparepart/GetDataSparepart",
+          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventif",
           currentFilter
         );
-    
+
         if (data === "ERROR") {
           setIsError(true);
-          console.log("Error nih Line 147");
         } else if (data.length === 0) {
           setCurrentData(inisialisasiData);
         } else {
+          console.log(data);
           const formattedData = data.map((value) => {
-            const { tanggal_masuk,Deskripsi,Status, ...rest } = value; // Menghapus tanggal_masuk
+            const {
+              Tanggal_Perawatan,
+              Status_Pemeliharaan,
+              Dibuat,
+              TindakanPerbaikan,
+              Nama_Mesin,
+              ...rest
+            } = value; // Menghapus tanggal_masuk
             return {
-              ...rest, // Menyalin sisa properti
-              "Tanggal Masuk": formatDate(tanggal_masuk, "D MMMM YYYY"),
-              Status: Status,
-              Aksi: ["Toggle", "Detail", "Edit"],
-              Alignment: [
-                "center",
-                "left",
-                "left",
-                "right",
-                "center",
-                "center",
-                "center",
-              ],
+              ...rest,
+              "Nama Mesin": Nama_Mesin,
+              "Tindakan Perbaikan":
+                TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
+              "Dibuat Oleh": Dibuat == null ? "-" : Dibuat,
+              "Jadwal Perawatan": formatDate(Tanggal_Perawatan, "D MMMM YYYY"),
+              Status: Status_Pemeliharaan,
+              Aksi: ["Detail"],
+              Alignment: ["center", "left", "left", "left", "center", "center"],
             };
           });
-          console.log(formattedData);
           setCurrentData(formattedData);
         }
-      } catch {
+      } catch (error) {
         setIsError(true);
+        console.log("Format Data Error: " + error);
       } finally {
         setIsLoading(false);
       }
     };
-    
 
     fetchData();
   }, [currentFilter]);
 
   return (
     <>
-      <div className="d-flex flex-column">
-        {isError && (
-          <div className="flex-fill">
-            <Alert
-              type="warning"
-              message="Terjadi kesalahan: Gagal mengambil data Sparepart. "
-            />
-          </div>
-        )}
-        <div className="flex-fill">
-          <div className="input-group">
-            <Button
-              iconName="add"
-              classType="success"
-              label="Tambah"
-              onClick={() => onChangePage("add")}
-            />
-            <Input
-              ref={searchQuery}
-              forInput="pencarianSparepart"
-              placeholder="Cari"
-            />
-            <Button
-              iconName="search"
-              classType="primary px-4"
-              title="Cari"
-              onClick={handleSearch}
-            />
-            <Filter>
-              <DropDown
-                ref={searchFilterSort}
-                forInput="ddUrut"
-                label="Urut Berdasarkan"
-                type="none"
-                arrData={dataFilterSort}
-                defaultValue="[spa_nama_sparepart] asc"
-              />
-              <DropDown
-                ref={searchFilterStatus}
-                forInput="ddStatus"
-                label="Status"
-                type="none"
-                arrData={dataFilterStatus}
-                defaultValue="Aktif"
-              />
-            </Filter>
-          </div>
-        </div>
-        <div className="mt-3">
-          {isLoading ? (
-            <Loading /> 
-          ) : (
-            <div className="d-flex flex-column">
-              <Table
-              // columns={columns}
-                data={currentData}
-                onToggle={handleSetStatus}
-                onDetail={onChangePage}
-                onEdit={onChangePage}
-              />
-              <Paging
-                pageSize={PAGE_SIZE}
-                pageCurrent={currentFilter.page}
-                totalData={currentData[0]["Count"]}
-                navigation={handleSetCurrentPage}
+      <div className="card">
+        <div className="d-flex flex-column">
+          {isError && (
+            <div className="flex-fill">
+              <Alert
+                type="warning"
+                message="Terjadi kesalahan: Gagal mengambil data Sparepart. "
               />
             </div>
           )}
+          <div className="card-header bg-primary fw-medium text-white">
+            Detail Data Sparepart
+          </div>
+          <div className="flex-fill">
+            <div className="input-group">
+              <Button
+                iconName="add"
+                classType="success"
+                label="Laporan Kerusakan"
+                onClick={() => onChangePage("add")}
+              />
+              <Input
+                ref={searchQuery}
+                forInput="pencarianSparepart"
+                placeholder="Cari"
+              />
+              <Button
+                iconName="search"
+                classType="primary px-4"
+                title="Cari"
+                onClick={handleSearch}
+              />
+              <Filter>
+                <DropDown
+                  ref={searchFilterSort}
+                  forInput="ddUrut"
+                  label="Urut Berdasarkan"
+                  type="none"
+                  arrData={dataFilterSort}
+                  defaultValue="[spa_nama_sparepart] asc"
+                />
+                <DropDown
+                  ref={searchFilterStatus}
+                  forInput="ddStatus"
+                  label="Status"
+                  type="none"
+                  arrData={dataFilterStatus}
+                  defaultValue="Aktif"
+                />
+              </Filter>
+            </div>
+          </div>
+          <div className="mt-3">
+            {isLoading ? (
+              <Loading />
+            ) : (
+              <div className="d-flex flex-column">
+                <Table
+                  data={currentData}
+                  onToggle={handleSetStatus}
+                  onDetail={onChangePage}
+                  onEdit={onChangePage}
+                />
+                <Paging
+                  pageSize={PAGE_SIZE}
+                  pageCurrent={currentFilter.page}
+                  totalData={currentData[0]["Count"]}
+                  navigation={handleSetCurrentPage}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>

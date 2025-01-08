@@ -1,26 +1,28 @@
 import { useState } from "react";
-import MasterMesinIndex from "./Index";
-import MasterMesinAdd from "./Add";
-import MasterMesinEdit from "./Edit";
-import MasterMesinDetail from "./Detail";
+import JadwalPerawatan from "./Index";
 
-export default function MasterMesin() {
+
+import MasterSparepartAdd from "./Add";
+import MasterSparepartEdit from "./Edit";
+import MasterSparepartDetail from "./Detail";
+
+export default function MasterProses() {
   const [pageMode, setPageMode] = useState("index");
   const [dataID, setDataID] = useState();
 
   function getPageMode() {
     switch (pageMode) {
       case "index":
-        return <MasterMesinIndex onChangePage={handleSetPageMode} />;
+        return <JadwalPerawatan onChangePage={handleSetPageMode} />;
       case "add":
-        return <MasterMesinAdd onChangePage={handleSetPageMode} />;
+        return <MasterSparepartAdd onChangePage={handleSetPageMode} />;
       case "edit":
         return (
-          <MasterMesinEdit onChangePage={handleSetPageMode} withID={dataID} />
+          <MasterSparepartEdit onChangePage={handleSetPageMode} withID={dataID} />
         );
         case "detail":
           return (
-            <MasterMesinDetail
+            <MasterSparepartDetail
               onChangePage={handleSetPageMode}
               withID={dataID}
             />

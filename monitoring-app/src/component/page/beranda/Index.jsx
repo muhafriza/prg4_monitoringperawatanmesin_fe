@@ -63,9 +63,9 @@ export default function BerandaIndex() {
         </div>
       )}
       <div className="card">
-        <div className="card-header bg-primary text-white p-4">
+        <div className="card-header bg-warning text-white p-4">
           <span className="lead fw-medium">
-            Selamat Datang di Sistem Informasi Produksi
+            Selamat Datang di Sistem Monitoring Proses Perawatan Mesin
           </span>
         </div>
         <div className="card-body lead p-4">

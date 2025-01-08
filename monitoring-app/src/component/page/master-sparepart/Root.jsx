@@ -4,7 +4,7 @@ import MasterSparepartAdd from "./Add";
 import MasterSparepartEdit from "./Edit";
 import MasterSparepartDetail from "./Detail";
 
-export default function MasterProses() {
+export default function MasterSparepart() {
   const [pageMode, setPageMode] = useState("index");
   const [dataID, setDataID] = useState();
 

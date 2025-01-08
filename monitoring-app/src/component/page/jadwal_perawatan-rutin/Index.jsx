@@ -15,36 +15,39 @@ const inisialisasiData = [
   {
     Key: null,
     No: null,
-    "Nama Sparepart": null,
-    Merk: null,
-    "Tanggal Masuk": null,
-    Stok: null,
+    "Nama Mesin": null,
+    "Tanggal Perawatan": null,
+    Tindakan: null,
+    "Dibuat Oleh": null,
     Status: null,
     Aksi: null,
-    Count: 0,
+    Count: 0, 
   },
 ];
 
 const dataFilterSort = [
-  { Value: "[spa_stok] asc", Text: "Stok [↑]" },
-  { Value: "[spa_stok] desc", Text: "Stok [↓]" },
+  { Value: "[pre_tanggal_penjadwalan] asc", Text: "Tanggal Penjadwalan [↑]" },
+  { Value: "[pre_tanggal_penjadwalan] desc", Text: "Tanggal Penjadawalan [↓]" },
 ];
 
 const dataFilterStatus = [
-  { Value: "Aktif", Text: "Aktif" },
-  { Value: "Tidak Aktif", Text: "Tidak Aktif" },
+  { Value: "Menunggu Perbaikan", Text: "Menunggu Perbaikan" },
+  { Value: "Dalam Pengerjaan", Text: "Dalam Pengerjaan" },
+  { Value: "Tertunda", Text: "Tertunda" },
+  { Value: "Selesai", Text: "Selesai" },
+  { Value: "Batal", Text: "Batal" },
 ];
 
-export default function MasterSparepartIndex({ onChangePage }) {
+export default function JadwalPerawatan({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[spa_nama_Sparepart] asc",
-    status: "Aktif",
-    itemPerPage: 5,
+    sort: "[pre_tanggal_penjadwalan] asc",
+    status: "",
+    itemPerPage: 10,
   });
 
   const searchQuery = useRef();
@@ -130,6 +133,7 @@ export default function MasterSparepartIndex({ onChangePage }) {
         }
       })
       .then(() => setIsLoading(false));
+      
   }
 
   useEffect(() => {
@@ -138,45 +142,47 @@ export default function MasterSparepartIndex({ onChangePage }) {
     
       try {
         const data = await UseFetch(
-          API_LINK + "MasterSparepart/GetDataSparepart",
+          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventif",
           currentFilter
         );
     
         if (data === "ERROR") {
           setIsError(true);
-          console.log("Error nih Line 147");
         } else if (data.length === 0) {
           setCurrentData(inisialisasiData);
         } else {
+        console.log(data);
           const formattedData = data.map((value) => {
-            const { tanggal_masuk,Deskripsi,Status, ...rest } = value; // Menghapus tanggal_masuk
+            const { Tanggal_Perawatan,Status_Pemeliharaan,Dibuat, TindakanPerbaikan, Nama_Mesin, ...rest } = value; // Menghapus tanggal_masuk
             return {
-              ...rest, // Menyalin sisa properti
-              "Tanggal Masuk": formatDate(tanggal_masuk, "D MMMM YYYY"),
-              Status: Status,
-              Aksi: ["Toggle", "Detail", "Edit"],
+              ...rest,
+              "Nama Mesin": Nama_Mesin,
+              "Tindakan Perbaikan": TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
+              "Dibuat Oleh": Dibuat == null ? "-" : Dibuat,
+              "Jadwal Perawatan": formatDate(Tanggal_Perawatan, "D MMMM YYYY"),
+              Status: Status_Pemeliharaan,
+              Aksi: ["Detail"],
               Alignment: [
                 "center",
                 "left",
                 "left",
-                "right",
+                "left",
                 "center",
                 "center",
-                "center",
+                "center"
               ],
             };
           });
-          console.log(formattedData);
           setCurrentData(formattedData);
         }
-      } catch {
+      } catch (error){
         setIsError(true);
+        console.log("Format Data Error: "+error);
       } finally {
         setIsLoading(false);
       }
     };
     
-
     fetchData();
   }, [currentFilter]);
 
@@ -196,7 +202,7 @@ export default function MasterSparepartIndex({ onChangePage }) {
             <Button
               iconName="add"
               classType="success"
-              label="Tambah"
+              label="Buat Jadwal Perawatan Rutin"
               onClick={() => onChangePage("add")}
             />
             <Input
@@ -236,7 +242,6 @@ export default function MasterSparepartIndex({ onChangePage }) {
           ) : (
             <div className="d-flex flex-column">
               <Table
-              // columns={columns}
                 data={currentData}
                 onToggle={handleSetStatus}
                 onDetail={onChangePage}

@@ -1,26 +1,26 @@
 import { useState } from "react";
-import MasterMesinIndex from "./Index";
-import MasterMesinAdd from "./Add";
-import MasterMesinEdit from "./Edit";
-import MasterMesinDetail from "./Detail";
+import MasterUserIndex from "./Index";
+import MasterUserAdd from "./Add";
+import MasterUserEdit from "./Edit";
+import MasterUserDetail from "./Detail";
 
-export default function MasterMesin() {
+export default function MasterUser() {
   const [pageMode, setPageMode] = useState("index");
   const [dataID, setDataID] = useState();
 
   function getPageMode() {
     switch (pageMode) {
       case "index":
-        return <MasterMesinIndex onChangePage={handleSetPageMode} />;
+        return <MasterUserIndex onChangePage={handleSetPageMode} />;
       case "add":
-        return <MasterMesinAdd onChangePage={handleSetPageMode} />;
+        return <MasterUserAdd onChangePage={handleSetPageMode} />;
       case "edit":
         return (
-          <MasterMesinEdit onChangePage={handleSetPageMode} withID={dataID} />
+          <MasterUserEdit onChangePage={handleSetPageMode} withID={dataID} />
         );
         case "detail":
           return (
-            <MasterMesinDetail
+            <MasterUserDetail
               onChangePage={handleSetPageMode}
               withID={dataID}
             />

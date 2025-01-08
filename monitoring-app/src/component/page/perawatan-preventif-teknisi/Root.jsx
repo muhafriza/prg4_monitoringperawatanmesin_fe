@@ -1,26 +1,25 @@
 import { useState } from "react";
-import MasterMesinIndex from "./Index";
-import MasterMesinAdd from "./Add";
-import MasterMesinEdit from "./Edit";
-import MasterMesinDetail from "./Detail";
+import PerawatanPreventifTeknisiIndex from "./Index";
+import PerawatanPreventifTeknisiDetail from "./Detail";
+import PerawatanPreventifTeknisiEdit from "./Edit";
 
-export default function MasterMesin() {
+export default function PerawatanPreventifTeknisi() {
   const [pageMode, setPageMode] = useState("index");
   const [dataID, setDataID] = useState();
 
   function getPageMode() {
     switch (pageMode) {
       case "index":
-        return <MasterMesinIndex onChangePage={handleSetPageMode} />;
+        return <PerawatanPreventifTeknisiIndex onChangePage={handleSetPageMode} />;
       case "add":
-        return <MasterMesinAdd onChangePage={handleSetPageMode} />;
+        return <PerawatanPreventifTeknisiIndex onChangePage={handleSetPageMode} />;
       case "edit":
         return (
-          <MasterMesinEdit onChangePage={handleSetPageMode} withID={dataID} />
+          <PerawatanPreventifTeknisiEdit onChangePage={handleSetPageMode} withID={dataID} />
         );
         case "detail":
           return (
-            <MasterMesinDetail
+            <PerawatanPreventifTeknisiDetail
               onChangePage={handleSetPageMode}
               withID={dataID}
             />
