@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { API_LINK, FILE_LINK } from "../../util/Constants";
 import UseFetch from "../../util/UseFetch";
+import { validateAllInputs } from "../../util/ValidateForm";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
 import DropDown from "../../part/Dropdown";
@@ -16,7 +17,6 @@ const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
 
-  // Use state instead of useRef for form data
   const [formData, setFormData] = useState({
     ID_Mesin: "",
     Nama_Mesin: "",
@@ -30,7 +30,8 @@ const [errors, setErrors] = useState({});
     Created_Date: "",
   });
 
-  const [edtiData, setEditData] = useState({
+  const [editData, setEditData] = useState({
+    ID_Preventif: "",
     Tanggal_Aktual: "",
     Tanggal_Selesai: "",
     Catatan_Tambahan: "",
@@ -79,19 +80,20 @@ const [errors, setErrors] = useState({});
     }
   }
   const handleInputChange = (e, fieldName) => {
-    const { value } = e.target;
+    const { name, value } = e.target;
     setFormData((prevFormData) => ({
       ...prevFormData,
-      [fieldName]: value,
+      [name]: value,
     }));
   };
 
   const handleEdit = async (e) => {
     e.preventDefault();
 
+    console.log("Payload:", formData);
+
     const validationErrors = await validateAllInputs(
       formData.current,
-      userSchema,
       setErrors
     );
 
@@ -103,20 +105,21 @@ const [errors, setErrors] = useState({});
       setErrors({});
 
       setEditData({
+        ID_Preventif: withID,
         Tanggal_Aktual: formData.current.Tanggal_Aktual,
         Tanggal_Selesai: formData.current.Tanggal_Selesai,
         Catatan_Tambahan: formData.current.Catatan_Tambahan,
         Status_Pemeliharaan: formData.current.Status_Pemeliharaan
       })
+      console.log(editData)
 
       try {
 
         const data = await UseFetch(
           API_LINK + "MasterSparepart/EditSparepart",
-          edtiData.current
+          editData.current
         );
 
-        console.log("Payload:", formDataRef.current);
         console.log("API Response:", data);
 
         if (!data) {
