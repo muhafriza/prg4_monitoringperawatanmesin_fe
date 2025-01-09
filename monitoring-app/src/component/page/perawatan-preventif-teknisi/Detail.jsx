@@ -10,6 +10,9 @@ export default function PerawatanPreventifTeknisiDetail({ onChangePage, withID }
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
 
+  // State untuk menampung data fetch dari DetailSPPerawatanMesin
+  const [fetchDataDetailSP, setFetchDataDetailSP] = useState(null);
+
   // Use state instead of useRef for form data
   const [formData, setFormData] = useState({
     ID_Mesin: "",
@@ -25,6 +28,7 @@ export default function PerawatanPreventifTeknisiDetail({ onChangePage, withID }
     Created_Date: "",
     Modified_By: "",
   });
+
   function formatDate(dateString, format) {
     const date = new Date(dateString);
 
@@ -89,7 +93,36 @@ export default function PerawatanPreventifTeknisiDetail({ onChangePage, withID }
       }
     };
 
-    fetchData();
+    const fetchDataDetailSP = async () => {
+      setIsError((prevError) => ({ ...prevError, error: false }));
+
+      try {
+        const data = await UseFetch(
+          API_LINK + "TransaksiPreventif/DetailSPPerawatanMesin",
+          {
+            id: withID,
+          }
+        );
+
+        if (data === "ERROR" || data.length === 0) {
+          throw new Error("Terjadi kesalahan: Gagal mengambil data Sparepart.");
+        } else {
+          setFetchDataDetailSP(data[0]); // Menyimpan hasil fetchDetailSP ke state
+        }
+      } catch (error) {
+        window.scrollTo(0, 0);
+        setIsError((prevError) => ({
+          ...prevError,
+          error: true,
+          message: error.message,
+        }));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDataDetailSP();  // Panggil fetchDataDetailSP untuk mendapatkan data tambahan
+    fetchData();  // Panggil fetchData untuk mendapatkan data utama
   }, [withID]);
 
   if (isLoading) return <Loading />;
@@ -177,14 +210,30 @@ export default function PerawatanPreventifTeknisiDetail({ onChangePage, withID }
                 data={formData.Modified_By}
               />
             </div>
-            <div className="col-lg-3">
+            <div className="col-lg-4">
               <Label
                 forLabel="Status_Pemeliharaan"
                 title="Status Pemeliharaan"
                 data={formData.Status_Pemeliharaan}
               />
             </div>
+          <div className="col-lg-3">
+            <Label forLabel="Detail_SP" title="Detail Sparepart yang digunakan: "></Label>
+            {fetchDataDetailSP ? (
+              <ul>
+                {Object.entries(fetchDataDetailSP).map(([key, value]) => (
+                  <li key={key}>
+                    <label>{key.replace(/_/g, " ")}</label>: {value}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>Tidak Ada Sparepart.</p>
+            )}
           </div>
+          </div>
+
+
           <div className="float-end my-4 mx-1">
             <Button
               classType="secondary px-4 py-2"

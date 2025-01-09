@@ -8,16 +8,19 @@ import DropDown from "../../part/Dropdown";
 import Label from "../../part/Label";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
+import { object, string } from "yup";
+import SweetAlert from "../../util/SweetAlert";
 
 export default function PerawatanPreventifTeknisiEdit({
   onChangePage,
   withID,
 }) {
-const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
 
   const [formData, setFormData] = useState({
+    ID_Perawatan_Preventif: withID,
     ID_Mesin: "",
     Nama_Mesin: "",
     Tanggal_Penjadwalan: "",
@@ -30,13 +33,31 @@ const [errors, setErrors] = useState({});
     Created_Date: "",
   });
 
-  const [editData, setEditData] = useState({
-    ID_Preventif: "",
-    Tanggal_Aktual: "",
-    Tanggal_Selesai: "",
-    Catatan_Tambahan: "",
-    Status_Pemeliharaan: "",
-  })
+  const userSchema = object({
+    ID_Perawatan_Preventif: string().required(),
+    ID_Mesin: string().required(),
+    Nama_Mesin: string().required(),
+    Tanggal_Penjadwalan: string().required(),
+    Tanggal_Aktual: string().required("Isi Tanggal Aktual Terlebih Dahulu"),
+    Tanggal_Selesai: string(),
+    Tindakan_Perbaikan: string().required(),
+    Catatan_Tambahan: string().test(
+      "required-if-actual-date-greater",
+      "Catatan Tambahan wajib diisi jika Tanggal Aktual lebih dari Tanggal Penjadwalan.",
+      function (value) {
+        const { Tanggal_Aktual, Tanggal_Penjadwalan } = this.parent;
+        if (Tanggal_Aktual && Tanggal_Penjadwalan) {
+          const actualDate = new Date(Tanggal_Aktual);
+          const scheduledDate = new Date(Tanggal_Penjadwalan);
+          return actualDate <= scheduledDate || (value && value.trim() !== "");
+        }
+        return true; // Tidak perlu validasi jika salah satu tanggal tidak ada
+      }
+    ),
+    Status_Pemeliharaan: string().required(),
+    Created_By: string().required(),
+    Created_Date: string().required(),
+  });
 
   const [statusOptions, setStatusOptions] = useState([
     { Value: "Menunggu Perbaikan", Text: "Menunggu Perbaikan" },
@@ -48,11 +69,11 @@ const [errors, setErrors] = useState({});
 
   function formatDate(dateString, format) {
     const date = new Date(dateString);
-
-    const day = date.getDate();
-    const month = date.getMonth(); // Get month as number (0-based)
+  
+    const day = String(date.getDate()).padStart(2, "0"); // Tambahkan leading zero
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Tambahkan leading zero dan bulan 0-based
     const year = date.getFullYear();
-
+  
     const months = [
       "Januari",
       "Februari",
@@ -67,18 +88,19 @@ const [errors, setErrors] = useState({});
       "November",
       "Desember",
     ];
-
+  
     switch (format) {
       case "DD/MM/YYYY":
         return `${day}/${month}/${year}`;
       case "YYYY-MM-DD":
-        return `${year}-${month}-${day}`;
+        return `${year}-${month}-${day}`; // Format untuk input date
       case "D MMMM YYYY":
-        return `${day} ${months[month]} ${year}`;
+        return `${day} ${months[parseInt(month, 10) - 1]} ${year}`;
       default:
         return dateString;
     }
   }
+  
   const handleInputChange = (e, fieldName) => {
     const { name, value } = e.target;
     setFormData((prevFormData) => ({
@@ -90,10 +112,15 @@ const [errors, setErrors] = useState({});
   const handleEdit = async (e) => {
     e.preventDefault();
 
+    delete formData.Modified_By;
+    delete formData.Modified_Date;
+
     console.log("Payload:", formData);
+    console.log("tes" + formData.Tanggal_Aktual);
 
     const validationErrors = await validateAllInputs(
-      formData.current,
+      formData,
+      userSchema,
       setErrors
     );
 
@@ -104,20 +131,10 @@ const [errors, setErrors] = useState({});
       setIsError((prevError) => ({ ...prevError, error: false }));
       setErrors({});
 
-      setEditData({
-        ID_Preventif: withID,
-        Tanggal_Aktual: formData.current.Tanggal_Aktual,
-        Tanggal_Selesai: formData.current.Tanggal_Selesai,
-        Catatan_Tambahan: formData.current.Catatan_Tambahan,
-        Status_Pemeliharaan: formData.current.Status_Pemeliharaan
-      })
-      console.log(editData)
-
       try {
-
         const data = await UseFetch(
-          API_LINK + "MasterSparepart/EditSparepart",
-          editData.current
+          API_LINK + "TransaksiPreventif/UpdatePerawatanPreventif",
+          formData
         );
 
         console.log("API Response:", data);
@@ -139,7 +156,6 @@ const [errors, setErrors] = useState({});
         setIsLoading(false);
       }
     } else window.scrollTo(0, 0);
-    console.log("ErrorSaat Simpan Data: ".formDataRef.gambarSparepart);
   };
 
   useEffect(() => {
@@ -156,7 +172,9 @@ const [errors, setErrors] = useState({});
         console.log(data);
 
         if (data === "ERROR" || data.length === 0) {
-          throw new Error("Terjadi kesalahan: Gagal mengambil data Sparepart.");
+          throw new Error(
+            "Terjadi kesalahan: Gagal mengambil data jadwal preventif."
+          );
         } else {
           setFormData((prevFormData) => ({ ...prevFormData, ...data[0] }));
         }
@@ -209,7 +227,7 @@ const [errors, setErrors] = useState({});
                 <Label
                   forLabel="Tanggal_Penjadwalan"
                   title="Tanggal Penjadwalan"
-                  data={formData.Tanggal_Penjadwalan}
+                  data={formatDate(formData.Tanggal_Penjadwalan, "D MMMM YYYY")}
                 />
               </div>
               <div className="col-lg-3">
@@ -226,7 +244,8 @@ const [errors, setErrors] = useState({});
                   label="Tanggal Aktual"
                   className="form-control"
                   isRequired
-                  value={formData.Tanggal_Aktual}
+                  value={formData.Tanggal_Aktual ? formatDate(formData.Tanggal_Aktual, "YYYY-MM-DD") : ""}
+                  disabled={!!formData.Tanggal_Aktual}
                   onChange={handleInputChange}
                 />
               </div>
@@ -241,7 +260,7 @@ const [errors, setErrors] = useState({});
                 <Label
                   forLabel="Created_Date"
                   title="Tanggal Dibuat"
-                  data={formData.Created_Date}
+                  data={formatDate(formData.Created_Date, "D MMMM YYYY")}
                 />
               </div>
               <div className="col-lg-4">
@@ -270,10 +289,9 @@ const [errors, setErrors] = useState({});
                   type="textarea"
                   forInput="Catatan_Tambahan"
                   label="Catatan Tambahan"
-                  isRequired
                   value={formData.Catatan_Tambahan || ""} // Gunakan default "" jika undefined
                   onChange={(e) => handleInputChange(e, "Catatan_Tambahan")}
-                  // errorMessage={errors?.Catatan_Tambahan || ""}
+                  errorMessage={errors?.Catatan_Tambahan || ""}
                 />
               </div>
             </div>

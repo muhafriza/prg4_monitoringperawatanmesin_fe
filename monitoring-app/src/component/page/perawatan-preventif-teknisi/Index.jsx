@@ -154,7 +154,7 @@ export default function PerawatanPreventifTeknisiIndex({ onChangePage }) {
         console.log(data);
         const formattedData = data.map((value) => {
           const { Tanggal_Perawatan, Status_Pemeliharaan, Dibuat, TindakanPerbaikan, Nama_Mesin, ...rest } = value;
-          const aksi = Status_Pemeliharaan === "Selesai" ? ["Detail"] : ["Detail", "Edit"];
+          const aksi = Status_Pemeliharaan === "Selesai" ? ["Detail", "Print"] : ["Detail", "Edit"];
           
           return {
             ...rest,
