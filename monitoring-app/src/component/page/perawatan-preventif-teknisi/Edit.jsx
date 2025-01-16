@@ -19,6 +19,8 @@ export default function PerawatanPreventifTeknisiEdit({
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
 
+  const [fetchDataDetailSP, setFetchDataDetailSP] = useState(null);
+
   const [formData, setFormData] = useState({
     ID_Perawatan_Preventif: withID,
     ID_Mesin: "",
@@ -69,11 +71,11 @@ export default function PerawatanPreventifTeknisiEdit({
 
   function formatDate(dateString, format) {
     const date = new Date(dateString);
-  
+
     const day = String(date.getDate()).padStart(2, "0"); // Tambahkan leading zero
     const month = String(date.getMonth() + 1).padStart(2, "0"); // Tambahkan leading zero dan bulan 0-based
     const year = date.getFullYear();
-  
+
     const months = [
       "Januari",
       "Februari",
@@ -88,7 +90,7 @@ export default function PerawatanPreventifTeknisiEdit({
       "November",
       "Desember",
     ];
-  
+
     switch (format) {
       case "DD/MM/YYYY":
         return `${day}/${month}/${year}`;
@@ -100,7 +102,7 @@ export default function PerawatanPreventifTeknisiEdit({
         return dateString;
     }
   }
-  
+
   const handleInputChange = (e, fieldName) => {
     const { name, value } = e.target;
     setFormData((prevFormData) => ({
@@ -159,6 +161,34 @@ export default function PerawatanPreventifTeknisiEdit({
   };
 
   useEffect(() => {
+    const fetchDataDetailSP = async () => {
+      setIsError((prevError) => ({ ...prevError, error: false }));
+
+      try {
+        const data = await UseFetch(
+          API_LINK + "TransaksiPreventif/DetailSPPerawatanMesin",
+          {
+            id: withID,
+          }
+        );
+
+        if (data === "ERROR" || data.length === 0) {
+          throw new Error("Terjadi kesalahan: Gagal mengambil data Sparepart.");
+        } else {
+          setFetchDataDetailSP(data); // Menyimpan hasil fetchDetailSP ke state
+        }
+      } catch (error) {
+        window.scrollTo(0, 0);
+        setIsError((prevError) => ({
+          ...prevError,
+          error: true,
+          message: error.message,
+        }));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     const fetchData = async () => {
       setIsError((prevError) => ({ ...prevError, error: false }));
 
@@ -190,6 +220,7 @@ export default function PerawatanPreventifTeknisiEdit({
       }
     };
 
+    fetchDataDetailSP();
     fetchData();
   }, [withID]);
 
@@ -244,7 +275,11 @@ export default function PerawatanPreventifTeknisiEdit({
                   label="Tanggal Aktual"
                   className="form-control"
                   isRequired
-                  value={formData.Tanggal_Aktual ? formatDate(formData.Tanggal_Aktual, "YYYY-MM-DD") : ""}
+                  value={
+                    formData.Tanggal_Aktual
+                      ? formatDate(formData.Tanggal_Aktual, "YYYY-MM-DD")
+                      : ""
+                  }
                   disabled={!!formData.Tanggal_Aktual}
                   onChange={handleInputChange}
                 />
@@ -293,6 +328,33 @@ export default function PerawatanPreventifTeknisiEdit({
                   onChange={(e) => handleInputChange(e, "Catatan_Tambahan")}
                   errorMessage={errors?.Catatan_Tambahan || ""}
                 />
+              </div>
+              <div className="col-lg-3">
+                <Label
+                  forLabel="Detail_SP"
+                  title="Detail Sparepart yang digunakan: "
+                ></Label>
+                {fetchDataDetailSP && fetchDataDetailSP.length > 0 ? (
+                  <ul>
+                    {fetchDataDetailSP.map((item, index) => (
+                      <li key={index}>
+                        <strong>Sparepart {index + 1}:</strong>
+                        <ul>
+                          {Object.entries(item).map(([key, value]) => (
+                            <li key={key}>
+                              {key.replace(/_/g, " ")}:{" "}
+                              {typeof value === "object" && value !== null
+                                ? JSON.stringify(value) // Render objek sebagai string
+                                : value}
+                            </li>
+                          ))}
+                        </ul>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>Tidak Ada Sparepart.</p>
+                )}
               </div>
             </div>
             <div className="float-end my-4 mx-1">

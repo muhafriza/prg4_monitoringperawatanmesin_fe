@@ -6,7 +6,7 @@ import Label from "../../part/Label";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
-export default function PerawatanPreventifTeknisiDetail({
+export default function DetailRiwayatPreventif({
   onChangePage,
   withID,
 }) {
@@ -161,7 +161,7 @@ export default function PerawatanPreventifTeknisiDetail({
               <Label
                 forLabel="Tanggal_Penjadwalan"
                 title="Tanggal Penjadwalan"
-                data={formData.Tanggal_Penjadwalan}
+                data={formatDate(formData.Tanggal_Penjadwalan, "D MMMM YYYY")}
               />
             </div>
             <div className="col-lg-3">
@@ -175,7 +175,7 @@ export default function PerawatanPreventifTeknisiDetail({
               <Label
                 forLabel="Tanggal_Aktual"
                 title="Tanggal Aktual"
-                data={formData.Tanggal_Aktual}
+                data={formatDate(formData.Tanggal_Aktual, "D MMMM YYYY")}
               />
             </div>
             <div className="col-lg-3">
@@ -189,14 +189,14 @@ export default function PerawatanPreventifTeknisiDetail({
               <Label
                 forLabel="Created_Date"
                 title="Tanggal Dibuat"
-                data={formData.Created_Date}
+                data={formatDate(formData.Created_Date, "D MMMM YYYY")}
               />
             </div>
             <div className="col-lg-4">
               <Label
                 forLabel="Tanggal_Selesai"
                 title="Tanggal Selesai"
-                data={formData.Tanggal_Selesai}
+                data={formatDate(formData.Tanggal_Selesai, "D MMMM YYYY")}
               />
             </div>
             <div className="col-lg-3">

@@ -18,10 +18,10 @@ const inisialisasiData = [
     "Nama Mesin": null,
     "Tanggal Perawatan": null,
     Tindakan: null,
-    "Dibuat Oleh": null,
+    "Dikerjakan Oleh Oleh": null,
     Status: null,
     Aksi: null,
-    Count: 0, 
+    Count: 0,
   },
 ];
 
@@ -30,15 +30,7 @@ const dataFilterSort = [
   { Value: "[pre_tanggal_penjadwalan] desc", Text: "Tanggal Penjadawalan [↓]" },
 ];
 
-const dataFilterStatus = [
-  { Value: "Menunggu Perbaikan", Text: "Menunggu Perbaikan" },
-  { Value: "Dalam Pengerjaan", Text: "Dalam Pengerjaan" },
-  { Value: "Tertunda", Text: "Tertunda" },
-  { Value: "Selesai", Text: "Selesai" },
-  { Value: "Batal", Text: "Batal" },
-];
-
-export default function JadwalPerawatan({ onChangePage }) {
+export default function RiwayatPreventif({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
@@ -46,7 +38,7 @@ export default function JadwalPerawatan({ onChangePage }) {
     page: 1,
     query: "",
     sort: "[pre_tanggal_penjadwalan] asc",
-    status: "Menunggu Perbaikan",
+    status: "",
     itemPerPage: 10,
   });
 
@@ -63,6 +55,7 @@ export default function JadwalPerawatan({ onChangePage }) {
       };
     });
   }
+
   function formatDate(dateString, format) {
     const date = new Date(dateString);
 
@@ -110,59 +103,47 @@ export default function JadwalPerawatan({ onChangePage }) {
         page: 1,
         query: searchQuery.current.value,
         sort: searchFilterSort.current.value,
-        status: searchFilterStatus.current.value,
+        status: "",
       };
     });
-  }
-
-  function handleSetStatus(id) {
-    setIsLoading(true);
-    setIsError(false);
-    UseFetch(API_LINK + "MasterSparepart/SetStatusSparepart", {
-      idSparepart: id,
-    })
-      .then((data) => {
-        if (data === "ERROR" || data.length === 0) setIsError(true);
-        else {
-          SweetAlert(
-            "Sukses",
-            "Status data Sparepart berhasil diubah menjadi " + data[0].Status,
-            "success"
-          );
-          handleSetCurrentPage(currentFilter.page);
-        }
-      })
-      .then(() => setIsLoading(false));
-      
   }
 
   useEffect(() => {
     const fetchData = async () => {
       setIsError(false);
-    
+
       try {
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventif",
+          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventifSelesai",
           currentFilter
         );
-    
+
         if (data === "ERROR") {
           setIsError(true);
         } else if (data.length === 0) {
           setCurrentData(inisialisasiData);
         } else {
-        console.log(data);
+          console.log(data);
           const formattedData = data.map((value) => {
-            const { ID_Perawatan, Tanggal_Perawatan,Status_Pemeliharaan,Dibuat, TindakanPerbaikan, Nama_Mesin, ...rest } = value; // Menghapus tanggal_masuk
+            const {
+              ID_Perawatan,
+              Tanggal_selesai,
+              Status_Pemeliharaan,
+              Dikerjakan_Oleh,
+              TindakanPerbaikan,
+              Nama_Mesin,
+              ...rest
+            } = value; // Menghapus tanggal_masuk
             return {
               ...rest,
               "ID Perawatan": ID_Perawatan,
               "Nama Mesin": Nama_Mesin,
-              "Tindakan Perbaikan": TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
-              "Dibuat Oleh": Dibuat == null ? "-" : Dibuat,
-              "Jadwal Perawatan": formatDate(Tanggal_Perawatan, "D MMMM YYYY"),
+              "Tindakan Perbaikan":
+                TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
+              "Dikerjakan Oleh": Dikerjakan_Oleh == null ? "-" : Dikerjakan_Oleh,
+              "Tanggal Selesai": formatDate(Tanggal_selesai, "D MMMM YYYY"),
               Status: Status_Pemeliharaan,
-              Aksi: ["Detail"],
+              Aksi: ["Detail", "Print"],
               Alignment: [
                 "center",
                 "center",
@@ -171,20 +152,20 @@ export default function JadwalPerawatan({ onChangePage }) {
                 "left",
                 "center",
                 "center",
-                "center"
+                "center",
               ],
             };
           });
           setCurrentData(formattedData);
         }
-      } catch (error){
+      } catch (error) {
         setIsError(true);
-        console.log("Format Data Error: "+error);
+        console.log("Format Data Error: " + error);
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
   }, [currentFilter]);
 
@@ -201,12 +182,6 @@ export default function JadwalPerawatan({ onChangePage }) {
         )}
         <div className="flex-fill">
           <div className="input-group">
-            <Button
-              iconName="add"
-              classType="success"
-              label="Buat Jadwal Perawatan Rutin"
-              onClick={() => onChangePage("add")}
-            />
             <Input
               ref={searchQuery}
               forInput="pencarianSparepart"
@@ -225,27 +200,24 @@ export default function JadwalPerawatan({ onChangePage }) {
                 label="Urut Berdasarkan"
                 type="none"
                 arrData={dataFilterSort}
-                defaultValue="[spa_nama_sparepart] asc"
-              />
-              <DropDown
-                ref={searchFilterStatus}
-                forInput="ddStatus"
-                label="Status"
-                type="none"
-                arrData={dataFilterStatus}
-                defaultValue="Aktif"
+                defaultValue="[pre_tanggal_penjadwalan] asc"
               />
             </Filter>
+            <Button
+              iconName="file-export"
+              classType="success px-4 ms-1"
+              title="Cetak Laporan Perawatan Preventif"
+              onClick={handleSearch}
+            />
           </div>
         </div>
         <div className="mt-3">
           {isLoading ? (
-            <Loading /> 
+            <Loading />
           ) : (
             <div className="d-flex flex-column">
               <Table
                 data={currentData}
-                onToggle={handleSetStatus}
                 onDetail={onChangePage}
                 onEdit={onChangePage}
               />
