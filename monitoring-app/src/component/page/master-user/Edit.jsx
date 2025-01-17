@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { object, string } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
 import SweetAlert from "../../util/SweetAlert";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
-import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
@@ -13,45 +12,44 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
   const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
-
-  const formDataRef = useRef({
-    idRole: "",
-    namaKaryawan: "",
-    NIK: "",
-    tanggalLahir: "",
-    noTelp: "",
-    alamat: "",
+  const [formData, setFormData] = useState({
+    username: "",
+    Role_Deskripsi: "", // Placeholder untuk Role_Deskripsi yang diambil dari API
+    role_baru: "", // Ini untuk dropdown
   });
 
   const userSchema = object({
-    idRole: string().optional(),
-    namaKaryawan: string()
-      .max(50, "maksimum 50 karakter")
-      .required("Nama karyawan harus diisi"),
-    NIK: string().required("NIK harus diisi"),
-    tanggalLahir: string().required("Tanggal Lahir harus diisi"),
-    noTelp: string().required("No Telepon harus diisi"),
+    username: string().optional(),
+    Role_Deskripsi: string(),
+    role_baru: string(),
   });
 
   useEffect(() => {
     const fetchData = async () => {
       setIsError({ error: false, message: "" });
+      const key = withID;
+
+      const username = key.split("_")[0];
+      const role = key.split("_")[1];
 
       try {
-        const data = await UseFetch(
-          API_LINK + `MasterUser/DetailUser`,
-          { id: withID }
-        );
-        console.log("ini data: " + data);
+        const data = await UseFetch(API_LINK + `MasterUser/DetailEditUser`, {
+          id: username,
+          rol: role,
+        });
+
         if (data === "ERROR" || data.length === 0) {
           throw new Error("Gagal mengambil data Karyawan.");
         }
 
         const karyawanData = data[0];
-        delete sparepartData.status;
-        delete sparepartData.Status;
 
-        formDataRef.current = { ...formDataRef.current, ...karyawanData };
+        setFormData({
+          username:username,
+          Role_Deskripsi: karyawanData.Role_Deskripsi, 
+          role_baru: karyawanData.Role_Deskripsi,
+        });
+        
       } catch (error) {
         window.scrollTo(0, 0);
         setIsError({ error: true, message: error.message });
@@ -61,39 +59,17 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
     };
 
     fetchData();
-  }, []);
-  function formatDate(dateString, format) {
-    const date = new Date(dateString);
-
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-
-    switch (format) {
-      case "DD/MM/YYYY":
-        return `${day}/${month}/${year}`;
-      case "YYYY-MM-DD":
-        return `${year}-${month}-${day}`;
-      default:
-        return dateString;
-    }
-  }
+  }, [withID]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
-    // Validasi hanya angka untuk field "NIK"
-    if (name === "stok") {
-      if (!/^\d*$/.test(value)) {
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          [name]: "Hanya angka yang diperbolehkan",
-        }));
-        return;
-      }
-    }
     const validationError = validateInput(name, value, userSchema);
-    formDataRef.current[name] = value;
+
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+
     setErrors((prevErrors) => ({
       ...prevErrors,
       [validationError.name]: validationError.error,
@@ -104,25 +80,25 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
     e.preventDefault();
 
     const validationErrors = await validateAllInputs(
-      formDataRef.current,
+      formData,
       userSchema,
       setErrors
     );
-    console.log("Data yang dikirimkan: ", validationErrors);
 
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
       setIsError((prevError) => ({ ...prevError, error: false }));
       setErrors({});
 
+      console.log(formData);
       try {
         const data = await UseFetch(
-          API_LINK + "MasterKaryawan/EditKaryawan",
-          formDataRef.current
+          API_LINK + "MasterUser/EditUser",
+          formData
         );
 
-        if (!data || data == "ERROR") {
-          console.log("ini data edit form nya: "+formDataRef.current);
+        if (!data) {
+          console.log(data);
           throw new Error("Terjadi kesalahan: Gagal menyimpan data karyawan.");
         } else {
           SweetAlert("Sukses", "Data karyawan berhasil disimpan", "success");
@@ -157,18 +133,18 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
           </div>
           <div className="card-body p-4">
             <div className="row">
-            <div className="form-group">
-                <label htmlFor="role">Role</label>
+              <div className="form-group">
+                <label htmlFor="role_baru">Role</label>
                 <select
-                  id="role"
-                  name="rol_id"
+                  id="role_baru"
+                  name="role_baru"
                   className="form-control"
-                  value={formDataRef.current.rol_id}
+                  value={formData.role_baru || ""} // Pastikan dropdown mengikat nilai role_baru
                   onChange={handleInputChange}
                 >
-                  <option value="ROL60">Administrator UPT</option>
-                  <option value="ROL61">PIC UPT</option>
-                  <option value="ROL62">TEKNISI</option>
+                  <option value="ADMINISTRATOR UPT">Administrator UPT</option>
+                  <option value="PIC">PIC UPT</option>
+                  <option value="TEKNISI">TEKNISI</option>
                 </select>
               </div>
             </div>

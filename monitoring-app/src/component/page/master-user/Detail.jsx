@@ -28,10 +28,13 @@ export default function MasterUserDetail({ onChangePage, withID }) {
   useEffect(() => {
     const fetchData = async () => {
       setIsError((prevError) => ({ ...prevError, error: false }));
+      const key = withID;
+
+      const username = key.split("_")[0];
 
       try {
         const data = await UseFetch(API_LINK + "MasterUser/DetailUser", {
-          id: withID,
+          id: username,
         });
     console.log(formData);
 

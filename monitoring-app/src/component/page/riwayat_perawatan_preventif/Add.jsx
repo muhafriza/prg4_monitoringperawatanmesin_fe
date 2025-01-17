@@ -8,7 +8,6 @@ import Button from "../../part/Button";
 import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
-import swal from "sweetalert";
 
 export default function Add({ onChangePage }) {
   const [errors, setErrors] = useState({});
@@ -102,44 +101,6 @@ export default function Add({ onChangePage }) {
     fetchDataMesin();
   }, [currentFilter]);
 
-  function formatDate(dateString, format) {
-    const date = new Date(dateString);
-
-    const day = date.getDate();
-    const month = date.getMonth(); // Get month as number (0-based)
-    const year = date.getFullYear();
-
-    const months = [
-      "Januari",
-      "Februari",
-      "Maret",
-      "April",
-      "Mei",
-      "Juni",
-      "Juli",
-      "Agustus",
-      "September",
-      "Oktober",
-      "November",
-      "Desember",
-    ];
-
-    switch (format) {
-      case "DD/MM/YYYY":
-        return `${String(day).padStart(2, "0")}/${String(month + 1).padStart(
-          2,
-          "0"
-        )}/${year}`;
-      case "YYYY-MM-DD":
-        return `${year}-${String(month + 1).padStart(2, "0")}-${String(
-          day
-        ).padStart(2, "0")}`;
-      case "D MMMM YYYY":
-        return `${day} ${months[month]} ${year}`;
-      default:
-        return dateString;
-    }
-  }
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     const validationError = validateInput(name, value, userSchema);
@@ -214,7 +175,6 @@ export default function Add({ onChangePage }) {
       userSchema,
       setErrors
     );
-
     console.log(formDataRef.current);
     const sparepartString = spareparts.map((item) => item.sparepart).join(",");
     const qtyString = spareparts.map((item) => item.qty).join(",");
@@ -224,12 +184,15 @@ export default function Add({ onChangePage }) {
     formDataRef.current.sparepart = sparepartString;
     formDataRef.current.qty = qtyString;
 
+    const dateList = generatedDates;
+    const dateListText = dateList.map((date) => `<li>${date}</li>`).join(""); // Membuat list HTML
+
     // Menampilkan SweetAlert konfirmasi dengan daftar tanggal
     const confirmation = await SweetAlert(
       "Warning", // title
-      "Yakin ingin membuat jadwal ini ?", // text, menampilkan list tanggal dengan newline
-      "info", // icon
-      "Ya, buat!" // confirmText
+      "Yakin ingin menyimpan jadwal ?", // text, menampilkan list tanggal
+      "warning", // icon
+      "Ya" // confirmText
     );
 
     // Jika pengguna memilih "Ya"
@@ -251,24 +214,15 @@ export default function Add({ onChangePage }) {
 
           console.log("Respons dari API: ", data);
           if (data[0].Message != "Jadwal berhasil disimpan") {
-            // swal.close();
             SweetAlert("Gagal", data[0].Message, "info", "Ok");
           } else {
-            // swal.close();
             SweetAlert("Sukses", data[0].Message, "success");
             onChangePage("index");
           }
         } catch (error) {
-          // swal.close();
-          SweetAlert(
-            "Terjadi Kesalahan!",
-            "Error saat menyimpan data.",
-            "Error",
-            "Ok"
-          );
+          SweetAlert("Terjadi Kesalahan!", "Error saat menyimpan data.", "Error", "Ok");
           setIsError({ error: true, message: error.message });
         } finally {
-          // swal.close();
           setIsLoading(false);
         }
       } else {
@@ -355,6 +309,7 @@ export default function Add({ onChangePage }) {
                   onChange={handleInputChange}
                   errorMessage={errors.durasi}
                 />
+                
               </div>
               {/* Spareparts Input */}
               {spareparts.map((sparepart, index) => (
@@ -416,16 +371,16 @@ export default function Add({ onChangePage }) {
               onClick={addSparepartField}
             />
             <Button
-              classType="info me-2 px-4 py-2"
-              label="Generate Schedule"
-              onClick={() => generateSchedule()}
-            />
+                  classType="info me-2 px-4 py-2"
+                  label="Generate Schedule"
+                  onClick={() => generateSchedule()}
+                />
             {generatedDates.length > 0 && (
               <div className="mt-4">
                 <h5>Jadwal Perawatan:</h5>
                 <ul>
                   {generatedDates.map((date, index) => (
-                    <li key={index}>Perawatan Hari ke-{index+1}: {formatDate(date, "D MMMM YYYY")}</li>
+                    <li key={index}>{date}</li>
                   ))}
                 </ul>
               </div>
