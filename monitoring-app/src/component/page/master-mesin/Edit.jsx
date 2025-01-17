@@ -90,7 +90,7 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
       setIsError({ error: false, message: "" });
 
       try {
-        const data = await UseFetch(`${API_LINK}Mesin/DetailMesin`, {
+        const data = await UseFetch(`${API_LINK}MasterMesin/DetailMesin`, {
           id: withID,
         });
 
@@ -200,7 +200,7 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
         await Promise.all(uploadPromises);
 
         const data = await UseFetch(
-          API_LINK + 'Mesin/EditMesin',
+          API_LINK + 'MasterMesin/EditMesin',
           formDataRef.current
         );
 

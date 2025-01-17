@@ -38,7 +38,7 @@ const dataFilterStatus = [
   { Value: "Batal", Text: "Batal" },
 ];
 
-export default function PerawatanPreventifTeknisiIndex({ onChangePage }) {
+export default function PerawatanKorektif({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);

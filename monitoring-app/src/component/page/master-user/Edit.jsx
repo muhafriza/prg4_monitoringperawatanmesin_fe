@@ -117,7 +117,7 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "MasterKaryawan/EditKaryawan",
+          API_LINK + "MasterKaryawan/EditUser",  //karya
           formDataRef.current
         );
 

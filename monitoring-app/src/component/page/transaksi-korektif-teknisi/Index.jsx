@@ -15,32 +15,40 @@ const inisialisasiData = [
   {
     Key: null,
     No: null,
-    Status: null,
+    kor_id_perawatan_korektif: null,
+    mes_id_mesin: null,
+    kor_tanggal_penjadwalan: null,
+    kor_tanggal_aktual: null,
+    kor_tanggal_pengajuan: null,
+    kor_deskripsi_kerusakan: null,
+    kor_tindakan_perbaikan: null,
+    kor_sparepart_diganti: null,
+    kor_status_pemeliharaan: 0,
     Count: 0,
   },
 ];
 
 const dataFilterSort = [
-  { Value: "[mes_nama_mesin] asc", Text: "Nama Mesin [↑]" },
-  { Value: "[mes_nama_mesin] desc", Text: "Nama Mesin [↓]" },
-  { Value: "[mes_daya_mesin] asc", Text: "Daya Mesin [↑]" },
-  { Value: "[mes_daya_mesin] desc", Text: "Daya Mesin [↓]" },
+  { Value: "[kor_tanggal_penjadwalan] asc", Text: "Tanggal Penjadwalan [↑]" },
+  { Value: "[kor_tanggal_penjadwalan] desc", Text: "Tanggal Penjadwalan [↓]" },
+  { Value: "[kor_tanggal_aktual] asc", Text: "Tanggal Aktual [↑]" },
+  { Value: "[kor_tanggal_aktual] desc", Text: "Tanggal Aktual [↓]" },
 ];
 
 const dataFilterStatus = [
-  { Value: "Aktif", Text: "Aktif" },
-  { Value: "Tidak Aktif", Text: "Tidak Aktif" },
+  { Value: "0", Text: "Belum Selesai" },
+  { Value: "1", Text: "Selesai" },
 ];
 
-export default function MasterMesinIndex({ onChangePage }) {
+export default function KorektifTeknisi({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[mes_nama_mesin] asc",
-    status: "Aktif",
+    sort: "[kor_tanggal_penjadwalan] asc",
+    status: "0", // Default ke status "Belum Selesai"
     itemPerPage: 10,
   });
 
@@ -48,7 +56,6 @@ export default function MasterMesinIndex({ onChangePage }) {
   const searchFilterSort = useRef();
   const searchFilterStatus = useRef();
 
-  // Handle page changes
   function handleSetCurrentPage(newCurrentPage) {
     setIsLoading(true);
     setCurrentFilter((prevFilter) => ({
@@ -57,7 +64,6 @@ export default function MasterMesinIndex({ onChangePage }) {
     }));
   }
 
-  // Handle search
   function handleSearch() {
     setIsLoading(true);
     setCurrentFilter((prevFilter) => ({
@@ -69,19 +75,19 @@ export default function MasterMesinIndex({ onChangePage }) {
     }));
   }
 
-  // Handle changing the machine's status
   function handleSetStatus(id) {
     setIsLoading(true);
     setIsError(false);
-    UseFetch(API_LINK + "MasterMesin/SetStatusMesin", {
-      mes_id_mesin: id,
+    UseFetch(API_LINK + "Korektif/GetDetailKorektif", {
+      kor_id_perawatan_korektif: id,
     })
       .then((data) => {
         if (data === "ERROR" || data.length === 0) setIsError(true);
         else {
           SweetAlert(
             "Sukses",
-            "Status data Mesin berhasil diubah menjadi " + data[0].Status,
+            "Status berhasil diubah menjadi " +
+              (data[0].kor_status_pemeliharaan === 1 ? "Selesai" : "Belum Selesai"),
             "success"
           );
           handleSetCurrentPage(currentFilter.page);
@@ -93,17 +99,11 @@ export default function MasterMesinIndex({ onChangePage }) {
   useEffect(() => {
     const fetchData = async () => {
       setIsError(false);
-
       try {
-        // Fetch data with the dynamic filters and pagination
-        const data = await UseFetch(API_LINK + "MasterMesin/GetDataMesin", {
-          page: currentFilter.page,
-          query: currentFilter.query,
-          sort: currentFilter.sort,
-          status: currentFilter.status,
-          itemPerPage: currentFilter.itemPerPage,
-        });
-        
+        const data = await UseFetch(
+          API_LINK + "Korektif/GetDataPerawatanKorektif",
+          currentFilter
+        );
         if (data === "ERROR") {
           setIsError(true);
         } else if (data.length === 0) {
@@ -111,15 +111,17 @@ export default function MasterMesinIndex({ onChangePage }) {
         } else {
           const formattedData = data.map((value) => ({
             ...value,
-            Aksi: ["Toggle", "Detail", "Edit"],
+            Aksi: [ "Detail", "Edit"],
             Alignment: [
               "center",
               "center",
-              "left",
+              "center",
               "center",
               "left",
-              "right",
               "left",
+              "left",
+              "left",
+              "center",
               "center",
               "center",
             ],
@@ -135,32 +137,27 @@ export default function MasterMesinIndex({ onChangePage }) {
     };
 
     fetchData();
-
-  }, [currentFilter]); // Dependency to trigger data fetch when filters change
+  }, [currentFilter]);
 
   return (
     <>
+    
       <div className="d-flex flex-column">
         {isError && (
           <div className="flex-fill">
             <Alert
               type="warning"
-              message="Terjadi kesalahan: Gagal mengambil data Mesin."
+              message="Terjadi kesalahan: Gagal mengambil data Perawatan Korektif."
             />
           </div>
         )}
         <div className="flex-fill">
           <div className="input-group">
-            <Button
-              iconName="add"
-              classType="success"
-              label="Tambah"
-              onClick={() => onChangePage("add")}
-            />
+           
             <Input
               ref={searchQuery}
-              forInput="pencarianMesin"
-              placeholder="Cari Nama Mesin"
+              forInput="pencarianPerawatan"
+              placeholder="Cari Deskripsi Kerusakan"
             />
             <Button
               iconName="search"
@@ -175,7 +172,7 @@ export default function MasterMesinIndex({ onChangePage }) {
                 label="Urut Berdasarkan"
                 type="none"
                 arrData={dataFilterSort}
-                defaultValue="[mes_nama_mesin] asc"
+                defaultValue="[kor_tanggal_penjadwalan] asc"
               />
               <DropDown
                 ref={searchFilterStatus}
@@ -183,8 +180,9 @@ export default function MasterMesinIndex({ onChangePage }) {
                 label="Status"
                 type="none"
                 arrData={dataFilterStatus}
-                defaultValue="Aktif"
+                defaultValue="0"
               />
+              
             </Filter>
           </div>
         </div>
@@ -195,7 +193,6 @@ export default function MasterMesinIndex({ onChangePage }) {
             <div className="d-flex flex-column">
               <Table
                 data={currentData}
-                onToggle={handleSetStatus}
                 onDetail={onChangePage}
                 onEdit={onChangePage}
               />

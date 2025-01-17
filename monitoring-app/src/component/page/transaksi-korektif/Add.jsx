@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { object, string, date, number } from "yup";
+import { object, string, date } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
 import SweetAlert from "../../util/SweetAlert";
@@ -17,57 +17,57 @@ export default function KorektifAdd({ onChangePage }) {
   const [selectedMesin, setSelectedMesin] = useState("");
 
   const formDataRef = useRef({
-    kor_id_perawatan_korektif: "", // Auto-increment, no need to set
-    kor_mes_id_mesin: "", // Will be updated when user selects an option
-    kor_tanggal_penjadwalan: "",
-    kor_tanggal_aktual: "",
-    kor_tanggal_pengajuan: "",
+   
+    kor_mes_id_mesin: "",   
     kor_deskripsi_kerusakan: "",
-    kor_tindakan_perbaikan: "",
-    kor_sparepart_diganti: "",
-    kor_status_pemeliharaan: "",
-    kor_created_by: "", // Add your user info or authentication data here
-    kor_modi_by: "", // Add your user info or authentication data here
   });
+
+  const [currentFilter, setCurrentFilter] = useState({
+    name: "",
+    status: "Aktif",
+  });
+
+    // useEffect(() => {
+    //   // Automatically update the formDataRef if necessary
+    //   formDataRef.current.kor_tanggal_pengajuan = new Date().toISOString(); // Updates to current time when component mounts
+    // }, []); 
 
   const userSchema = object({
     kor_mes_id_mesin: string().required("ID Mesin is required"),
-    kor_tanggal_penjadwalan: date().required("Tanggal Penjadwalan is required"),
-    kor_tanggal_aktual: date().required("Tanggal Aktual is required"),
-    kor_tanggal_pengajuan: date().required("Tanggal Pengajuan is required"),
     kor_deskripsi_kerusakan: string().max(255, "Deskripsi Kerusakan too long"),
-    kor_tindakan_perbaikan: string().max(255, "Tindakan Perbaikan too long"),
-    kor_sparepart_diganti: string().max(255, "Sparepart Diganti too long"),
-    kor_status_pemeliharaan: number().required("Status Pemeliharaan is required").min(0, "Invalid status"),
+   
   });
 
-  // Fetch the mesin data
   useEffect(() => {
-    const fetchMesinData = async () => {
-      try {
-        // Perbaiki penggunaan UseFetch untuk mengambil data mesin
-        const mesinData = await UseFetch(API_LINK + "Mesin/GetDataMesin", {
-          method: "GET", // Pastikan metode GET digunakan jika hanya mengambil data
-        });
+    const fetchDataMesin = async () => {
+      setIsError((prevError) => ({ ...prevError, error: false }));
 
-        if (mesinData && Array.isArray(mesinData)) {
-          setMesinOptions(mesinData); // Assuming mesinData is an array
+      try {
+        const data = await UseFetch(API_LINK + "Korektif/getNamaMesin", currentFilter);
+        // console.log(data);
+        if (data === "ERROR" || data.length === 0) {
+          throw new Error("Terjadi kesalahan: Gagal mengambil data Mesin.");
         } else {
-          throw new Error("Data mesin tidak valid.");
+          setMesinOptions(data); // Set data yang diterima ke dalam mesinOptions
         }
       } catch (error) {
-        setIsError({ error: true, message: "Failed to load mesin data: " + error.message });
+        window.scrollTo(0, 0);
+        setIsError((prevError) => ({
+          ...prevError,
+          error: true,
+          message: error.message,
+        }));
+      } finally {
+        setIsLoading(false);
       }
     };
-
-    fetchMesinData();
-  }, []); // empty dependency array, run once on component mount
+    fetchDataMesin();
+  }, []); // Empty dependency array to ensure fetch is called once on mount
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    formDataRef.current[name] = value; // Update formDataRef with the new value
+    formDataRef.current[name] = value;
 
-    // Validate the input field
     const validationError = validateInput(name, value, userSchema);
     setErrors((prevErrors) => ({
       ...prevErrors,
@@ -77,27 +77,27 @@ export default function KorektifAdd({ onChangePage }) {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-
+    console.log(1)
     const validationErrors = await validateAllInputs(
       formDataRef.current,
       userSchema,
       setErrors
     );
-
-    // Check if there are no validation errors
+    
+    console.log(2)
     if (Object.values(validationErrors).every((error) => !error)) {
+      console.log(3)
       setIsLoading(true);
       setIsError({ error: false, message: "" });
       setErrors({});
-
+      
       try {
+        // formDataRef.current.kor_status_pemeliharaan =
+        //   formDataRef.current.kor_status_pemeliharaan || 0;
+
         const data = await UseFetch(
-          API_LINK + "Korektif/CreateKorektif",
-          {
-            method: "POST",
-            body: JSON.stringify(formDataRef.current),
-            headers: { "Content-Type": "application/json" },
-          }
+          API_LINK + "Korektif/Createkorektif",
+          formDataRef.current
         );
 
         if (!data) {
@@ -106,13 +106,15 @@ export default function KorektifAdd({ onChangePage }) {
           SweetAlert("Sukses", "Data perawatan korektif berhasil disimpan", "success");
           onChangePage("index");
         }
+        
       } catch (error) {
         setIsError({ error: true, message: error.message });
+        console.error(error); 
       } finally {
         setIsLoading(false);
       }
     } else {
-      window.scrollTo(0, 0); // Scroll to the top if validation fails
+      window.scrollTo(0, 0);
     }
   };
 
@@ -144,49 +146,18 @@ export default function KorektifAdd({ onChangePage }) {
                     setSelectedMesin(e.target.value);
                     formDataRef.current.kor_mes_id_mesin = e.target.value;
                   }}
+                  name="kor_mes_id_mesin"
                 >
                   <option value="">Pilih ID Mesin</option>
                   {mesinOptions.map((mesin) => (
-                    <option key={mesin.id} value={mesin.id}>
-                      {mesin.nama_mesin} ({mesin.id})
+                    <option key={mesin.ID_Mesin} value={mesin.ID_Mesin}>
+                      {mesin.Nama_Mesin} ({mesin.ID_Mesin})
                     </option>
                   ))}
                 </select>
                 {errors.kor_mes_id_mesin && <div className="text-danger">{errors.kor_mes_id_mesin}</div>}
               </div>
-              <div className="col-lg-4">
-                <Input
-                  type="date"
-                  forInput="kor_tanggal_penjadwalan"
-                  label="Tanggal Penjadwalan"
-                  isRequired
-                  value={formDataRef.current.kor_tanggal_penjadwalan}
-                  onChange={handleInputChange}
-                  errorMessage={errors.kor_tanggal_penjadwalan}
-                />
-              </div>
-              <div className="col-lg-4">
-                <Input
-                  type="date"
-                  forInput="kor_tanggal_aktual"
-                  label="Tanggal Aktual"
-                  isRequired
-                  value={formDataRef.current.kor_tanggal_aktual}
-                  onChange={handleInputChange}
-                  errorMessage={errors.kor_tanggal_aktual}
-                />
-              </div>
-              <div className="col-lg-4">
-                <Input
-                  type="date"
-                  forInput="kor_tanggal_pengajuan"
-                  label="Tanggal Pengajuan"
-                  isRequired
-                  value={formDataRef.current.kor_tanggal_pengajuan}
-                  onChange={handleInputChange}
-                  errorMessage={errors.kor_tanggal_pengajuan}
-                />
-              </div>
+              
               <div className="col-lg-4">
                 <Input
                   type="text"
@@ -195,37 +166,7 @@ export default function KorektifAdd({ onChangePage }) {
                   value={formDataRef.current.kor_deskripsi_kerusakan}
                   onChange={handleInputChange}
                   errorMessage={errors.kor_deskripsi_kerusakan}
-                />
-              </div>
-              <div className="col-lg-4">
-                <Input
-                  type="text"
-                  forInput="kor_tindakan_perbaikan"
-                  label="Tindakan Perbaikan"
-                  value={formDataRef.current.kor_tindakan_perbaikan}
-                  onChange={handleInputChange}
-                  errorMessage={errors.kor_tindakan_perbaikan}
-                />
-              </div>
-              <div className="col-lg-4">
-                <Input
-                  type="text"
-                  forInput="kor_sparepart_diganti"
-                  label="Sparepart Diganti"
-                  value={formDataRef.current.kor_sparepart_diganti}
-                  onChange={handleInputChange}
-                  errorMessage={errors.kor_sparepart_diganti}
-                />
-              </div>
-              <div className="col-lg-4">
-                <Input
-                  type="number"
-                  forInput="kor_status_pemeliharaan"
-                  label="Status Pemeliharaan"
-                  isRequired
-                  value={formDataRef.current.kor_status_pemeliharaan}
-                  onChange={handleInputChange}
-                  errorMessage={errors.kor_status_pemeliharaan}
+                  name="kor_deskripsi_kerusakan"
                 />
               </div>
             </div>

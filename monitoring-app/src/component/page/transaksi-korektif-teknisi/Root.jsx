@@ -1,8 +1,7 @@
 import { useState } from "react";
-import PerawatanKorektif from "./Index";
-import KorektifAdd from "./Add";
-import KorektifDetail from "./Detail";
-
+import KorektifTeknisiIndex from "./Index";
+import KorektifTekEdit from "./Edit";
+import KorektifTeknisiDetail from "./Detail";
 
 export default function MasterProses() {
   const [pageMode, setPageMode] = useState("index");
@@ -11,12 +10,14 @@ export default function MasterProses() {
   function getPageMode() {
     switch (pageMode) {
       case "index":
-        return <PerawatanKorektif onChangePage={handleSetPageMode} />;
-      case "add":
-        return <KorektifAdd onChangePage={handleSetPageMode} />;
+        return <KorektifTeknisiIndex onChangePage={handleSetPageMode} />;
+      case "edit":
+        return (
+          <KorektifTekEdit onChangePage={handleSetPageMode} withID={dataID} />
+        );
         case "detail":
           return (
-            <KorektifDetail
+            <KorektifTeknisiDetail
               onChangePage={handleSetPageMode}
               withID={dataID}
             />
