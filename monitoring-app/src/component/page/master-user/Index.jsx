@@ -21,8 +21,8 @@ const inisialisasiData = [
 ];
 
 const dataFilterSort = [
-  { Value: "[kry_id] asc", Text: "NPK [↑]" },
-  { Value: "[kry_id] desc", Text: "NPK [↓]" },
+  { Value: "[kry_id] asc", Text: "ID Karyawan [↑]" },
+  { Value: "[kry_id] desc", Text: "ID Karyawan [↓]" },
 ];
 
 const dataFilterStatus = [

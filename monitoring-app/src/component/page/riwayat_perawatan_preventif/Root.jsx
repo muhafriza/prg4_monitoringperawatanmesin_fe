@@ -1,26 +1,28 @@
 import { useState } from "react";
-import JadwalPerawatan from "./Index";
-import JadwalEdit from "./Edit";
-import DetailJadwal from "./Detail";
-import Add from "./Add";
+import RiwayatPreventif from "./Index";
+import DetailRiwayatPreventif from "./Detail";
 
-export default function MasterProses() {
+import MasterSparepartAdd from "./Add";
+import MasterSparepartEdit from "./Edit";
+import MasterSparepartDetail from "./Detail";
+
+export default function RiwayatPerawatanPreventif() {
   const [pageMode, setPageMode] = useState("index");
   const [dataID, setDataID] = useState();
 
   function getPageMode() {
     switch (pageMode) {
       case "index":
-        return <JadwalPerawatan onChangePage={handleSetPageMode} />;
+        return <RiwayatPreventif onChangePage={handleSetPageMode} />;
       case "add":
-        return <Add onChangePage={handleSetPageMode} />;
+        return <MasterSparepartAdd onChangePage={handleSetPageMode} />;
       case "edit":
         return (
-          <JadwalEdit onChangePage={handleSetPageMode} withID={dataID} />
+          <MasterSparepartEdit onChangePage={handleSetPageMode} withID={dataID} />
         );
         case "detail":
           return (
-            <DetailJadwal
+            <DetailRiwayatPreventif
               onChangePage={handleSetPageMode}
               withID={dataID}
             />

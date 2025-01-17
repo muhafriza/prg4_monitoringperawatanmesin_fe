@@ -4,6 +4,15 @@ import UseFetch from "../../util/UseFetch";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
+import { Chart as ChartJS, defaults } from "chart.js/auto";
+import { Bar, Doughnut, Pie } from "react-chartjs-2";
+
+
+defaults.plugins.title.display = true;
+defaults.plugins.title.align = "start";
+defaults.plugins.title.font.size = 25;
+defaults.plugins.title.color = "black"
+
 export default function BerandaIndex() {
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
@@ -22,6 +31,7 @@ export default function BerandaIndex() {
     countDalamProsesQC: 0,
     countDalamProsesDelivery: 0,
   });
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -103,7 +113,7 @@ export default function BerandaIndex() {
             </div>
           </div>
         </div>
-        <div className="col-lg-3">
+        <div className="col-lg-3 mb-3">
           <div className="card mt-3 border-0">
             <div className="card-body bg-dark-subtle bg-gradient rounded-2 text-white">
               <div className="lead fw-medium">Selesai (In Progress)</div>
@@ -111,24 +121,91 @@ export default function BerandaIndex() {
             </div>
           </div>
         </div>
-        <div className="col-lg-12">
-          <div className="pt-3">
-            <hr />
-          </div>
-        </div>
-        <div className="col-lg-3">
-          <div className="card mt-3 border-0">
-            <div className="card-body bg-primary bg-gradient rounded-2 text-white">
-              <div className="lead fw-medium">
-                Menunggu Analisa Engineering/PPIC
+        <div className="row">
+          <div className="col-lg-8">
+            <div className="card mt-3 border">
+              <div className="card-body bg-gradient rounded-2 text-white">
+                <div style={{ width: "100%", height: "300px" }}>
+                  <Bar
+                    // ref={(ref) => (barChartRef.current = ref?.chartInstance)}
+                    data={{
+                      labels: ["A", "B", "C"],
+                      datasets: [
+                        {
+                          label: "Revenue",
+                          data: [10, 20, 30],
+                          backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+                          borderColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+                          borderWidth: 1,
+                        },
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          display: true,
+                          position: "top",
+                        },
+                        title: {
+                          text: "Revenue Set"
+                        }
+                      },
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                        },
+                      },
+                    }}
+                  />
+                </div>
               </div>
-              <div className="h1">
-                {formDataRef.current.countMenungguAnalisa}
+            </div>
+          </div>
+
+          <div className="col-lg-4">
+            <div className="card mt-3 border ">
+              <div className="card-body bg-gradient rounded-2 text-white">
+                <div style={{ width: "100%", height: "300px" }}>
+                  <Pie
+                    // ref={(ref) =>
+                    //   (doughnutChartRef.current = ref?.chartInstance)
+                    // }
+                    data={{
+                      labels: ["Oil Tonna", "Coolant", "Tool Holder"],
+                      datasets: [
+                        {
+                          data: [524, 364, 75],
+                          backgroundColor: ["#36A2EB", "#FF6384", "#FFCE56"],
+                          borderColor: ["#36A2EB", "#FF6384", "#FFCE56"],
+                          borderWidth: 1,
+                        },
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          display: true,
+                          position: "top",
+                        },
+                        title: {
+                          text: "Sparepart Stok"
+                        }
+                      },
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div className="col-lg-3">
+
+        <div className="col-lg-12"></div>
+
+        {/* <div className="col-lg-3">
           <div className="card mt-3 border-0">
             <div className="card-body bg-primary bg-gradient rounded-2 text-white">
               <div className="lead fw-medium">Belum Dibuat RAK</div>
@@ -199,7 +276,7 @@ export default function BerandaIndex() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </>
   );
