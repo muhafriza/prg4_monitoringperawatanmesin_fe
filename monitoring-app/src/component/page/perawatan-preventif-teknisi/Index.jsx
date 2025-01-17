@@ -38,7 +38,7 @@ const dataFilterStatus = [
   { Value: "Batal", Text: "Batal" },
 ];
 
-export default function JadwalPerawatan({ onChangePage }) {
+export default function PerawatanPreventifTeknisiIndex({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
@@ -46,8 +46,8 @@ export default function JadwalPerawatan({ onChangePage }) {
     page: 1,
     query: "",
     sort: "[pre_tanggal_penjadwalan] asc",
-    status: "Menunggu Perbaikan",
-    itemPerPage: 10,
+    status: "",
+    itemPerPage: 5,
   });
 
   const searchQuery = useRef();
@@ -152,29 +152,21 @@ export default function JadwalPerawatan({ onChangePage }) {
           setCurrentData(inisialisasiData);
         } else {
         console.log(data);
-          const formattedData = data.map((value) => {
-            const { ID_Perawatan, Tanggal_Perawatan,Status_Pemeliharaan,Dibuat, TindakanPerbaikan, Nama_Mesin, ...rest } = value; // Menghapus tanggal_masuk
-            return {
-              ...rest,
-              "ID Perawatan": ID_Perawatan,
-              "Nama Mesin": Nama_Mesin,
-              "Tindakan Perbaikan": TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
-              "Dibuat Oleh": Dibuat == null ? "-" : Dibuat,
-              "Jadwal Perawatan": formatDate(Tanggal_Perawatan, "D MMMM YYYY"),
-              Status: Status_Pemeliharaan,
-              Aksi: ["Detail"],
-              Alignment: [
-                "center",
-                "center",
-                "left",
-                "left",
-                "left",
-                "center",
-                "center",
-                "center"
-              ],
-            };
-          });
+        const formattedData = data.map((value) => {
+          const { Tanggal_Perawatan, Status_Pemeliharaan, Dibuat, TindakanPerbaikan, Nama_Mesin, ...rest } = value;
+          const aksi = Status_Pemeliharaan === "Selesai" ? ["Detail", "Print"] : ["Detail", "Edit"];
+          
+          return {
+            ...rest,
+            "Nama Mesin": Nama_Mesin,
+            "Tindakan Perbaikan": TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
+            "Dibuat Oleh": Dibuat == null ? "-" : Dibuat,
+            "Jadwal Perawatan": formatDate(Tanggal_Perawatan, "D MMMM YYYY"),
+            Status: Status_Pemeliharaan,
+            Aksi: aksi,
+            Alignment: ["center", "left", "left", "left", "center", "center", "center"],
+          };
+        });        
           setCurrentData(formattedData);
         }
       } catch (error){
@@ -201,12 +193,6 @@ export default function JadwalPerawatan({ onChangePage }) {
         )}
         <div className="flex-fill">
           <div className="input-group">
-            <Button
-              iconName="add"
-              classType="success"
-              label="Buat Jadwal Perawatan Rutin"
-              onClick={() => onChangePage("add")}
-            />
             <Input
               ref={searchQuery}
               forInput="pencarianSparepart"

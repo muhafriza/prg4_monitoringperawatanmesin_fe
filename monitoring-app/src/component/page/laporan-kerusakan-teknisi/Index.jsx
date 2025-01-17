@@ -21,7 +21,7 @@ const inisialisasiData = [
     "Dibuat Oleh": null,
     Status: null,
     Aksi: null,
-    Count: 0, 
+    Count: 0,
   },
 ];
 
@@ -38,7 +38,7 @@ const dataFilterStatus = [
   { Value: "Batal", Text: "Batal" },
 ];
 
-export default function JadwalPerawatan({ onChangePage }) {
+export default function LaporanKerusakan({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
@@ -46,8 +46,8 @@ export default function JadwalPerawatan({ onChangePage }) {
     page: 1,
     query: "",
     sort: "[pre_tanggal_penjadwalan] asc",
-    status: "Menunggu Perbaikan",
-    itemPerPage: 10,
+    status: "",
+    itemPerPage: 5,
   });
 
   const searchQuery = useRef();
@@ -133,130 +133,132 @@ export default function JadwalPerawatan({ onChangePage }) {
         }
       })
       .then(() => setIsLoading(false));
-      
   }
 
   useEffect(() => {
     const fetchData = async () => {
       setIsError(false);
-    
+
       try {
         const data = await UseFetch(
           API_LINK + "TransaksiPreventif/GetDataPerawatanPreventif",
           currentFilter
         );
-    
+
         if (data === "ERROR") {
           setIsError(true);
         } else if (data.length === 0) {
           setCurrentData(inisialisasiData);
         } else {
-        console.log(data);
+          console.log(data);
           const formattedData = data.map((value) => {
-            const { ID_Perawatan, Tanggal_Perawatan,Status_Pemeliharaan,Dibuat, TindakanPerbaikan, Nama_Mesin, ...rest } = value; // Menghapus tanggal_masuk
+            const {
+              Tanggal_Perawatan,
+              Status_Pemeliharaan,
+              Dibuat,
+              TindakanPerbaikan,
+              Nama_Mesin,
+              ...rest
+            } = value; // Menghapus tanggal_masuk
             return {
               ...rest,
-              "ID Perawatan": ID_Perawatan,
               "Nama Mesin": Nama_Mesin,
-              "Tindakan Perbaikan": TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
+              "Tindakan Perbaikan":
+                TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
               "Dibuat Oleh": Dibuat == null ? "-" : Dibuat,
               "Jadwal Perawatan": formatDate(Tanggal_Perawatan, "D MMMM YYYY"),
               Status: Status_Pemeliharaan,
               Aksi: ["Detail"],
-              Alignment: [
-                "center",
-                "center",
-                "left",
-                "left",
-                "left",
-                "center",
-                "center",
-                "center"
-              ],
+              Alignment: ["center", "left", "left", "left", "center", "center"],
             };
           });
           setCurrentData(formattedData);
         }
-      } catch (error){
+      } catch (error) {
         setIsError(true);
-        console.log("Format Data Error: "+error);
+        console.log("Format Data Error: " + error);
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
   }, [currentFilter]);
 
   return (
     <>
-      <div className="d-flex flex-column">
-        {isError && (
-          <div className="flex-fill">
-            <Alert
-              type="warning"
-              message="Terjadi kesalahan: Gagal mengambil data Sparepart. "
-            />
-          </div>
-        )}
-        <div className="flex-fill">
-          <div className="input-group">
-            <Button
-              iconName="add"
-              classType="success"
-              label="Buat Jadwal Perawatan Rutin"
-              onClick={() => onChangePage("add")}
-            />
-            <Input
-              ref={searchQuery}
-              forInput="pencarianSparepart"
-              placeholder="Cari"
-            />
-            <Button
-              iconName="search"
-              classType="primary px-4"
-              title="Cari"
-              onClick={handleSearch}
-            />
-            <Filter>
-              <DropDown
-                ref={searchFilterSort}
-                forInput="ddUrut"
-                label="Urut Berdasarkan"
-                type="none"
-                arrData={dataFilterSort}
-                defaultValue="[spa_nama_sparepart] asc"
-              />
-              <DropDown
-                ref={searchFilterStatus}
-                forInput="ddStatus"
-                label="Status"
-                type="none"
-                arrData={dataFilterStatus}
-                defaultValue="Aktif"
-              />
-            </Filter>
-          </div>
-        </div>
-        <div className="mt-3">
-          {isLoading ? (
-            <Loading /> 
-          ) : (
-            <div className="d-flex flex-column">
-              <Table
-                data={currentData}
-                onToggle={handleSetStatus}
-                onDetail={onChangePage}
-                onEdit={onChangePage}
-              />
-              <Paging
-                pageSize={PAGE_SIZE}
-                pageCurrent={currentFilter.page}
-                totalData={currentData[0]["Count"]}
-                navigation={handleSetCurrentPage}
+      <div className="card">
+        <div className="d-flex flex-column">
+          {isError && (
+            <div className="flex-fill">
+              <Alert
+                type="warning"
+                message="Terjadi kesalahan: Gagal mengambil data Sparepart. "
               />
             </div>
           )}
+          <div className="card-header bg-primary fw-medium text-white">
+            Detail Data Sparepart
+          </div>
+          <div className="flex-fill">
+            <div className="input-group">
+              <Button
+                iconName="add"
+                classType="success"
+                label="Laporan Kerusakan"
+                onClick={() => onChangePage("add")}
+              />
+              <Input
+                ref={searchQuery}
+                forInput="pencarianSparepart"
+                placeholder="Cari"
+              />
+              <Button
+                iconName="search"
+                classType="primary px-4"
+                title="Cari"
+                onClick={handleSearch}
+              />
+              <Filter>
+                <DropDown
+                  ref={searchFilterSort}
+                  forInput="ddUrut"
+                  label="Urut Berdasarkan"
+                  type="none"
+                  arrData={dataFilterSort}
+                  defaultValue="[spa_nama_sparepart] asc"
+                />
+                <DropDown
+                  ref={searchFilterStatus}
+                  forInput="ddStatus"
+                  label="Status"
+                  type="none"
+                  arrData={dataFilterStatus}
+                  defaultValue="Aktif"
+                />
+              </Filter>
+            </div>
+          </div>
+          <div className="mt-3">
+            {isLoading ? (
+              <Loading />
+            ) : (
+              <div className="d-flex flex-column">
+                <Table
+                  data={currentData}
+                  onToggle={handleSetStatus}
+                  onDetail={onChangePage}
+                  onEdit={onChangePage}
+                />
+                <Paging
+                  pageSize={PAGE_SIZE}
+                  pageCurrent={currentFilter.page}
+                  totalData={currentData[0]["Count"]}
+                  navigation={handleSetCurrentPage}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>

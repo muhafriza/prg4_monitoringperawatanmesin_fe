@@ -21,8 +21,8 @@ const inisialisasiData = [
 ];
 
 const dataFilterSort = [
-  { Value: "[rol_id] asc", Text: "NPK [↑]" },
-  { Value: "[rol_id] desc", Text: "NPK [↓]" },
+  { Value: "[kry_id] asc", Text: "ID Karyawan [↑]" },
+  { Value: "[kry_id] desc", Text: "ID Karyawan [↓]" },
 ];
 
 const dataFilterStatus = [
@@ -38,12 +38,8 @@ export default function MasterUserIndex({ onChangePage }) {
     page: 1,
     query: "",
     sort: "kry_nama_depan",
-    status: "Aktif",
+    status: "",
     APP: "APP60",
-  });
-  const [filterIdRole, setfilterIdRole] = useState({
-    rol_deskripsi: "",
-    status: "Aktif",
   });
 
   const searchQuery = useRef();
@@ -72,27 +68,29 @@ export default function MasterUserIndex({ onChangePage }) {
     });
   }
 
-  // function handleSetStatus(id, peran, status) {
-    function handleSetStatus(id) {
+  function handleSetStatus(id, peran) {
+    console.log(id, peran);
     setIsLoading(true);
     setIsError(false);
     console.log(id);
   
     UseFetch(API_LINK + "MasterUser/SetStatusUser", {
-      idPeran: id,
+      id: id,
+      peran: peran,
     })
-    .then((data) => {
-      if (data === "ERROR" || data.length === 0) setIsError(true);
-      else {
-        SweetAlert(
-          "Sukses",
-          "Status data User berhasil diubah menjadi " + data[0].Status,
-          "success"
-        );
-        handleSetCurrentPage(currentFilter.page);
-      }
-    })
-    .then(() => setIsLoading(false));
+      .then((data) => {
+        if (data === "ERROR" || data.length === 0) setIsError(true);
+        else {
+          SweetAlert(
+            "Sukses",
+            "Status data Sparepart berhasil diubah menjadi " + data[0].Status,
+            "success"
+          );
+          setIsLoading(false);
+          handleSetCurrentPage(currentFilter.page);
+        }
+      })
+      .then(() => setIsLoading(false));
   }
   
 
@@ -105,7 +103,7 @@ export default function MasterUserIndex({ onChangePage }) {
           API_LINK + "MasterUser/GetDataKaryawanByUser",
           currentFilter
         );
-        console.log(filterIdRole);
+
         if (data === "ERROR") {
           setIsError(true);
           console.log("Error nih");
@@ -135,13 +133,6 @@ export default function MasterUserIndex({ onChangePage }) {
         setIsLoading(false);
       }
     };
-    const getIdRole = async () => {
-      const data = await UseFetch(
-        API_LINK + "MasterUser/GetIdRole",
-        currentFilter
-      );
-    };
-
     fetchData();
   }, [currentFilter]);
 
@@ -204,6 +195,7 @@ export default function MasterUserIndex({ onChangePage }) {
                 data={currentData}
                 onToggle={(id) => {
                   const selectedRow = currentData.find((row) => row.Key === id); // Cari row berdasarkan ID
+                  const username = selectedRow ? selectedRow.Username : null;
                   const peran = selectedRow ? selectedRow.Peran : null; // Ambil nilai Peran
                   const status = selectedRow ? selectedRow.Status : null; // Ambil nilai Peran
 
@@ -216,7 +208,7 @@ export default function MasterUserIndex({ onChangePage }) {
                     return;
                   }
 
-                  handleSetStatus(id, peran, status); // Panggil fungsi dengan ID dan Peran
+                  handleSetStatus(username, peran, status); // Panggil fungsi dengan ID dan Peran
                 }}
                 onDetail={onChangePage}
                 onEdit={onChangePage}

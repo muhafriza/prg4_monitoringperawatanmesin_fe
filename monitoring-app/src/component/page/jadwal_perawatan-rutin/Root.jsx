@@ -1,10 +1,8 @@
 import { useState } from "react";
 import JadwalPerawatan from "./Index";
-
-
-import MasterSparepartAdd from "./Add";
-import MasterSparepartEdit from "./Edit";
-import MasterSparepartDetail from "./Detail";
+import JadwalEdit from "./Edit";
+import DetailJadwal from "./Detail";
+import Add from "./Add";
 
 export default function MasterProses() {
   const [pageMode, setPageMode] = useState("index");
@@ -15,14 +13,14 @@ export default function MasterProses() {
       case "index":
         return <JadwalPerawatan onChangePage={handleSetPageMode} />;
       case "add":
-        return <MasterSparepartAdd onChangePage={handleSetPageMode} />;
+        return <Add onChangePage={handleSetPageMode} />;
       case "edit":
         return (
-          <MasterSparepartEdit onChangePage={handleSetPageMode} withID={dataID} />
+          <JadwalEdit onChangePage={handleSetPageMode} withID={dataID} />
         );
         case "detail":
           return (
-            <MasterSparepartDetail
+            <DetailJadwal
               onChangePage={handleSetPageMode}
               withID={dataID}
             />

@@ -6,7 +6,7 @@ import Label from "../../part/Label";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
-export default function DetailJadwal({
+export default function PerawatanPreventifTeknisiDetail({
   onChangePage,
   withID,
 }) {
