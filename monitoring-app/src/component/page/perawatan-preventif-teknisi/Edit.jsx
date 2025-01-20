@@ -268,22 +268,22 @@ export default function PerawatanPreventifTeknisiEdit({
                   data={formData.Tindakan_Perbaikan}
                 />
               </div>
-              <div className="col-lg-4">
-                <Input
-                  type="date"
-                  forInput="Tanggal_Aktual"
-                  label="Tanggal Aktual"
-                  className="form-control"
-                  isRequired
-                  value={
-                    formData.Tanggal_Aktual
-                      ? formatDate(formData.Tanggal_Aktual, "YYYY-MM-DD")
-                      : ""
-                  }
-                  disabled={!!formData.Tanggal_Aktual}
-                  onChange={handleInputChange}
-                />
-              </div>
+                <div className="col-lg-4">
+                  <Input
+                    type="date"
+                    forInput="Tanggal_Aktual"
+                    label="Tanggal Aktual"
+                    className="form-control"
+                    isRequired
+                    value={
+                      formData.Tanggal_Aktual
+                        ? formatDate(formData.Tanggal_Aktual, "YYYY-MM-DD")
+                        : ""
+                    }
+                    disabled={!!formData.Tanggal_Aktual}
+                    onChange={handleInputChange}
+                  />
+                </div>
               <div className="col-lg-3">
                 <Label
                   forLabel="Created_By"
