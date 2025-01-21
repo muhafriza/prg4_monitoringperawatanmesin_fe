@@ -7,11 +7,10 @@ import Alert from "../../part/Alert";
 import { Chart as ChartJS, defaults } from "chart.js/auto";
 import { Bar, Doughnut, Pie } from "react-chartjs-2";
 
-
 defaults.plugins.title.display = true;
 defaults.plugins.title.align = "start";
 defaults.plugins.title.font.size = 25;
-defaults.plugins.title.color = "black"
+defaults.plugins.title.color = "black";
 
 export default function BerandaIndex() {
   const [isError, setIsError] = useState({ error: false, message: "" });
@@ -32,6 +31,7 @@ export default function BerandaIndex() {
     countDalamProsesDelivery: 0,
   });
 
+  const [sparepartStok, setSparepartStok] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,6 +47,28 @@ export default function BerandaIndex() {
           throw new Error("Terjadi kesalahan: Gagal mengambil data dashboard.");
         } else {
           formDataRef.current = { ...formDataRef.current, ...data[0] };
+        }
+      } catch (error) {
+        window.scrollTo(0, 0);
+        setIsError((prevError) => ({
+          ...prevError,
+          error: true,
+          message: error.message,
+        }));
+      } finally {
+        setIsLoading(false);
+      }
+
+      try {
+        const dataSP = await UseFetch(
+          API_LINK + "TransaksiPreventif/getStokSparepart",
+          { status: "Aktif" }
+        );
+
+        if (dataSP === "ERROR" || dataSP.length === 0) {
+          throw new Error("Terjadi kesalahan: Gagal mengambil data stok.");
+        } else {
+          setSparepartStok(dataSP);
         }
       } catch (error) {
         window.scrollTo(0, 0);
@@ -127,15 +149,20 @@ export default function BerandaIndex() {
               <div className="card-body bg-gradient rounded-2 text-white">
                 <div style={{ width: "100%", height: "300px" }}>
                   <Bar
-                    // ref={(ref) => (barChartRef.current = ref?.chartInstance)}
                     data={{
-                      labels: ["A", "B", "C"],
+                      labels: sparepartStok.map(
+                        (item) => item.spa_nama_sparepart
+                      ),
                       datasets: [
                         {
-                          label: "Revenue",
-                          data: [10, 20, 30],
-                          backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
-                          borderColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+                          label: "Stok Sparepart", // Label utama dataset
+                          data: sparepartStok.map((item) => item.spa_stok),
+                          backgroundColor: sparepartStok.map(
+                            () =>
+                              `rgba(${Math.floor(Math.random() * 255)}, 
+                  ${Math.floor(Math.random() * 255)}, 
+                  ${Math.floor(Math.random() * 255)}, 0.7)`
+                          ),
                           borderWidth: 1,
                         },
                       ],
@@ -145,16 +172,66 @@ export default function BerandaIndex() {
                       maintainAspectRatio: false,
                       plugins: {
                         legend: {
-                          display: true,
+                          display: true, // Menampilkan legend
                           position: "top",
+                          align: "center",
+                          labels: {
+                            boxWidth: 20,
+                            padding: 10,
+                            font: {
+                              size: 12,
+                            },
+                            generateLabels: (chart) => {
+                              const dataset = chart.data.datasets[0]; // Dataset pertama
+                              return chart.data.labels.map((label, index) => ({
+                                text: label, // Nama berdasarkan spa_nama_sparepart
+                                fillStyle: dataset.backgroundColor[index], // Warna legend
+                                hidden: dataset.data[index] === null, // Sembunyikan jika data null
+                                index: index,
+                              }));
+                            },
+                          },
+                          onClick: (e, legendItem, legend) => {
+                            const index = legendItem.index;
+                            const chart = legend.chart;
+                            const dataset = chart.data.datasets[0];
+
+                            // Toggle visibility
+                            dataset.data[index] =
+                              dataset.data[index] === null
+                                ? sparepartStok[index].spa_stok // Tampilkan ulang jika tersembunyi
+                                : null; // Sembunyikan data
+
+                            chart.update();
+                          },
                         },
                         title: {
-                          text: "Revenue Set"
-                        }
+                          display: true,
+                          text: "Stok Sparepart",
+                          font: {
+                            size: 16,
+                          },
+                        },
                       },
                       scales: {
                         y: {
                           beginAtZero: true,
+                          title: {
+                            display: true,
+                            text: "Jumlah Stok",
+                            font: {
+                              size: 14,
+                            },
+                          },
+                        },
+                        x: {
+                          title: {
+                            display: true,
+                            text: "Nama Sparepart",
+                            font: {
+                              size: 14,
+                            },
+                          },
                         },
                       },
                     }}
@@ -192,8 +269,8 @@ export default function BerandaIndex() {
                           position: "top",
                         },
                         title: {
-                          text: "Sparepart Stok"
-                        }
+                          text: "Sparepart Stok",
+                        },
                       },
                     }}
                   />
