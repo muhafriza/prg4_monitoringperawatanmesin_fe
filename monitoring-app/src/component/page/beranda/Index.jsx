@@ -156,7 +156,7 @@ export default function BerandaIndex() {
                       datasets: [
                         {
                           label: "Stok Sparepart", // Label utama dataset
-                          data: sparepartStok.map((item) => item.spa_stok),
+                            data: sparepartStok.map((item) => item.spa_stok),
                           backgroundColor: sparepartStok.map(
                             () =>
                               `rgba(${Math.floor(Math.random() * 255)}, 
