@@ -12,7 +12,7 @@ defaults.plugins.title.align = "start";
 defaults.plugins.title.font.size = 25;
 defaults.plugins.title.color = "black";
 
-export default function BerandaIndex() {
+export default function BerandaTeknisi() {
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
 

@@ -1,0 +1,11 @@
+.card-equal-height {
+    display: flex;
+    flex-direction: column;
+    height: 80%; /* Pastikan card memenuhi tinggi container */
+  }
+  
+  .row-equal-height {
+    display: flex;
+    align-items: stretch; /* Pastikan semua card memiliki tinggi yang sama */
+  }
+  

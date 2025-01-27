@@ -60,6 +60,7 @@ export default function MasterSparepartIndex({ onChangePage }) {
       };
     });
   }
+  
   function formatDate(dateString, format) {
     const date = new Date(dateString);
 
