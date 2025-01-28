@@ -22,8 +22,8 @@ export default function MasterMesinAdd({ onChangePage }) {
     mes_no_panel: "",
     mes_lab: "",
     mes_nama_mesin: "",
+    mes_upt: "",
     mes_daya_mesin: "",
-    mes_jumlah: "",
     mes_kapasitas: "",
     mes_tipe: "",
     mes_status: "Aktif",
@@ -43,14 +43,11 @@ export default function MasterMesinAdd({ onChangePage }) {
     mes_daya_mesin: number()
       .typeError("Daya Mesin harus berupa angka")
       .required("Daya Mesin harus diisi"),
-    mes_jumlah: number()
-      .typeError("mes_jumlah harus berupa angka")
-      .integer("Harus bilangan bulat")
-      .required("mes_jumlah harus diisi"),
     mes_kapasitas: string().max(25, "Maksimum 25 karakter"),
     mes_tipe: string().max(25, "Maksimum 25 karakter"),
     mes_status: string(),
     mes_gambar: string(),
+    mes_upt: string().required("UPT Harus diisi"),
   });
 
   const handleFileChange = (ref, extAllowed) => {
@@ -170,11 +167,33 @@ export default function MasterMesinAdd({ onChangePage }) {
           </div>
           <div className="card-body p-4">
             <div className="row">
+            <div className="col-lg-3">
+                <Input
+                  type="text"
+                  forInput="mes_nama_mesin"
+                  label="Nama Mesin"
+                  isRequired
+                  value={formDataRef.current.mes_nama_mesin}
+                  onChange={handleInputChange}
+                  errorMessage={errors.mes_nama_mesin}
+                />
+              </div>
+              <div className="col-lg-3">
+                <Input
+                  type="text"
+                  forInput="mes_upt"
+                  label="UPT"
+                  isRequired
+                  value={formDataRef.current.mes_upt}
+                  onChange={handleInputChange}
+                  errorMessage={errors.mes_upt}
+                />
+              </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
                   forInput="mes_kondisi_operasional"
-                  label="mes_kondisi_operasional Operasional (%)"
+                  label="Kondisi Operasional (%)"
                   isRequired
                   value={formDataRef.current.mes_kondisi_operasional}
                   onChange={handleInputChange}
@@ -201,17 +220,7 @@ export default function MasterMesinAdd({ onChangePage }) {
                   errorMessage={errors.mes_lab}
                 />
               </div>
-              <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="mes_nama_mesin"
-                  label="Nama Mesin"
-                  isRequired
-                  value={formDataRef.current.mes_nama_mesin}
-                  onChange={handleInputChange}
-                  errorMessage={errors.mes_nama_mesin}
-                />
-              </div>
+              
               <div className="col-lg-3">
                 <Input
                   type="text"
@@ -221,17 +230,6 @@ export default function MasterMesinAdd({ onChangePage }) {
                   value={formDataRef.current.mes_daya_mesin}
                   onChange={handleInputChange}
                   errorMessage={errors.mes_daya_mesin}
-                />
-              </div>
-              <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="mes_jumlah"
-                  label="mes_jumlah"
-                  isRequired
-                  value={formDataRef.current.mes_jumlah}
-                  onChange={handleInputChange}
-                  errorMessage={errors.mes_jumlah}
                 />
               </div>
               <div className="col-lg-3">

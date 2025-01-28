@@ -6,10 +6,7 @@ import Label from "../../part/Label";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
-export default function DetailRiwayatPreventif({
-  onChangePage,
-  withID,
-}) {
+export default function DetailRiwayatPreventif({ onChangePage, withID }) {
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -20,7 +17,7 @@ export default function DetailRiwayatPreventif({
   const [formData, setFormData] = useState({
     ID_Mesin: "",
     Nama_Mesin: "",
-    gambarSparepart: "",
+    gambar_mesin: "",
     Tanggal_Penjadwalan: "",
     Tanggal_Aktual: "",
     Tanggal_Selesai: "",
@@ -143,109 +140,141 @@ export default function DetailRiwayatPreventif({
         </div>
         <div className="card-body p-4">
           <div className="row">
-            <div className="col-lg-3">
+            <div className="col-md-4">
               <Label
-                forLabel="ID_Mesin"
-                title="ID Mesin"
-                data={formData.ID_Mesin}
+                forLabel="gambar_mesin"
+                title="Gambar Mesin"
+                data={
+                  formData.gambar_mesin && formData.gambar_mesin !== "" ? (
+                    <img
+                      src={FILE_LINK + formData.gambar_mesin}
+                      alt="Gambar Mesin"
+                      className="img-fluid"
+                      style={{
+                        objectFit: "cover",
+                        width: "100%",
+                        height: "300px",
+                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                      }}
+                    />
+                  ) : (
+                    "-"
+                  )
+                }
               />
+              <div className="col-lg-8">
+                <Label
+                  forLabel="Detail_SP"
+                  title="Detail Sparepart yang digunakan: "
+                ></Label>
+                {fetchDataDetailSP && fetchDataDetailSP.length > 0 ? (
+                  <ul>
+                    {fetchDataDetailSP.map((item, index) => (
+                      <li key={index}>
+                        <strong>Sparepart {index + 1}:</strong>
+                        <ul>
+                          {Object.entries(item).map(([key, value]) => (
+                            <li key={key}>
+                              {key.replace(/_/g, " ")}:{" "}
+                              {typeof value === "object" && value !== null
+                                ? JSON.stringify(value) // Render objek sebagai string
+                                : value}
+                            </li>
+                          ))}
+                        </ul>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                ) : (
+                  <p>Tidak Ada Sparepart.</p>
+                )}
+                <hr />
+              </div>
             </div>
-            <div className="col-lg-4">
-              <Label
-                forLabel="Nama_Mesin"
-                title="Nama Mesin"
-                data={formData.Nama_Mesin}
-              />
-            </div>
-            <div className="col-lg-3">
-              <Label
-                forLabel="Tanggal_Penjadwalan"
-                title="Tanggal Penjadwalan"
-                data={formatDate(formData.Tanggal_Penjadwalan, "D MMMM YYYY")}
-              />
-            </div>
-            <div className="col-lg-3">
-              <Label
-                forLabel="Tindakan_Perbaikan"
-                title="TindakanPerbaikan"
-                data={formData.Tindakan_Perbaikan}
-              />
-            </div>
-            <div className="col-lg-4">
-              <Label
-                forLabel="Tanggal_Aktual"
-                title="Tanggal Aktual"
-                data={formatDate(formData.Tanggal_Aktual, "D MMMM YYYY")}
-              />
-            </div>
-            <div className="col-lg-3">
-              <Label
-                forLabel="Created_By"
-                title="Dibuat Oleh"
-                data={formData.Created_By}
-              />
-            </div>
-            <div className="col-lg-3">
-              <Label
-                forLabel="Created_Date"
-                title="Tanggal Dibuat"
-                data={formatDate(formData.Created_Date, "D MMMM YYYY")}
-              />
-            </div>
-            <div className="col-lg-4">
-              <Label
-                forLabel="Tanggal_Selesai"
-                title="Tanggal Selesai"
-                data={formatDate(formData.Tanggal_Selesai, "D MMMM YYYY")}
-              />
-            </div>
-            <div className="col-lg-3">
-              <Label
-                forLabel="Catatan_Tambahan"
-                title="Catatan Tambahan"
-                data={formData.Catatan_Tambahan}
-              />
-            </div>
-            <div className="col-lg-3">
-              <Label
-                forLabel="Modified_By"
-                title="Teknisi"
-                data={formData.Modified_By}
-              />
-            </div>
-            <div className="col-lg-4">
-              <Label
-                forLabel="Status_Pemeliharaan"
-                title="Status Pemeliharaan"
-                data={formData.Status_Pemeliharaan}
-              />
-            </div>
-            <div className="col-lg-3">
-              <Label
-                forLabel="Detail_SP"
-                title="Detail Sparepart yang digunakan: "
-              ></Label>
-              {fetchDataDetailSP && fetchDataDetailSP.length > 0 ? (
-                <ul>
-                  {fetchDataDetailSP.map((item, index) => (
-                    <li key={index}>
-                      <strong>Sparepart {index + 1}:</strong>
-                      <ul>
-                        {Object.entries(item).map(([key, value]) => (
-                          <li key={key}>
-                            {key.replace(/_/g, " ")}:{" "}
-                            {typeof value === "object" && value !== null
-                              ? JSON.stringify(value) // Render objek sebagai string
-                              : value}
-                          </li>
-                        ))}
-                      </ul>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>Tidak Ada Sparepart.</p>
-              )}
+            <div className="col-lg-8">
+              <div className="row">
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="ID_Mesin"
+                    title="ID Mesin"
+                    data={formData.ID_Mesin}
+                  />
+                </div>
+                <div className="col-lg-4">
+                  <Label
+                    forLabel="Nama_Mesin"
+                    title="Nama Mesin"
+                    data={formData.Nama_Mesin}
+                  />
+                </div>
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="Tanggal_Penjadwalan"
+                    title="Tanggal Penjadwalan"
+                    data={formatDate(
+                      formData.Tanggal_Penjadwalan,
+                      "D MMMM YYYY"
+                    )}
+                  />
+                </div>
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="Tindakan_Perbaikan"
+                    title="TindakanPerbaikan"
+                    data={formData.Tindakan_Perbaikan}
+                  />
+                </div>
+                <div className="col-lg-4">
+                  <Label
+                    forLabel="Tanggal_Aktual"
+                    title="Tanggal Aktual"
+                    data={formatDate(formData.Tanggal_Aktual, "D MMMM YYYY")}
+                  />
+                </div>
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="Created_By"
+                    title="Dibuat Oleh"
+                    data={formData.Created_By}
+                  />
+                </div>
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="Created_Date"
+                    title="Tanggal Dibuat"
+                    data={formatDate(formData.Created_Date, "D MMMM YYYY")}
+                  />
+                </div>
+                <div className="col-lg-4">
+                  <Label
+                    forLabel="Tanggal_Selesai"
+                    title="Tanggal Selesai"
+                    data={formatDate(formData.Tanggal_Selesai, "D MMMM YYYY")}
+                  />
+                </div>
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="Catatan_Tambahan"
+                    title="Catatan Tambahan"
+                    data={formData.Catatan_Tambahan}
+                  />
+                </div>
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="Modified_By"
+                    title="Teknisi"
+                    data={formData.Modified_By}
+                  />
+                </div>
+                <div className="col-lg-4">
+                  <Label
+                    forLabel="Status_Pemeliharaan"
+                    title="Status Pemeliharaan"
+                    data={formData.Status_Pemeliharaan}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 

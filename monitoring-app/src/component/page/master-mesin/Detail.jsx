@@ -17,6 +17,7 @@ export default function MasterMesinDetail({ onChangePage, withID }) {
     mes_no_panel: "",
     mes_lab: "",
     mes_nama_mesin: "",
+    mes_upt: "",
     mes_daya_mesin: 0,
     mes_jumlah: 0,
     mes_kapasitas: "",
@@ -132,6 +133,13 @@ export default function MasterMesinDetail({ onChangePage, withID }) {
                     forLabel="mes_nama_mesin"
                     title="Nama Mesin"
                     data={formData.mes_nama_mesin}
+                  />
+                </div>
+                <div className="col-lg-3">
+                  <Label
+                    forLabel="mes_upt"
+                    title="UPT"
+                    data={formData.mes_upt}
                   />
                 </div>
                 <div className="col-lg-3">

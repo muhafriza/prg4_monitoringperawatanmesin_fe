@@ -23,6 +23,7 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
     mes_no_panel: "",
     mes_lab: "",
     mes_nama_mesin: "",
+    mes_upt: "",
     mes_daya_mesin: "",
     mes_jumlah: "",
     mes_kapasitas: "",
@@ -47,6 +48,7 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
       .positive("Jumlah harus lebih besar dari 0")
       .required("Jumlah Mesin harus diisi"),
     mes_kapasitas: string().optional(),
+    mes_upt: string(),
     mes_tipe: string().optional(),
     mes_gambar: string(),
   });
@@ -250,6 +252,17 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
                   value={formDataRef.current.mes_nama_mesin}
                   onChange={handleInputChange}
                   errorMessage={errors.mes_nama_mesin}
+                />
+              </div>
+              <div className="col-lg-3">
+                <Input
+                  type="text"
+                  forInput="mes_upt"
+                  label="UPT"
+                  isRequired
+                  value={formDataRef.current.mes_upt}
+                  onChange={handleInputChange}
+                  errorMessage={errors.mes_upt}
                 />
               </div>
               <div className="col-lg-3">

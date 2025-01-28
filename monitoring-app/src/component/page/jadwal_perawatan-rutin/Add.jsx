@@ -2,13 +2,22 @@ import { useRef, useState, useEffect } from "react";
 import { object, string } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
+import DropDown from "../../part/Dropdown";
 import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
-import swal from "sweetalert";
+
+const dataUPT = [
+  { Value: "INFORMATICS", Text: "INFORMATICS" },
+  { Value: "PERAWATAN", Text: "PERAWATAN" },
+  { Value: "ALAT BERAT", Text: "ALAT BERAT" },
+  { Value: "MO", Text: "MO" },
+  { Value: "PRODUKSI", Text: "PRODUKSI" },
+];
 
 export default function Add({ onChangePage }) {
   const [errors, setErrors] = useState({});
@@ -27,7 +36,8 @@ export default function Add({ onChangePage }) {
     qty: "",
   });
   const [currentFilter, setCurrentFilter] = useState({
-    name: "",
+    p1: "",
+    upt: "",
     status: "Aktif",
   });
   const [sparepartOptions, setSparepartOptions] = useState([]);
@@ -48,31 +58,43 @@ export default function Add({ onChangePage }) {
     qty: string(),
   });
 
-  useEffect(() => {
-    const fetchDataMesin = async () => {
-      setIsError((prevError) => ({ ...prevError, error: false }));
+  const handleUPTChange = (e) => {
+    const selectedUPT = e.target.value;
+    setCurrentFilter((prevFilter) => ({
+      ...prevFilter,
+      p1: "",
+      upt: selectedUPT,
+      status: "Aktif"
+    }));
+    fetchDataMesin();
+  };
 
-      try {
-        const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/getNamaMesin",
-          currentFilter
-        );
-        if (data === "ERROR" || data.length === 0) {
-          throw new Error("Terjadi kesalahan: Gagal mengambil data Mesin.");
-        } else {
-          setmesinOptions(data); // Set data yang diterima ke dalam mesinOptions
-        }
-      } catch (error) {
-        window.scrollTo(0, 0);
-        setIsError((prevError) => ({
-          ...prevError,
-          error: true,
-          message: error.message,
-        }));
-      } finally {
-        setIsLoading(false);
+  const fetchDataMesin = async () => {
+    setIsError((prevError) => ({ ...prevError, error: false }));
+
+    try {
+      const data = await UseFetch(
+        API_LINK + "TransaksiPreventif/getNamaMesin",
+        currentFilter
+      );
+      if (data === "ERROR" || data.length === 0) {
+        throw new Error("Terjadi kesalahan: Gagal mengambil data Mesin.");
+      } else {
+        setmesinOptions(data); // Set data yang diterima ke dalam mesinOptions
       }
-    };
+    } catch (error) {
+      window.scrollTo(0, 0);
+      setIsError((prevError) => ({
+        ...prevError,
+        error: true,
+        message: error.message,
+      }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     const fetchDataSparepart = async () => {
       setIsError((prevError) => ({ ...prevError, error: false }));
 
@@ -99,7 +121,6 @@ export default function Add({ onChangePage }) {
     };
 
     fetchDataSparepart();
-    fetchDataMesin();
   }, [currentFilter]);
 
   function formatDate(dateString, format) {
@@ -148,37 +169,8 @@ export default function Add({ onChangePage }) {
       ...prevErrors,
       [validationError.name]: validationError.error,
     }));
-  };
 
-  // Fungsi untuk menangani perubahan pada spareparts
-  const handleSparepartChange = (index, field, value) => {
-    const updatedSpareparts = [...spareparts];
-    updatedSpareparts[index][field] = value; // Update sparepart berdasarkan index
-    setSpareparts(updatedSpareparts);
-  };
-
-  // Fungsi untuk menambahkan field sparepart baru
-  const addSparepartField = () => {
-    setSpareparts([...spareparts, { sparepart: "", qty: "" }]); // Tambahkan field baru
-  };
-
-  // Fungsi untuk mengurangi sparepart berdasarkan index
-  const removeSparepartField = (index) => {
-    const updatedSpareparts = spareparts.filter((_, i) => i !== index); // Hapus sparepart yang dipilih
-    setSpareparts(updatedSpareparts);
-  };
-
-  const generateSchedule = () => {
     const { tanggal_mulai, interval, durasi } = formDataRef.current;
-
-    if (!tanggal_mulai || !interval || !durasi) {
-      SweetAlert(
-        "Peringatan",
-        "Tanggal mulai, interval, dan durasi harus diisi!",
-        "warning"
-      );
-      return;
-    }
 
     const startDate = new Date(tanggal_mulai);
     const generated = [];
@@ -205,6 +197,24 @@ export default function Add({ onChangePage }) {
     setGeneratedDates(generated);
   };
 
+  // Fungsi untuk menangani perubahan pada spareparts
+  const handleSparepartChange = (index, field, value) => {
+    const updatedSpareparts = [...spareparts];
+    updatedSpareparts[index][field] = value; // Update sparepart berdasarkan index
+    setSpareparts(updatedSpareparts);
+  };
+
+  // Fungsi untuk menambahkan field sparepart baru
+  const addSparepartField = () => {
+    setSpareparts([...spareparts, { sparepart: "", qty: "" }]); // Tambahkan field baru
+  };
+
+  // Fungsi untuk mengurangi sparepart berdasarkan index
+  const removeSparepartField = (index) => {
+    const updatedSpareparts = spareparts.filter((_, i) => i !== index); // Hapus sparepart yang dipilih
+    setSpareparts(updatedSpareparts);
+  };
+
   const handleAdd = async (e) => {
     e.preventDefault(); // Pastikan ini dijalankan
 
@@ -224,16 +234,19 @@ export default function Add({ onChangePage }) {
     formDataRef.current.sparepart = sparepartString;
     formDataRef.current.qty = qtyString;
 
-    // Menampilkan SweetAlert konfirmasi dengan daftar tanggal
-    const confirmation = await SweetAlert(
-      "Warning", // title
-      "Yakin ingin membuat jadwal ini ?", // text, menampilkan list tanggal dengan newline
-      "info", // icon
-      "Ya, buat!" // confirmText
-    );
+    const datesList = generatedDates.map((date) => `<li>${date}</li>`).join(""); // Gabungkan tanggal menjadi string untuk ditampilkan
+
+    const confirmation = await Swal.fire({
+      title: "Jadwal yang dihasilkan:",
+      html: `<ul>${datesList}</ul><br>Jika Anda setuju, jadwal akan disimpan.`,
+      icon: "info",
+      showCancelButton: true,
+      confirmButtonText: "Ya, simpan",
+      cancelButtonText: "Batal",
+    });
 
     // Jika pengguna memilih "Ya"
-    if (confirmation) {
+    if (confirmation.isConfirmed) {
       console.log("User memilih Ya");
 
       // Lakukan validasi jika tidak ada error
@@ -255,17 +268,12 @@ export default function Add({ onChangePage }) {
             SweetAlert("Gagal", data[0].Message, "info", "Ok");
           } else {
             // swal.close();
-            SweetAlert("Sukses", data[0].Message, "success");
+            Swal.fire("Success!", "Berhasil menyimpan data.", "success");
             onChangePage("index");
           }
         } catch (error) {
           // swal.close();
-          SweetAlert(
-            "Terjadi Kesalahan!",
-            "Error saat menyimpan data.",
-            "Error",
-            "Ok"
-          );
+          Swal.fire("Error!", "Terjadi kesalahan saat mengirim data.", "error");
           setIsError({ error: true, message: error.message });
         } finally {
           // swal.close();
@@ -295,6 +303,24 @@ export default function Add({ onChangePage }) {
           </div>
           <div className="card-body p-4">
             <div className="row">
+              <div className="col-lg-3">
+                <label htmlFor="mes_upt" className="form-label fw-bold">
+                  UPT <span style={{ color: "red" }}>*</span>
+                </label>
+                <select
+                  id="mes_upt"
+                  name="upt"
+                  className="form-select"
+                  onChange={handleUPTChange}
+                >
+                  <option value="">-- Pilih UPT --</option>
+                  {dataUPT.map((upt) => (
+                    <option key={upt.Value} value={upt.Value}>
+                      {upt.Text}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="col-lg-3">
                 <label htmlFor="userDropdown" className="form-label fw-bold">
                   Pilih Mesin <span style={{ color: "red" }}>*</span>
@@ -425,7 +451,10 @@ export default function Add({ onChangePage }) {
                 <h5>Jadwal Perawatan:</h5>
                 <ul>
                   {generatedDates.map((date, index) => (
-                    <li key={index}>Perawatan Hari ke-{index+1}: {formatDate(date, "D MMMM YYYY")}</li>
+                    <li key={index}>
+                      Perawatan Hari ke-{index + 1}:{" "}
+                      {formatDate(date, "D MMMM YYYY")}
+                    </li>
                   ))}
                 </ul>
               </div>
