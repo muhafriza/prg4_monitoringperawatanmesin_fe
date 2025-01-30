@@ -226,7 +226,7 @@ export default function SuratPenawaranKonfirmasi({ onChangePage, withID }) {
       )}
       <form onSubmit={handleAdd}>
         <div className="card">
-          <div className="card-header bg-primary fw-medium text-white">
+          <div className="card-header bg-primary lead fw-medium text-white">
             Konfirmasi Persetujuan Pelanggan
           </div>
           <div className="card-body p-4">

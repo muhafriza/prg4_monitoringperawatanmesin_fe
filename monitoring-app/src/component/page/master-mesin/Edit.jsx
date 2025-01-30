@@ -202,7 +202,7 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
         await Promise.all(uploadPromises);
 
         const data = await UseFetch(
-          API_LINK + 'Mesin/EditMesin',
+          API_LINK + "Mesin/EditMesin",
           formDataRef.current
         );
 
@@ -238,7 +238,7 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
       )}
       <form onSubmit={handleAdd}>
         <div className="card">
-          <div className="card-header bg-primary fw-medium text-white">
+          <div className="card-header bg-primary lead fw-medium text-white">
             Ubah Data Mesin
           </div>
           <div className="card-body p-4">

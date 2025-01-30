@@ -123,7 +123,7 @@ export default function Add({ onChangePage }) {
     const date = new Date(dateString);
 
     const day = date.getDate();
-    const month = date.getMonth(); 
+    const month = date.getMonth();
     const year = date.getFullYear();
 
     const months = [
@@ -295,7 +295,7 @@ export default function Add({ onChangePage }) {
       )}
       <form onSubmit={handleAdd}>
         <div className="card">
-          <div className="card-header bg-primary fw-medium text-white">
+          <div className="card-header bg-primary lead fw-medium text-white">
             Buat Jadwal Perawatan Rutin
           </div>
           <div className="card-body p-4">

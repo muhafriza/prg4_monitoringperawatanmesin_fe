@@ -72,16 +72,16 @@ export default function MasterKaryawanAdd({ onChangePage }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-  
+
     // Jika role yang dipilih adalah "PIC", tampilkan input tambahan
     if (name === "rol_id") {
       setShowAdditionalInput(value === "PIC"); // Menampilkan input tambahan untuk PIC
     }
-  
+
     // Menyimpan nilai input ke dalam formDataRef.current
     console.log(`${formDataRef.current.rol_id}: ${value}`);
     formDataRef.current[name] = value;
-  
+
     const validationError = validateInput(name, value, userSchema);
     setErrors((prevErrors) => ({
       ...prevErrors,
@@ -89,27 +89,26 @@ export default function MasterKaryawanAdd({ onChangePage }) {
     }));
     console.log(validationError);
   };
-  
 
   const handleAdd = async (e) => {
     e.preventDefault();
-  
+
     const validationErrors = await validateAllInputs(
       formDataRef.current,
       userSchema,
       setErrors
     );
-  
+
     // console.log(formDataRef.current);
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
       setIsError((prevError) => ({ ...prevError, error: false }));
       setErrors({});
-      
+
       const rol_final =
-      formDataRef.current.rol_id === "PIC"
-      ? `${formDataRef.current.rol_id} ${formDataRef.current.upt}`
-      : formDataRef.current.rol_id;
+        formDataRef.current.rol_id === "PIC"
+          ? `${formDataRef.current.rol_id} ${formDataRef.current.upt}`
+          : formDataRef.current.rol_id;
 
       console.log(formDataRef.current.upt);
       try {
@@ -120,12 +119,11 @@ export default function MasterKaryawanAdd({ onChangePage }) {
           app_id: "APP60",
           usr_status: "Aktif",
         });
-  
-        
+
         // Check if the 'hasil' field is 'ERROR' or 'OK'
-        if (data && data[0]?.hasil === 'ERROR') {
+        if (data && data[0]?.hasil === "ERROR") {
           SweetAlert("Error", data[0]?.pesan, "error");
-        } else if (data && data[0]?.hasil === 'OK') {
+        } else if (data && data[0]?.hasil === "OK") {
           SweetAlert("Sukses", "Data User berhasil disimpan", "success");
           onChangePage("index");
         } else {
@@ -145,7 +143,6 @@ export default function MasterKaryawanAdd({ onChangePage }) {
       window.scrollTo(0, 0);
     }
   };
-  
 
   if (isLoading) return <Loading />;
 
@@ -158,7 +155,7 @@ export default function MasterKaryawanAdd({ onChangePage }) {
       )}
       <form onSubmit={handleAdd}>
         <div className="card">
-          <div className="card-header bg-primary fw-medium text-white">
+          <div className="card-header bg-primary lead fw-medium text-white">
             Tambah Data User Baru
           </div>
 

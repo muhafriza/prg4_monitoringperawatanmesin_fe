@@ -97,7 +97,7 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
         </div>
       )}
       <div className="card">
-        <div className="card-header bg-primary fw-medium text-white">
+        <div className="card-header bg-primary lead fw-medium text-white">
           Detail Data Sparepart
         </div>
         <div className="card-body p-4">

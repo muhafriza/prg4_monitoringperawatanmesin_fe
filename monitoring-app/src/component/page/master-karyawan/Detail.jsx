@@ -33,7 +33,6 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
         );
         console.log(data);
 
-
         if (data === "ERROR" || data.length === 0) {
           throw new Error("Terjadi kesalahan: Gagal mengambil data Sparepart.");
         } else {
@@ -65,7 +64,7 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
         </div>
       )}
       <div className="card">
-        <div className="card-header bg-primary fw-medium text-white">
+        <div className="card-header bg-primary lead fw-medium text-white">
           Detail Data Sparepart
         </div>
         <div className="card-body p-4">
@@ -91,14 +90,14 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
               <Label forLabel="stok" title="Stok" data={formData.stok} />
             </div>
             <div className="col-lg-6">
-              <Label forLabel="tanggalMasuk" title="Tanggal Masuk" data={formData.tanggalMasuk} />
+              <Label
+                forLabel="tanggalMasuk"
+                title="Tanggal Masuk"
+                data={formData.tanggalMasuk}
+              />
             </div>
             <div className="col-lg-3">
-              <Label
-                forLabel="status"
-                title="Status"
-                data={formData.status}
-              />
+              <Label forLabel="status" title="Status" data={formData.status} />
             </div>
           </div>
         </div>

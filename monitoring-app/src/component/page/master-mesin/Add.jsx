@@ -162,12 +162,12 @@ export default function MasterMesinAdd({ onChangePage }) {
       )}
       <form onSubmit={handleAdd}>
         <div className="card">
-          <div className="card-header bg-primary fw-medium text-white">
+          <div className="card-header bg-primary lead fw-medium text-white">
             Tambah Data Mesin Baru
           </div>
           <div className="card-body p-4">
             <div className="row">
-            <div className="col-lg-3">
+              <div className="col-lg-3">
                 <Input
                   type="text"
                   forInput="mes_nama_mesin"
@@ -220,7 +220,7 @@ export default function MasterMesinAdd({ onChangePage }) {
                   errorMessage={errors.mes_lab}
                 />
               </div>
-              
+
               <div className="col-lg-3">
                 <Input
                   type="text"

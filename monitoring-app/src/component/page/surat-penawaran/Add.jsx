@@ -378,7 +378,7 @@ export default function SuratPenawaranAdd({ onChangePage }) {
       )}
       <form onSubmit={handleAdd}>
         <div className="card">
-          <div className="card-header bg-primary fw-medium text-white">
+          <div className="card-header bg-primary lead fw-medium text-white">
             Tambah Surat Penawaran Baru
           </div>
           <div className="card-body p-4">

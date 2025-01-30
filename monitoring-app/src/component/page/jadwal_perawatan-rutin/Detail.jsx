@@ -135,7 +135,7 @@ export default function DetailJadwal({ onChangePage, withID }) {
         </div>
       )}
       <div className="card">
-        <div className="card-header bg-primary fw-medium text-white">
+        <div className="card-header bg-primary lead fw-medium text-white">
           Detail Data Sparepart
         </div>
         <div className="card-body p-4">
@@ -228,7 +228,11 @@ export default function DetailJadwal({ onChangePage, withID }) {
                   <Label
                     forLabel="Tanggal_Aktual"
                     title="Tanggal Aktual"
-                    data={formData.Tanggal_Aktual ? formatDate(formData.Tanggal_Aktual, "D MMMM YYYY") : "-"}
+                    data={
+                      formData.Tanggal_Aktual
+                        ? formatDate(formData.Tanggal_Aktual, "D MMMM YYYY")
+                        : "-"
+                    }
                   />
                 </div>
                 <div className="col-lg-3">
@@ -249,7 +253,11 @@ export default function DetailJadwal({ onChangePage, withID }) {
                   <Label
                     forLabel="Tanggal_Selesai"
                     title="Tanggal Selesai"
-                    data={formData.Tanggal_Aktual ? formatDate(formData.Tanggal_Selesai, "D MMMM YYYY") : "-"}
+                    data={
+                      formData.Tanggal_Aktual
+                        ? formatDate(formData.Tanggal_Selesai, "D MMMM YYYY")
+                        : "-"
+                    }
                   />
                 </div>
                 <div className="col-lg-3">
@@ -278,13 +286,13 @@ export default function DetailJadwal({ onChangePage, withID }) {
           </div>
         </div>
       </div>
-          <div className="float-end my-4 mx-1">
-            <Button
-              classType="secondary px-4 py-2"
-              label="KEMBALI"
-              onClick={() => onChangePage("index")}
-            />
-          </div>
+      <div className="float-end my-4 mx-1">
+        <Button
+          classType="secondary px-4 py-2"
+          label="KEMBALI"
+          onClick={() => onChangePage("index")}
+        />
+      </div>
     </>
   );
 }

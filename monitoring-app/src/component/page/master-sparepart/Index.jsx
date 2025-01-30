@@ -284,7 +284,7 @@ export default function MasterSparepartIndex({ onChangePage }) {
               />
             </Filter>
             <Button
-              iconName="export"
+              iconName="file-export"
               classType="success"
               title="Export"
               label="Export to XLSX"

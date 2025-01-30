@@ -38,9 +38,9 @@ export default function MasterSparepartAdd({ onChangePage }) {
     spa_gambar_sparepart: string(),
     spa_merk: string().required("harus diisi"),
     spa_stok: string()
-    .matches(/^\d*$/, "Hanya angka yang diperbolehkan") // Validasi angka
-    .min(0, "Stok tidak boleh kurang dari 0") // Menambahkan validasi minimal 0
-    .required("harus diisi"), // Harus diisi
+      .matches(/^\d*$/, "Hanya angka yang diperbolehkan") // Validasi angka
+      .min(0, "Stok tidak boleh kurang dari 0") // Menambahkan validasi minimal 0
+      .required("harus diisi"), // Harus diisi
     spa_tanggal_masuk: string().test(
       "is-valid-date",
       "Tanggal masuk tidak boleh kurang dari hari ini",
@@ -169,7 +169,7 @@ export default function MasterSparepartAdd({ onChangePage }) {
       )}
       <form onSubmit={handleAdd}>
         <div className="card">
-          <div className="card-header bg-primary fw-medium text-white">
+          <div className="card-header bg-primary lead fw-medium text-white">
             Tambah Data Sparepart Baru
           </div>
           <div className="card-body p-4">

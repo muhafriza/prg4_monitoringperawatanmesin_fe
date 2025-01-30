@@ -9,6 +9,7 @@ import Table from "../../part/Table";
 
 import { Chart as ChartJS, defaults } from "chart.js/auto";
 import { Bar, Doughnut, Pie } from "react-chartjs-2";
+import { DateTime } from "luxon";
 
 defaults.plugins.title.display = true;
 defaults.plugins.title.align = "start";
@@ -27,26 +28,28 @@ const inisialisasiData = [
     Count: 0,
   },
 ];
+const inisialisasiDataProses = [
+  {
+    Key: null,
+    No: null,
+    "Nama Mesin": null,
+    "Tanggal Perawatan": null,
+    Tindakan: null,
+    "Dibuat Oleh": null,
+    Status: null,
+    Aksi: null,
+    Count: 0,
+  },
+];
 
 export default function BerandaAdministrator() {
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
-  const [dataKerusakanTerahir, setDataKerusakanTerahir] = useState(inisialisasiData);
-
-  const formDataRef = useRef({
-    countTotalPermintaan: 0,
-    countTerlambat: 0,
-    countBatal: 0,
-    countSelesai: 0,
-    countMenungguAnalisa: 0,
-    countBelumDibuatRAK: 0,
-    countBelumDibuatPenawaran: 0,
-    countDalamProsesNegosiasi: 0,
-    countBelumDibuatSPK: 0,
-    countDalamProsesProduksi: 0,
-    countDalamProsesQC: 0,
-    countDalamProsesDelivery: 0,
-  });
+  const [dataKerusakanTerahir, setDataKerusakanTerahir] =
+    useState(inisialisasiData);
+  const [dataProsesPerbaikan, setDataProsesPerbaikan] = useState(
+    inisialisasiDataProses
+  );
 
   function formatDate(dateString, format) {
     const date = new Date(dateString);
@@ -90,50 +93,110 @@ export default function BerandaAdministrator() {
   const [sparepartStok, setSparepartStok] = useState([]);
 
   useEffect(() => {
-    console.log(inisialisasiData);
     const fetchData = async () => {
       setIsError((prevError) => ({ ...prevError, error: false }));
 
       try {
+        const datenow = new Date().toLocaleDateString("sv-SE");
+        const date = new Date().toISOString().split("T")[0];
+        console.log("SEKARANG "+ datenow);
         const data = await UseFetch(
-          API_LINK + "Utilities/GetDataCountingDashboard",
-          {}
+          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventif",
+          {
+            page: 1,
+            query: datenow,
+            sort: "pre_idPerawatan_preventif",
+            status: "",
+            itemPerPage: 1000,
+          }
         );
+        console.log("ini Data Proses");
+        console.log(data);
 
-        if (data === "ERROR" || data.length === 0) {
-          throw new Error("Terjadi kesalahan: Gagal mengambil data dashboard.");
+        if (data.length == 0) {
+          setDataProsesPerbaikan(inisialisasiDataProses);
         } else {
-          formDataRef.current = { ...formDataRef.current, ...data[0] };
+          console.log(data);
           const formattedData = data.map((value) => {
-            const { tanggal_masuk, Deskripsi, Status, ...rest } = value; // Menghapus tanggal_masuk
+            const {
+              ID_Perawatan,
+              Tanggal_Perawatan,
+              Status_Pemeliharaan,
+              Dibuat,
+              TindakanPerbaikan,
+              Nama_Mesin,
+              ...rest
+            } = value;
             return {
-              ...rest, // Menyalin sisa properti
-              "Tanggal Masuk": formatDate(tanggal_masuk, "D MMMM YYYY"),
-              Status: Status,
-              Aksi: ["Toggle", "Detail", "Edit"],
+              ...rest,
+              "ID Perawatan": ID_Perawatan,
+              "Nama Mesin": Nama_Mesin,
+              "Tindakan Perbaikan":
+                TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
+              "Dibuat Oleh": Dibuat == null ? "-" : Dibuat,
+              "Jadwal Perawatan": formatDate(Tanggal_Perawatan, "D MMMM YYYY"),
+              Status: Status_Pemeliharaan,
               Alignment: [
+                "center",
                 "center",
                 "left",
                 "left",
-                "right",
+                "left",
                 "center",
                 "center",
                 "center",
               ],
             };
           });
-          // setCurrentData(formattedData);
+          setDataProsesPerbaikan(formattedData);
         }
       } catch (error) {
-        window.scrollTo(0, 0);
-        setIsError((prevError) => ({
-          ...prevError,
-          error: true,
-          message: error.message,
-        }));
+        setIsError(true);
+        console.log("Format Data Error: " + error);
       } finally {
         setIsLoading(false);
       }
+
+      // try {
+      //   const data = await UseFetch(
+      //     API_LINK + "Utilities/GetDataCountingDashboard",
+      //     {}
+      //   );
+
+      //   if (data === "ERROR" || data.length === 0) {
+      //     throw new Error("Terjadi kesalahan: Gagal mengambil data dashboard.");
+      //   } else {
+      //     formDataRef.current = { ...formDataRef.current, ...data[0] };
+      //     const formattedData = data.map((value) => {
+      //       const { tanggal_masuk, Deskripsi, Status, ...rest } = value; // Menghapus tanggal_masuk
+      //       return {
+      //         ...rest, // Menyalin sisa properti
+      //         "Tanggal Masuk": formatDate(tanggal_masuk, "D MMMM YYYY"),
+      //         Status: Status,
+      //         Aksi: ["Toggle", "Detail", "Edit"],
+      //         Alignment: [
+      //           "center",
+      //           "left",
+      //           "left",
+      //           "right",
+      //           "center",
+      //           "center",
+      //           "center",
+      //         ],
+      //       };
+      //     });
+      //     // setCurrentData(formattedData);
+      //   }
+      // } catch (error) {
+      //   window.scrollTo(0, 0);
+      //   setIsError((prevError) => ({
+      //     ...prevError,
+      //     error: true,
+      //     message: error.message,
+      //   }));
+      // } finally {
+      //   setIsLoading(false);
+      // }
 
       try {
         const dataSP = await UseFetch(
@@ -154,8 +217,8 @@ export default function BerandaAdministrator() {
               "center",
               "center",
               "center",
-            ]
-          }))
+            ],
+          }));
           setDataKerusakanTerahir(formattedData);
           setSparepartStok(dataSP);
         }
@@ -170,7 +233,7 @@ export default function BerandaAdministrator() {
         setIsLoading(false);
       }
     };
-    console.log("PA",dataKerusakanTerahir);
+    console.log("PA", dataKerusakanTerahir);
     fetchData();
   }, []);
 
@@ -191,7 +254,7 @@ export default function BerandaAdministrator() {
               <div className="lead fw-medium">Laporan Kerusakan</div>
             </div>
             <div className="card-footer d-flex align-items-center justify-content-between h1 border-0">
-              <span>{formDataRef.current.countTotalPermintaan}</span>
+              <span></span>
               <i className="bi bi-tools ms-2"></i>
             </div>
           </div>
@@ -215,12 +278,10 @@ export default function BerandaAdministrator() {
       <div className="my-2">
         <div className="card card-equal-height border">
           <div className="card-header bg-warning text-center text-white pt-3 pb-3 px-3">
-            <span className="lead fw-medium">
-              Pelaksanaan Proses Perbaikan
-            </span>
+            <span className="lead fw-medium">Pelaksanaan Proses Perbaikan</span>
           </div>
           <div className="card-body lead fw-small">
-            <Table data={inisialisasiData} />
+            <Table data={dataProsesPerbaikan != null ? dataProsesPerbaikan : inisialisasiData} />
           </div>
         </div>
         <div className="row">
@@ -288,9 +349,6 @@ export default function BerandaAdministrator() {
                         title: {
                           display: true,
                           text: "Stok Sparepart",
-                          font: {
-                            size: 16,
-                          },
                         },
                       },
                       scales: {
@@ -349,7 +407,7 @@ export default function BerandaAdministrator() {
                           position: "top",
                         },
                         title: {
-                          text: "Sparepart Stok",
+                          text: "Laporan Kerusakan bagian UPT",
                         },
                       },
                     }}
