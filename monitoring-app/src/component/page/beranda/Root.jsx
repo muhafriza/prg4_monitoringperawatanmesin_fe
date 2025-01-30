@@ -46,7 +46,7 @@ export default function Beranda() {
     );
   }
 
-  // Jika role bukan 60, tampilkan halaman lain atau pesan error
+  
   return (
     <div>
       <h1>Akses Ditolak</h1>

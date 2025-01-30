@@ -17,14 +17,13 @@ defaults.plugins.title.color = "black";
 
 const inisialisasiData = [
   {
-    Key: null,
-    No: 1,
+    Key: 1,
+    No: "WW",
     "Nama Sparepart": "MSKKS SDSAD",
     Merk: "HONDA",
     "Tanggal Masuk": "12 Jan 2023",
     Stok: 23,
     Status: "Menungg",
-    Aksi: null,
     Count: 0,
   },
 ];
@@ -32,7 +31,7 @@ const inisialisasiData = [
 export default function BerandaAdministrator() {
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
-  const [currentData, setCurrentData] = useState(inisialisasiData);
+  const [dataKerusakanTerahir, setDataKerusakanTerahir] = useState(inisialisasiData);
 
   const formDataRef = useRef({
     countTotalPermintaan: 0,
@@ -48,7 +47,6 @@ export default function BerandaAdministrator() {
     countDalamProsesQC: 0,
     countDalamProsesDelivery: 0,
   });
-
 
   function formatDate(dateString, format) {
     const date = new Date(dateString);
@@ -89,8 +87,6 @@ export default function BerandaAdministrator() {
     }
   }
 
-  
-
   const [sparepartStok, setSparepartStok] = useState([]);
 
   useEffect(() => {
@@ -109,7 +105,7 @@ export default function BerandaAdministrator() {
         } else {
           formDataRef.current = { ...formDataRef.current, ...data[0] };
           const formattedData = data.map((value) => {
-            const { tanggal_masuk,Deskripsi,Status, ...rest } = value; // Menghapus tanggal_masuk
+            const { tanggal_masuk, Deskripsi, Status, ...rest } = value; // Menghapus tanggal_masuk
             return {
               ...rest, // Menyalin sisa properti
               "Tanggal Masuk": formatDate(tanggal_masuk, "D MMMM YYYY"),
@@ -126,7 +122,7 @@ export default function BerandaAdministrator() {
               ],
             };
           });
-          // setCurrentData(formattedData);  
+          // setCurrentData(formattedData);
         }
       } catch (error) {
         window.scrollTo(0, 0);
@@ -144,10 +140,23 @@ export default function BerandaAdministrator() {
           API_LINK + "TransaksiPreventif/getStokSparepart",
           { status: "Aktif" }
         );
+        console.log(dataSP);
 
         if (dataSP === "ERROR" || dataSP.length === 0) {
           throw new Error("Terjadi kesalahan: Gagal mengambil data stok.");
         } else {
+          const formattedData = dataSP.map((value) => ({
+            ...value,
+            Alignment: [
+              "center",
+              "center",
+              "center",
+              "center",
+              "center",
+              "center",
+            ]
+          }))
+          setDataKerusakanTerahir(formattedData);
           setSparepartStok(dataSP);
         }
       } catch (error) {
@@ -161,7 +170,7 @@ export default function BerandaAdministrator() {
         setIsLoading(false);
       }
     };
-
+    console.log("PA",dataKerusakanTerahir);
     fetchData();
   }, []);
 
@@ -191,41 +200,27 @@ export default function BerandaAdministrator() {
         {/* Komponen Selamat Datang */}
         <div className="col-lg-10">
           <div className="card card-equal-height mt-3 border">
-            <div className="card-header bg-primary text-white pt-3 pb-3 px-3">
+            <div className="card-header bg-danger text-center text-white pt-3 pb-3 px-3">
               <span className="lead fw-medium">
-                Selamat Datang di Sistem Monitoring Proses Perawatan Mesin
+                Kerusakan yang terakhir terjadi
               </span>
             </div>
             <div className="card-body lead fw-small px-3 mb-3">
-              <Table data={inisialisasiData} />
+              <Table data={dataKerusakanTerahir} />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="row mx-0 my-2">
-        <div className="col-lg-3">
-          <div className="card mt-3 border-0">
-            <div className="card-body bg-dark-subtle bg-gradient rounded-2 text-white">
-              <div className="lead fw-medium">Terlambat (In Progress)</div>
-              <div className="h1">{formDataRef.current.countTerlambat}</div>
-            </div>
+      <div className="my-2">
+        <div className="card card-equal-height border">
+          <div className="card-header bg-warning text-center text-white pt-3 pb-3 px-3">
+            <span className="lead fw-medium">
+              Pelaksanaan Proses Perbaikan
+            </span>
           </div>
-        </div>
-        <div className="col-lg-3">
-          <div className="card mt-3 border-0">
-            <div className="card-body bg-danger bg-gradient rounded-2 text-white">
-              <div className="lead fw-medium">Batal</div>
-              <div className="h1">{formDataRef.current.countBatal}</div>
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-3 mb-3">
-          <div className="card mt-3 border-0">
-            <div className="card-body bg-dark-subtle bg-gradient rounded-2 text-white">
-              <div className="lead fw-medium">Selesai (In Progress)</div>
-              <div className="h1">{formDataRef.current.countSelesai}</div>
-            </div>
+          <div className="card-body lead fw-small">
+            <Table data={inisialisasiData} />
           </div>
         </div>
         <div className="row">

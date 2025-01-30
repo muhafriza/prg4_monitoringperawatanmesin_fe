@@ -185,7 +185,6 @@ export default function DetailRiwayatPreventif({ onChangePage, withID }) {
                       </li>
                     ))}
                   </ul>
-                  
                 ) : (
                   <p>Tidak Ada Sparepart.</p>
                 )}
@@ -277,15 +276,14 @@ export default function DetailRiwayatPreventif({ onChangePage, withID }) {
               </div>
             </div>
           </div>
-
-          <div className="float-end my-4 mx-1">
-            <Button
-              classType="secondary px-4 py-2"
-              label="KEMBALI"
-              onClick={() => onChangePage("index")}
-            />
-          </div>
         </div>
+      </div>
+      <div className="float-end my-4 mx-1">
+        <Button
+          classType="secondary px-4 py-2"
+          label="KEMBALI"
+          onClick={() => onChangePage("index")}
+        />
       </div>
     </>
   );

@@ -10,6 +10,8 @@ import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const inisialisasiData = [
   {
@@ -39,6 +41,7 @@ export default function MasterSparepartIndex({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
+  const [dataExport, setDataExport] = useState();
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
@@ -46,6 +49,33 @@ export default function MasterSparepartIndex({ onChangePage }) {
     status: "Aktif",
     itemPerPage: 5,
   });
+
+  const exportToExcel = () => {
+    if (!dataExport || dataExport.length === 0) {
+      SweetAlert("Gagal", "Tidak ada data untuk diekspor!", "error");
+      return;
+    }
+
+    // 1. Konversi data menjadi worksheet
+    const worksheet = XLSX.utils.json_to_sheet(dataExport);
+
+    // 2. Buat workbook dan tambahkan worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Data Sparepart");
+
+    // 3. Konversi workbook ke file Excel (blob)
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const excelFile = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+    });
+
+    // 4. Simpan file
+    const now = new Date().toISOString().split("T")[0];
+    saveAs(excelFile, `Data-Sparepart_${formatDate(now, "D MMMM YYYY")}.xlsx`);
+  };
 
   const searchQuery = useRef();
   const searchFilterSort = useRef();
@@ -61,6 +91,7 @@ export default function MasterSparepartIndex({ onChangePage }) {
     });
   }
   
+
   function formatDate(dateString, format) {
     const date = new Date(dateString);
 
@@ -134,15 +165,38 @@ export default function MasterSparepartIndex({ onChangePage }) {
   }
 
   useEffect(() => {
+    const fetchDataToExport = async () => {
+      setIsError(false);
+  
+      try {
+        const data = await UseFetch(
+          API_LINK + "MasterSparepart/ExportExcelSparepart",
+          { status: "Aktif" }
+        );
+  
+        if (!data) {
+          setIsError(true);
+          console.log("Error saat fetch data export");
+        } else if (data.length === 0) {
+          setDataExport(inisialisasiData);
+        } else {
+          setDataExport(data);
+          console.log("Data Export" + dataExport);
+        }
+      } catch {
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     const fetchData = async () => {
       setIsError(false);
-    
       try {
         const data = await UseFetch(
           API_LINK + "MasterSparepart/GetDataSparepart",
           currentFilter
         );
-    
+
         if (data === "ERROR") {
           setIsError(true);
           console.log("Error nih Line 147");
@@ -150,7 +204,7 @@ export default function MasterSparepartIndex({ onChangePage }) {
           setCurrentData(inisialisasiData);
         } else {
           const formattedData = data.map((value) => {
-            const { tanggal_masuk,Deskripsi,Status, ...rest } = value; // Menghapus tanggal_masuk
+            const { tanggal_masuk, Deskripsi, Status, ...rest } = value; // Menghapus tanggal_masuk
             return {
               ...rest, // Menyalin sisa properti
               "Tanggal Masuk": formatDate(tanggal_masuk, "D MMMM YYYY"),
@@ -176,9 +230,9 @@ export default function MasterSparepartIndex({ onChangePage }) {
         setIsLoading(false);
       }
     };
-    
 
     fetchData();
+    fetchDataToExport();
   }, [currentFilter]);
 
   return (
@@ -229,15 +283,22 @@ export default function MasterSparepartIndex({ onChangePage }) {
                 defaultValue="Aktif"
               />
             </Filter>
+            <Button
+              iconName="export"
+              classType="success"
+              title="Export"
+              label="Export to XLSX"
+              onClick={exportToExcel}
+            />
           </div>
         </div>
         <div className="mt-3">
           {isLoading ? (
-            <Loading /> 
+            <Loading />
           ) : (
             <div className="d-flex flex-column">
               <Table
-              // columns={columns}
+                // columns={columns}
                 data={currentData}
                 onToggle={handleSetStatus}
                 onDetail={onChangePage}

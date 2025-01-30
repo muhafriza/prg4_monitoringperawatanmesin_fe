@@ -43,19 +43,7 @@ export default function PerawatanPreventifTeknisiEdit({
     Tanggal_Aktual: string().required("Isi Tanggal Aktual Terlebih Dahulu"),
     Tanggal_Selesai: string(),
     Tindakan_Perbaikan: string().required(),
-    Catatan_Tambahan: string().test(
-      "required-if-actual-date-greater",
-      "Catatan Tambahan wajib diisi jika Tanggal Aktual lebih dari Tanggal Penjadwalan.",
-      function (value) {
-        const { Tanggal_Aktual, Tanggal_Penjadwalan } = this.parent;
-        if (Tanggal_Aktual && Tanggal_Penjadwalan) {
-          const actualDate = new Date(Tanggal_Aktual);
-          const scheduledDate = new Date(Tanggal_Penjadwalan);
-          return actualDate <= scheduledDate || (value && value.trim() !== "");
-        }
-        return true; // Tidak perlu validasi jika salah satu tanggal tidak ada
-      }
-    ),
+    Catatan_Tambahan: string(),
     Status_Pemeliharaan: string().required(),
     Created_By: string().required(),
     Created_Date: string().required(),
@@ -105,10 +93,74 @@ export default function PerawatanPreventifTeknisiEdit({
 
   const handleInputChange = (e, fieldName) => {
     const { name, value } = e.target;
+
+    // Memperbarui data form
     setFormData((prevFormData) => ({
       ...prevFormData,
       [name]: value,
     }));
+
+    // Validasi untuk Tanggal Selesai
+    if (name === "Tanggal_Selesai") {
+      const { Tanggal_Aktual } = formData;
+      if (Tanggal_Aktual && value) {
+        const actualDate = new Date(Tanggal_Aktual);
+        const completionDate = new Date(value);
+        if (completionDate < actualDate) {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            Tanggal_Selesai:
+              "Tanggal Selesai tidak boleh sebelum Tanggal Aktual.",
+          }));
+        } else {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            Tanggal_Selesai: "",
+          }));
+        }
+      }
+    }
+
+    if (name === "Tanggal_Aktual") {
+      const { Tanggal_Penjadwalan } = formData;
+      if (Tanggal_Penjadwalan && value) {
+        const actualDate = new Date(value);
+        const jadwal = new Date(Tanggal_Penjadwalan);
+        if (actualDate >= jadwal) {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            Catatan_Tambahan:
+              "Catatan Tambahan wajib diisi jika Tanggal Aktual lebih dari Tanggal Penjadwalan.",
+          }));
+        } else {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            Catatan_Tambahan: "",
+          }));
+        }
+      }
+    }
+
+    // Validasi untuk Catatan Tambahan
+    if (name === "Catatan_Tambahan") {
+      const { Tanggal_Aktual, Tanggal_Penjadwalan } = formData;
+      if (Tanggal_Aktual && Tanggal_Penjadwalan) {
+        const actualDate = new Date(Tanggal_Aktual);
+        const scheduledDate = new Date(Tanggal_Penjadwalan);
+        if (actualDate > scheduledDate && (!value || value.trim() === "")) {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            Catatan_Tambahan:
+              "Catatan Tambahan wajib diisi jika Tanggal Aktual lebih dari Tanggal Penjadwalan.",
+          }));
+        } else {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            Catatan_Tambahan: "",
+          }));
+        }
+      }
+    }
   };
 
   const handleEdit = async (e) => {
@@ -118,15 +170,41 @@ export default function PerawatanPreventifTeknisiEdit({
     delete formData.Modified_Date;
 
     console.log("Payload:", formData);
-    console.log("tes" + formData.Tanggal_Aktual);
 
+    // Validasi manual untuk Tanggal_Selesai
+    if (formData.Tanggal_Selesai) {
+      const actualDate = new Date(formData.Tanggal_Aktual);
+      const completionDate = new Date(formData.Tanggal_Selesai);
+      if (completionDate < actualDate) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          Tanggal_Selesai:
+            "Tanggal Selesai tidak boleh sebelum Tanggal Aktual.",
+        }));
+        window.scrollTo(0, 0);
+        return; // Hentikan proses submit jika ada error
+      }
+    }
+    if (formData.Tanggal_Aktual) {
+      const actualDate = new Date(formData.Tanggal_Aktual);
+      const scheduledDate = new Date(formData.Tanggal_Penjadwalan);
+      if (actualDate > scheduledDate) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          Catatan_Tambahan:
+            "Catatan Tambahan wajib diisi jika Tanggal Aktual lebih dari Tanggal Penjadwalan.",
+        }));
+        window.scrollTo(0, 0);
+        return;
+      }
+    }
+
+    // Validasi form
     const validationErrors = await validateAllInputs(
       formData,
       userSchema,
       setErrors
     );
-
-    console.error("Validation :", validationErrors);
 
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
@@ -144,7 +222,7 @@ export default function PerawatanPreventifTeknisiEdit({
         if (!data) {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data produk.");
         } else {
-          SweetAlert("Sukses", "Data produk berhasil disimpan", "success");
+          SweetAlert("Sukses", "Data berhasil disimpan", "success");
           onChangePage("index");
         }
       } catch (error) {
@@ -157,7 +235,9 @@ export default function PerawatanPreventifTeknisiEdit({
       } finally {
         setIsLoading(false);
       }
-    } else window.scrollTo(0, 0);
+    } else {
+      window.scrollTo(0, 0);
+    }
   };
 
   useEffect(() => {
@@ -199,6 +279,8 @@ export default function PerawatanPreventifTeknisiEdit({
             id: withID,
           }
         );
+        delete data[0].gambar_mesin;
+        delete data[0].upt;
         console.log(data);
 
         if (data === "ERROR" || data.length === 0) {
@@ -268,22 +350,23 @@ export default function PerawatanPreventifTeknisiEdit({
                   data={formData.Tindakan_Perbaikan}
                 />
               </div>
-                <div className="col-lg-4">
-                  <Input
-                    type="date"
-                    forInput="Tanggal_Aktual"
-                    label="Tanggal Aktual"
-                    className="form-control"
-                    isRequired
-                    value={
-                      formData.Tanggal_Aktual
-                        ? formatDate(formData.Tanggal_Aktual, "YYYY-MM-DD")
-                        : ""
-                    }
-                    disabled={!!formData.Tanggal_Aktual}
-                    onChange={handleInputChange}
-                  />
-                </div>
+              <div className="col-lg-4">
+                <Input
+                  type="date"
+                  forInput="Tanggal_Aktual"
+                  label="Tanggal Aktual"
+                  className="form-control"
+                  isRequired
+                  min={formatDate(new Date(), "YYYY-MM-DD")} // Set tanggal minimal hari ini
+                  value={
+                    formData.Tanggal_Aktual
+                      ? formatDate(formData.Tanggal_Aktual, "YYYY-MM-DD")
+                      : ""
+                  }
+                  onChange={handleInputChange}
+                  errorMessage={errors.Tanggal_Aktual}
+                />
+              </div>
               <div className="col-lg-3">
                 <Label
                   forLabel="Created_By"
@@ -304,8 +387,10 @@ export default function PerawatanPreventifTeknisiEdit({
                   forInput="Tanggal_Selesai"
                   label="Tanggal Selesai"
                   className="form-control"
+                  min={formatDate(new Date(formData.Tanggal_Aktual), "YYYY-MM-DD")} // Set tanggal minimal hari ini
                   value={formData.Tanggal_Selesai}
                   onChange={handleInputChange}
+                  errorMessage={errors.Tanggal_Selesai}
                 />
               </div>
               <div className="col-lg-3">
@@ -323,10 +408,11 @@ export default function PerawatanPreventifTeknisiEdit({
                 <Input
                   type="textarea"
                   forInput="Catatan_Tambahan"
+                  name="Catatan_Tambahan"
                   label="Catatan Tambahan"
                   value={formData.Catatan_Tambahan || ""} // Gunakan default "" jika undefined
                   onChange={(e) => handleInputChange(e, "Catatan_Tambahan")}
-                  errorMessage={errors?.Catatan_Tambahan || ""}
+                  errorMessage={errors.Catatan_Tambahan}
                 />
               </div>
               <div className="col-lg-3">

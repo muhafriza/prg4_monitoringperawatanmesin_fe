@@ -10,6 +10,8 @@ import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const inisialisasiData = [
   {
@@ -43,6 +45,7 @@ export default function MasterMesinIndex({ onChangePage }) {
     status: "Aktif",
     itemPerPage: 10,
   });
+  const [dataExport, setDataExport] = useState([]);
 
   const searchQuery = useRef();
   const searchFilterSort = useRef();
@@ -86,8 +89,95 @@ export default function MasterMesinIndex({ onChangePage }) {
       })
       .finally(() => setIsLoading(false));
   }
+  const exportToExcel = () => {
+    if (!dataExport || dataExport.length === 0) {
+      SweetAlert("Gagal", "Tidak ada data untuk diekspor!", "error");
+      return;
+    }
 
+    // 1. Konversi data menjadi worksheet
+    const worksheet = XLSX.utils.json_to_sheet(dataExport);
+
+    // 2. Buat workbook dan tambahkan worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Data Mesin");
+
+    // 3. Konversi workbook ke file Excel (blob)
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const excelFile = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+    });
+
+    // 4. Simpan file
+    const now = new Date().toISOString().split("T")[0];
+    saveAs(excelFile, `Data-Mesin_${formatDate(now, "D MMMM YYYY")}.xlsx`);
+  };
+
+  function formatDate(dateString, format) {
+    const date = new Date(dateString);
+
+    const day = date.getDate();
+    const month = date.getMonth(); // Get month as number (0-based)
+    const year = date.getFullYear();
+
+    const months = [
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember",
+    ];
+
+    switch (format) {
+      case "DD/MM/YYYY":
+        return `${String(day).padStart(2, "0")}/${String(month + 1).padStart(
+          2,
+          "0"
+        )}/${year}`;
+      case "YYYY-MM-DD":
+        return `${year}-${String(month + 1).padStart(2, "0")}-${String(
+          day
+        ).padStart(2, "0")}`;
+      case "D MMMM YYYY":
+        return `${day} ${months[month]} ${year}`;
+      default:
+        return dateString;
+    }
+  }
   useEffect(() => {
+    const fetchDataToExport = async () => {
+      setIsError(false);
+      try {
+        const data = await UseFetch(API_LINK + "Mesin/ExporttoExcel", {
+          status: "Aktif",
+        });
+
+        console.log(data);
+        if (!data) {
+          setIsError(true);
+          console.log("Error saat fetch data export");
+        } else if (data.length === 0) {
+          setDataExport(inisialisasiData);
+        } else {
+          setDataExport(data);
+          console.log("Data Export" + dataExport);
+        }
+      } catch {
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     const fetchData = async () => {
       setIsError(false);
 
@@ -127,8 +217,8 @@ export default function MasterMesinIndex({ onChangePage }) {
       }
     };
 
+    fetchDataToExport();
     fetchData();
-
   }, [currentFilter]);
 
   return (
@@ -179,6 +269,13 @@ export default function MasterMesinIndex({ onChangePage }) {
                 defaultValue="Aktif"
               />
             </Filter>
+            <Button
+              iconName="export"
+              classType="success"
+              title="Export"
+              label="Export to XLSX"
+              onClick={exportToExcel}
+            />
           </div>
         </div>
         <div className="mt-3">

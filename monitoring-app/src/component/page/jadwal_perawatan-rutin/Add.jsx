@@ -24,6 +24,7 @@ export default function Add({ onChangePage }) {
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [mesinOptions, setmesinOptions] = useState([]);
+  let selectedUPT = "";
   const [generatedDates, setGeneratedDates] = useState([]); // State untuk menyimpan jadwal yang dihasilkan
   const formDataRef = useRef({
     mes_id_mesin: "",
@@ -34,11 +35,6 @@ export default function Add({ onChangePage }) {
     durasi: "",
     sparepart: "",
     qty: "",
-  });
-  const [currentFilter, setCurrentFilter] = useState({
-    p1: "",
-    upt: "",
-    status: "Aktif",
   });
   const [sparepartOptions, setSparepartOptions] = useState([]);
   const [spareparts, setSpareparts] = useState([{ sparepart: "", qty: "" }]);
@@ -59,13 +55,8 @@ export default function Add({ onChangePage }) {
   });
 
   const handleUPTChange = (e) => {
-    const selectedUPT = e.target.value;
-    setCurrentFilter((prevFilter) => ({
-      ...prevFilter,
-      p1: "",
-      upt: selectedUPT,
-      status: "Aktif"
-    }));
+    selectedUPT = e.target.value;
+    console.log(e.target.value);
     fetchDataMesin();
   };
 
@@ -75,8 +66,13 @@ export default function Add({ onChangePage }) {
     try {
       const data = await UseFetch(
         API_LINK + "TransaksiPreventif/getNamaMesin",
-        currentFilter
+        {
+          p1: "",
+          upt: selectedUPT,
+          status: "Aktif",
+        }
       );
+      console.log(data);
       if (data === "ERROR" || data.length === 0) {
         throw new Error("Terjadi kesalahan: Gagal mengambil data Mesin.");
       } else {
@@ -121,13 +117,13 @@ export default function Add({ onChangePage }) {
     };
 
     fetchDataSparepart();
-  }, [currentFilter]);
+  }, []);
 
   function formatDate(dateString, format) {
     const date = new Date(dateString);
 
     const day = date.getDate();
-    const month = date.getMonth(); // Get month as number (0-based)
+    const month = date.getMonth(); 
     const year = date.getFullYear();
 
     const months = [
@@ -187,6 +183,7 @@ export default function Add({ onChangePage }) {
 
       // Menghitung total hari yang telah berlalu setelah menambahkan tanggal
       totalDaysPassed = (nextDate - startDate) / (1000 * 60 * 60 * 24);
+      console.log(totalDaysPassed);
     }
 
     // Menambahkan tanggal terakhir yang valid jika totalDaysPassed masih kurang dari durasi
@@ -440,11 +437,6 @@ export default function Add({ onChangePage }) {
               classType="success me-2 px-4 py-2"
               label="Tambah Sparepart"
               onClick={addSparepartField}
-            />
-            <Button
-              classType="info me-2 px-4 py-2"
-              label="Generate Schedule"
-              onClick={() => generateSchedule()}
             />
             {generatedDates.length > 0 && (
               <div className="mt-4">
