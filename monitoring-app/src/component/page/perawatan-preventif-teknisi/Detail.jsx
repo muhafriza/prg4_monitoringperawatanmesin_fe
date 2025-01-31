@@ -72,7 +72,7 @@ export default function PerawatanPreventifTeknisiDetail({
 
       try {
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/DetailPerawatanMesin",
+          API_LINK + "PTransaksiPreventif/DetailPerawatanMesin",
           {
             id: withID,
           }
@@ -101,7 +101,7 @@ export default function PerawatanPreventifTeknisiDetail({
 
       try {
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/DetailSPPerawatanMesin",
+          API_LINK + "PTransaksiPreventif/DetailSPPerawatanMesin",
           {
             id: withID,
           }

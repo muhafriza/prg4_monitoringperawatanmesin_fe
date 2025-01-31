@@ -36,7 +36,7 @@ export default function MasterMesinDetail({ onChangePage, withID }) {
 
       try {
         // Call API to fetch the details of the machine
-        const data = await UseFetch(API_LINK + "Mesin/DetailMesin", {
+        const data = await UseFetch(API_LINK + "MasterMesin/DetailMesin", {
           id: withID, // Pass the machine ID to the API
         });
 

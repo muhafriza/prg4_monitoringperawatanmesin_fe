@@ -51,6 +51,7 @@ export default function MasterMesinIndex({ onChangePage }) {
   const searchFilterSort = useRef();
   const searchFilterStatus = useRef();
 
+  // Handle page changes
   function handleSetCurrentPage(newCurrentPage) {
     setIsLoading(true);
     setCurrentFilter((prevFilter) => ({
@@ -59,6 +60,7 @@ export default function MasterMesinIndex({ onChangePage }) {
     }));
   }
 
+  // Handle search
   function handleSearch() {
     setIsLoading(true);
     setCurrentFilter((prevFilter) => ({
@@ -70,10 +72,11 @@ export default function MasterMesinIndex({ onChangePage }) {
     }));
   }
 
+  // Handle changing the machine's status
   function handleSetStatus(id) {
     setIsLoading(true);
     setIsError(false);
-    UseFetch(API_LINK + "Mesin/SetStatusMesin", {
+    UseFetch(API_LINK + "MasterMesin/SetStatusMesin", {
       mes_id_mesin: id,
     })
       .then((data) => {
@@ -182,10 +185,15 @@ export default function MasterMesinIndex({ onChangePage }) {
       setIsError(false);
 
       try {
-        const data = await UseFetch(
-          API_LINK + "Mesin/GetDataMesin",
-          currentFilter
-        );
+        // Fetch data with the dynamic filters and pagination
+        const data = await UseFetch(API_LINK + "MasterMesin/GetDataMesin", {
+          page: currentFilter.page,
+          query: currentFilter.query,
+          sort: currentFilter.sort,
+          status: currentFilter.status,
+          itemPerPage: currentFilter.itemPerPage,
+        });
+        
         if (data === "ERROR") {
           setIsError(true);
         } else if (data.length === 0) {

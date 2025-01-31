@@ -142,7 +142,7 @@ export default function JadwalPerawatan({ onChangePage }) {
     
       try {
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventif",
+          API_LINK + "PTransaksiPreventif/GetDataPerawatanPreventif",
           currentFilter
         );
     
