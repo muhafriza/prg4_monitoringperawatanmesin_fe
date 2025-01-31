@@ -108,9 +108,16 @@ const routeList = [
   {
     path: "/riwayat_preventif",
     element: <RiwayatPerawatanPreventif />,
-  }
+  },
+  {
+    path: "/perawatan_korektif",
+    element: <KorektifPic />,
+  },
 
-  
+  {
+    path: "/perawatan_korektif_teknisi",
+    element: <KorektifTeknisi />,
+  }
 ];
 
 export default routeList;

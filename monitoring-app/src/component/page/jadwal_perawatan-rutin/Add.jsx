@@ -54,7 +54,7 @@ export default function Add({ onChangePage }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/getNamaMesin",
+          API_LINK + "PTransaksiPreventif/getNamaMesin",
           currentFilter
         );
         if (data === "ERROR" || data.length === 0) {
@@ -78,7 +78,7 @@ export default function Add({ onChangePage }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/getNamaSparepart",
+          API_LINK + "PTransaksiPreventif/getNamaSparepart",
           { status: "Aktif" }
         );
         if (data === "ERROR" || data.length === 0) {
@@ -245,7 +245,7 @@ export default function Add({ onChangePage }) {
         console.log("Pe: ");
         try {
           const data = await UseFetch(
-            API_LINK + "TransaksiPreventif/CreateJadwal",
+            API_LINK + "PTransaksiPreventif/CreateJadwal",
             formDataRef.current
           );
 

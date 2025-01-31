@@ -29,8 +29,8 @@ const inisialisasiData = [
 ];
 
 const dataFilterSort = [
-  { Value: "[kor_tanggal_penjadwalan] asc", Text: "Tanggal Penjadwalan [↑]" },
-  { Value: "[kor_tanggal_penjadwalan] desc", Text: "Tanggal Penjadwalan [↓]" },
+  { Value: "[kor_tanggal_pengajuan] asc", Text: "Tanggal Pengajuan [↑]" },
+  { Value: "[kor_tanggal_pengajuan] desc", Text: "Tanggal Pengajuan [↓]" },
   { Value: "[kor_tanggal_aktual] asc", Text: "Tanggal Aktual [↑]" },
   { Value: "[kor_tanggal_aktual] desc", Text: "Tanggal Aktual [↓]" },
 ];
@@ -47,7 +47,7 @@ export default function KorektifTeknisi({ onChangePage }) {
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[kor_tanggal_penjadwalan] asc",
+    sort: "[kor_tanggal_pengajuan] desc",
     status: "0", // Default ke status "Belum Selesai"
     itemPerPage: 10,
   });

@@ -114,7 +114,7 @@ export default function RiwayatPreventif({ onChangePage }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventifSelesai",
+          API_LINK + "PTransaksiPreventif/GetDataPerawatanPreventifSelesai",
           currentFilter
         );
 

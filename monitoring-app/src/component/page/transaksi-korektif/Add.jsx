@@ -17,7 +17,6 @@ export default function KorektifAdd({ onChangePage }) {
   const [selectedMesin, setSelectedMesin] = useState("");
 
   const formDataRef = useRef({
-   
     kor_mes_id_mesin: "",   
     kor_deskripsi_kerusakan: "",
   });

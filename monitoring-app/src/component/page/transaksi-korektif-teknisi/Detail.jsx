@@ -6,60 +6,115 @@ import Label from "../../part/Label";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
-export default function MasterMesinDetail({ onChangePage, withID }) {
+export default function DetailJadwal({ onChangePage, withID }) {
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
 
-  // Use state for the form data corresponding to pro_msmesin fields
-  const [formData, setFormData] = useState({
-    mes_id_mesin: "",
-    mes_kondisi_operasional: "",
-    mes_no_panel: "",
-    mes_lab: "",
-    mes_nama_mesin: "",
-    mes_daya_mesin: 0,
-    mes_jumlah: 0,
-    mes_kapasitas: "",
-    mes_tipe: "",
-    mes_status: "",
-    mes_created_by: "",
-    mes_created_date: "",
-    mes_modi_by: "",
-    mes_modi_date: "",
-    mes_gambar: "",
-  });
+  // State untuk menampung data fetch dari DetailSPPerawatanMesin
+  const [fetchDataDetailSP, setFetchDataDetailSP] = useState(null);
+
+  // Use state instead of useRef for form data
+  const [formData, setFormData] = useState({});
+
+  function formatDate(dateString, format) {
+    const date = new Date(dateString);
+
+    const day = date.getDate();
+    const month = date.getMonth(); // Get month as number (0-based)
+    const year = date.getFullYear();
+
+    const months = [
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember",
+    ];
+
+    switch (format) {
+      case "DD/MM/YYYY":
+        return `${day}/${month}/${year}`;
+      case "YYYY-MM-DD":
+        return `${year}-${month}-${day}`;
+      case "D MMMM YYYY":
+        return `${day} ${months[month]} ${year}`;
+      default:
+        return dateString;
+    }
+  }
 
   useEffect(() => {
     const fetchData = async () => {
       setIsError((prevError) => ({ ...prevError, error: false }));
 
       try {
-        // Call API to fetch the details of the machine
-        const data = await UseFetch(API_LINK + "Mesin/DetailMesin", {
-          id: withID, // Pass the machine ID to the API
-        });
+        const data = await UseFetch(
+          API_LINK + "Korektif/DetailPerawatanKorektif",
+          {
+            id: withID,
+          }
+        );
+        console.log("Response: ",data);
 
-        if (data === "ERROR" || !data || data.length === 0) {
-          throw new Error("Terjadi kesalahan: Gagal mengambil data Mesin.");
+        if (data === "ERROR" || data.length === 0) {
+          throw new Error("Terjadi kesalahan: Gagal mengambil data Detail.");
         } else {
-          // Update the formData state with the fetched data
-          setFormData(data[0]); // Assuming data[0] contains the correct object with the machine details
+          setFormData(data[0]);
+          console.log("Ini Form Data: ",formData)
+
         }
       } catch (error) {
-        window.scrollTo(0, 0); // Scroll to top in case of error
-        setIsError({
+        window.scrollTo(0, 0);
+        setIsError((prevError) => ({
+          ...prevError,
           error: true,
           message: error.message,
-        });
+        }));
       } finally {
-        setIsLoading(false); // Set loading state to false once data is fetched
+        setIsLoading(false);
       }
     };
 
-    fetchData(); // Call the fetchData function when component mounts or withID changes
+    const fetchDataDetailSP = async () => {
+      setIsError((prevError) => ({ ...prevError, error: false }));
+
+      try {
+        const data = await UseFetch(
+          API_LINK + "Korektif/DetailSPPerawatanKorektif",
+          {
+            id: withID,
+          }
+        );
+
+        if (data === "ERROR") {
+          throw new Error("Terjadi kesalahan: Gagal mengambil data Sparepart.");
+        } else {
+          setFetchDataDetailSP(data); // Menyimpan hasil fetchDetailSP ke state
+        }
+      } catch (error) {
+        window.scrollTo(0, 0);
+        setIsError((prevError) => ({
+          ...prevError,
+          error: true,
+          message: error.message,
+        }));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDataDetailSP(); // Panggil fetchDataDetailSP untuk mendapatkan data tambahan
+    fetchData(); // Panggil fetchData untuk mendapatkan data utama
   }, [withID]);
 
-  if (isLoading) return <Loading />; // Show loading component while fetching data
+  if (isLoading) return <Loading />;
 
   return (
     <>
@@ -69,19 +124,19 @@ export default function MasterMesinDetail({ onChangePage, withID }) {
         </div>
       )}
       <div className="card">
-        <div className="card-header bg-primary fw-medium text-white">
-          Detail Data Mesin
+        <div className="card-header bg-primary lead fw-medium text-white">
+          Detail Data Sparepart
         </div>
         <div className="card-body p-4">
           <div className="row">
-            <div className="col-md-4 mb-3">
+            <div className="col-md-4">
               <Label
-                forLabel="mes_gambar"
+                forLabel="gambar_mesin"
                 title="Gambar Mesin"
                 data={
-                  formData.mes_gambar && formData.mes_gambar !== "" ? (
+                  formData.gambar_mesin && formData.gambar_mesin !== "" ? (
                     <img
-                      src={FILE_LINK + formData.mes_gambar}
+                      src={FILE_LINK + formData.gambar_mesin}
                       alt="Gambar Mesin"
                       className="img-fluid"
                       style={{
@@ -96,77 +151,113 @@ export default function MasterMesinDetail({ onChangePage, withID }) {
                   )
                 }
               />
+              <div className="col-lg-8">
+                <Label
+                  forLabel="Detail_SP"
+                  title="Detail Sparepart yang digunakan: "
+                ></Label>
+                {fetchDataDetailSP && fetchDataDetailSP.length > 0 ? (
+                  <ul>
+                    {fetchDataDetailSP.map((item, index) => (
+                      <li key={index}>
+                        <strong>Sparepart {index + 1}:</strong>
+                        <ul>
+                          {Object.entries(item).map(([key, value]) => (
+                            <li key={key}>
+                              {key.replace(/_/g, " ")}:{" "}
+                              {typeof value === "object" && value !== null
+                                ? JSON.stringify(value) // Render objek sebagai string
+                                : value}
+                            </li>
+                          ))}
+                        </ul>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>Tidak Ada Sparepart.</p>
+                )}
+                <hr />
+              </div>
             </div>
-            <div className="col-lg-8">
+            <div className="col-lg-8 ml-5">
               <div className="row">
                 <div className="col-lg-3">
                   <Label
-                    forLabel="mes_id_mesin"
+                    forLabel="ID_Mesin"
                     title="ID Mesin"
-                    data={formData.mes_id_mesin}
+                    data={formData.ID_Mesin}
                   />
                 </div>
-                <div className="col-lg-3">
+                <div className="col-lg-4">
                   <Label
-                    forLabel="mes_kondisi_operasional"
-                    title="Kondisi Operasional"
-                    data={formData.mes_kondisi_operasional}
-                  />
-                </div>
-                <div className="col-lg-3">
-                  <Label
-                    forLabel="mes_no_panel"
-                    title="No. Panel"
-                    data={formData.mes_no_panel}
-                  />
-                </div>
-                <div className="col-lg-3">
-                  <Label
-                    forLabel="mes_lab"
-                    title="Lab"
-                    data={formData.mes_lab}
-                  />
-                </div>
-                <div className="col-lg-3">
-                  <Label
-                    forLabel="mes_nama_mesin"
+                    forLabel="Nama_Mesin"
                     title="Nama Mesin"
-                    data={formData.mes_nama_mesin}
+                    data={formData.Nama_Mesin}
                   />
                 </div>
                 <div className="col-lg-3">
                   <Label
-                    forLabel="mes_daya_mesin"
-                    title="Daya Mesin"
-                    data={formData.mes_daya_mesin}
+                    forLabel="Tanggal_Penjadwalan"
+                    title="Tanggal Penjadwalan"
+                    data={formData.Tanggal_Penjadwalan ? formatDate(
+                      formData.Tanggal_Penjadwalan,
+                      "D MMMM YYYY"
+                    ):"-"}
                   />
                 </div>
                 <div className="col-lg-3">
                   <Label
-                    forLabel="mes_jumlah"
-                    title="Jumlah"
-                    data={formData.mes_jumlah}
+                    forLabel="Tindakan_Perbaikan"
+                    title="Tindakan Perbaikan"
+                    data={formData.Tindakan_Perbaikan ? formData.Tindakan_Perbaikan : "Belum Ada Tindakan Perbaikan"}
+                  />
+                </div>
+                <div className="col-lg-4">
+                  <Label
+                    forLabel="Tanggal_Aktual"
+                    title="Tanggal Aktual"
+                    data={
+                      formData.Tanggal_Aktual
+                        ? formatDate(formData.Tanggal_Aktual, "D MMMM YYYY")
+                        : "-"
+                    }
                   />
                 </div>
                 <div className="col-lg-3">
                   <Label
-                    forLabel="mes_kapasitas"
-                    title="Kapasitas"
-                    data={formData.mes_kapasitas}
+                    forLabel="Created_By"
+                    title="Dibuat Oleh"
+                    data={formData.Created_By}
                   />
                 </div>
                 <div className="col-lg-3">
                   <Label
-                    forLabel="mes_tipe"
-                    title="Tipe"
-                    data={formData.mes_tipe}
+                    forLabel="Created_Date"
+                    title="Tanggal Dibuat"
+                    data={formatDate(formData.Created_Date, "D MMMM YYYY")}
+                  />
+                </div>
+                <div className="col-lg-4">
+                  <Label
+                    forLabel="Catatan_Tambahan" 
+                    title="Catatan Tambahan"
+                    data={formData.Sparepart ? formData.Sparepart
+                       : "Tidak Ada Keterangan Tambahan"}
                   />
                 </div>
                 <div className="col-lg-3">
                   <Label
-                    forLabel="mes_status"
-                    title="Status"
-                    data={formData.mes_status}
+                    forLabel="Modified_By"
+                    title="Teknisi"
+                    data={formData.Modified_By}
+                  />
+                </div>
+                <div className="col-lg-4">
+                  <Label
+                    forLabel="Status_Pemeliharaan"
+                    title="Status Pemeliharaan"
+                    data={formData.Status_Pemeliharaan}
                   />
                 </div>
               </div>
