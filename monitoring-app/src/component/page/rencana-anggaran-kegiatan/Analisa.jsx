@@ -218,7 +218,7 @@ export default function RencanaAnggaranKegiatanAnalisa({
 
       <form>
         <div className="card">
-          <div className="card-header bg-primary fw-medium text-white">
+          <div className="card-header bg-primary lead fw-medium text-white">
             Detail Biaya Proses dan Material
           </div>
           <div className="card-body p-3">

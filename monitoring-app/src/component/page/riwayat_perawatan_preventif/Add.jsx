@@ -220,7 +220,12 @@ export default function Add({ onChangePage }) {
             onChangePage("index");
           }
         } catch (error) {
-          SweetAlert("Terjadi Kesalahan!", "Error saat menyimpan data.", "Error", "Ok");
+          SweetAlert(
+            "Terjadi Kesalahan!",
+            "Error saat menyimpan data.",
+            "Error",
+            "Ok"
+          );
           setIsError({ error: true, message: error.message });
         } finally {
           setIsLoading(false);
@@ -244,7 +249,7 @@ export default function Add({ onChangePage }) {
       )}
       <form onSubmit={handleAdd}>
         <div className="card">
-          <div className="card-header bg-primary fw-medium text-white">
+          <div className="card-header bg-primary lead fw-medium text-white">
             Buat Jadwal Perawatan Rutin
           </div>
           <div className="card-body p-4">
@@ -309,7 +314,6 @@ export default function Add({ onChangePage }) {
                   onChange={handleInputChange}
                   errorMessage={errors.durasi}
                 />
-                
               </div>
               {/* Spareparts Input */}
               {spareparts.map((sparepart, index) => (
@@ -371,10 +375,10 @@ export default function Add({ onChangePage }) {
               onClick={addSparepartField}
             />
             <Button
-                  classType="info me-2 px-4 py-2"
-                  label="Generate Schedule"
-                  onClick={() => generateSchedule()}
-                />
+              classType="info me-2 px-4 py-2"
+              label="Generate Schedule"
+              onClick={() => generateSchedule()}
+            />
             {generatedDates.length > 0 && (
               <div className="mt-4">
                 <h5>Jadwal Perawatan:</h5>

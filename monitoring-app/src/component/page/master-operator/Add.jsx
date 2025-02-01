@@ -121,7 +121,7 @@ export default function MasterOperatorAdd({ onChangePage }) {
       )}
       <form onSubmit={handleAdd}>
         <div className="card">
-          <div className="card-header bg-primary fw-medium text-white">
+          <div className="card-header bg-primary lead fw-medium text-white">
             Tambah Data Operator Produksi Baru
           </div>
           <div className="card-body p-4">

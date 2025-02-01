@@ -21,7 +21,7 @@ const inisialisasiData = [
     "Dibuat Oleh": null,
     Status: null,
     Aksi: null,
-    Count: 0, 
+    Count: 0,
   },
 ];
 
@@ -38,7 +38,7 @@ const dataFilterStatus = [
   { Value: "Batal", Text: "Batal" },
 ];
 
-export default function PerawatanPreventifTeknisiIndex({ onChangePage }) {
+export default function PerawatanKorektif({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
@@ -133,50 +133,68 @@ export default function PerawatanPreventifTeknisiIndex({ onChangePage }) {
         }
       })
       .then(() => setIsLoading(false));
-      
   }
 
   useEffect(() => {
     const fetchData = async () => {
       setIsError(false);
-    
+
       try {
         const data = await UseFetch(
           API_LINK + "TransaksiPreventif/GetDataPerawatanPreventif",
           currentFilter
         );
-    
+
         if (data === "ERROR") {
           setIsError(true);
         } else if (data.length === 0) {
           setCurrentData(inisialisasiData);
         } else {
-        console.log(data);
-        const formattedData = data.map((value) => {
-          const { Tanggal_Perawatan, Status_Pemeliharaan, Dibuat, TindakanPerbaikan, Nama_Mesin, ...rest } = value;
-          const aksi = Status_Pemeliharaan === "Selesai" ? ["Detail", "Print"] : ["Detail", "Edit"];
-          
-          return {
-            ...rest,
-            "Nama Mesin": Nama_Mesin,
-            "Tindakan Perbaikan": TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
-            "Dibuat Oleh": Dibuat == null ? "-" : Dibuat,
-            "Jadwal Perawatan": formatDate(Tanggal_Perawatan, "D MMMM YYYY"),
-            Status: Status_Pemeliharaan,
-            Aksi: aksi,
-            Alignment: ["center", "left", "left", "left", "center", "center", "center"],
-          };
-        });        
+          console.log(data);
+          const formattedData = data.map((value) => {
+            const {
+              Tanggal_Perawatan,
+              Status_Pemeliharaan,
+              Dibuat,
+              TindakanPerbaikan,
+              Nama_Mesin,
+              ...rest
+            } = value;
+            const aksi =
+              Status_Pemeliharaan === "Selesai"
+                ? ["Detail", "Print"]
+                : ["Detail", "Edit"];
+
+            return {
+              ...rest,
+              "Nama Mesin": Nama_Mesin,
+              "Tindakan Perbaikan":
+                TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
+              "Dibuat Oleh": Dibuat == null ? "-" : Dibuat,
+              "Jadwal Perawatan": formatDate(Tanggal_Perawatan, "D MMMM YYYY"),
+              Status: Status_Pemeliharaan,
+              Aksi: aksi,
+              Alignment: [
+                "center",
+                "left",
+                "left",
+                "left",
+                "center",
+                "center",
+                "center",
+              ],
+            };
+          });
           setCurrentData(formattedData);
         }
-      } catch (error){
+      } catch (error) {
         setIsError(true);
-        console.log("Format Data Error: "+error);
+        console.log("Format Data Error: " + error);
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
   }, [currentFilter]);
 
@@ -226,7 +244,7 @@ export default function PerawatanPreventifTeknisiIndex({ onChangePage }) {
         </div>
         <div className="mt-3">
           {isLoading ? (
-            <Loading /> 
+            <Loading />
           ) : (
             <div className="d-flex flex-column">
               <Table

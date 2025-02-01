@@ -36,8 +36,7 @@ export default function MasterUserDetail({ onChangePage, withID }) {
         const data = await UseFetch(API_LINK + "MasterUser/DetailUser", {
           id: username,
         });
-    console.log(formData);
-
+        console.log(formData);
 
         if (data === "ERROR" || data.length === 0) {
           throw new Error("Terjadi kesalahan: Gagal mengambil data User.");
@@ -69,7 +68,7 @@ export default function MasterUserDetail({ onChangePage, withID }) {
         </div>
       )}
       <div className="card">
-        <div className="card-header bg-primary fw-medium text-white">
+        <div className="card-header bg-primary lead fw-medium text-white">
           Detail Data User
         </div>
         <div className="card-body p-4">

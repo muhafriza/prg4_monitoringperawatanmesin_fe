@@ -6,7 +6,7 @@ import Label from "../../part/Label";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
-export default function DetailRiwayatPreventif({ onChangePage, withID }) {
+export default function DetailJadwal({ onChangePage, withID }) {
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -14,20 +14,7 @@ export default function DetailRiwayatPreventif({ onChangePage, withID }) {
   const [fetchDataDetailSP, setFetchDataDetailSP] = useState(null);
 
   // Use state instead of useRef for form data
-  const [formData, setFormData] = useState({
-    ID_Mesin: "",
-    Nama_Mesin: "",
-    gambar_mesin: "",
-    Tanggal_Penjadwalan: "",
-    Tanggal_Aktual: "",
-    Tanggal_Selesai: "",
-    Tindakan_Perbaikan: "",
-    Catatan_Tambahan: "",
-    Status_Pemeliharaan: "",
-    Created_By: "",
-    Created_Date: "",
-    Modified_By: "",
-  });
+  const [formData, setFormData] = useState({});
 
   function formatDate(dateString, format) {
     const date = new Date(dateString);
@@ -69,17 +56,19 @@ export default function DetailRiwayatPreventif({ onChangePage, withID }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/DetailPerawatanMesin",
+          API_LINK + "Korektif/DetailPerawatanKorektif",
           {
             id: withID,
           }
         );
-        console.log(data);
+        console.log("Response: ",data);
 
         if (data === "ERROR" || data.length === 0) {
-          throw new Error("Terjadi kesalahan: Gagal mengambil data Sparepart.");
+          throw new Error("Terjadi kesalahan: Gagal mengambil data Detail.");
         } else {
-          setFormData((prevFormData) => ({ ...prevFormData, ...data[0] }));
+          setFormData(data[0]);
+          console.log("Ini Form Data: ",formData)
+
         }
       } catch (error) {
         window.scrollTo(0, 0);
@@ -98,13 +87,13 @@ export default function DetailRiwayatPreventif({ onChangePage, withID }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/DetailSPPerawatanMesin",
+          API_LINK + "Korektif/DetailSPPerawatanKorektif",
           {
             id: withID,
           }
         );
 
-        if (data === "ERROR" || data.length === 0) {
+        if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal mengambil data Sparepart.");
         } else {
           setFetchDataDetailSP(data); // Menyimpan hasil fetchDetailSP ke state
@@ -191,7 +180,7 @@ export default function DetailRiwayatPreventif({ onChangePage, withID }) {
                 <hr />
               </div>
             </div>
-            <div className="col-lg-8">
+            <div className="col-lg-8 ml-5">
               <div className="row">
                 <div className="col-lg-3">
                   <Label
@@ -211,24 +200,28 @@ export default function DetailRiwayatPreventif({ onChangePage, withID }) {
                   <Label
                     forLabel="Tanggal_Penjadwalan"
                     title="Tanggal Penjadwalan"
-                    data={formatDate(
+                    data={formData.Tanggal_Penjadwalan ? formatDate(
                       formData.Tanggal_Penjadwalan,
                       "D MMMM YYYY"
-                    )}
+                    ):"-"}
                   />
                 </div>
                 <div className="col-lg-3">
                   <Label
                     forLabel="Tindakan_Perbaikan"
-                    title="TindakanPerbaikan"
-                    data={formData.Tindakan_Perbaikan}
+                    title="Tindakan Perbaikan"
+                    data={formData.Tindakan_Perbaikan ? formData.Tindakan_Perbaikan : "Belum Ada Tindakan Perbaikan"}
                   />
                 </div>
                 <div className="col-lg-4">
                   <Label
                     forLabel="Tanggal_Aktual"
                     title="Tanggal Aktual"
-                    data={formatDate(formData.Tanggal_Aktual, "D MMMM YYYY")}
+                    data={
+                      formData.Tanggal_Aktual
+                        ? formatDate(formData.Tanggal_Aktual, "D MMMM YYYY")
+                        : "-"
+                    }
                   />
                 </div>
                 <div className="col-lg-3">
@@ -247,16 +240,10 @@ export default function DetailRiwayatPreventif({ onChangePage, withID }) {
                 </div>
                 <div className="col-lg-4">
                   <Label
-                    forLabel="Tanggal_Selesai"
-                    title="Tanggal Selesai"
-                    data={formatDate(formData.Tanggal_Selesai, "D MMMM YYYY")}
-                  />
-                </div>
-                <div className="col-lg-3">
-                  <Label
-                    forLabel="Catatan_Tambahan"
+                    forLabel="Catatan_Tambahan" 
                     title="Catatan Tambahan"
-                    data={formData.Catatan_Tambahan}
+                    data={formData.Sparepart ? formData.Sparepart
+                       : "Tidak Ada Keterangan Tambahan"}
                   />
                 </div>
                 <div className="col-lg-3">

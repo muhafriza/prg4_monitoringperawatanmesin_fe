@@ -1,23 +1,22 @@
 import { useState } from "react";
-import PerawatanPreventifTeknisiIndex from "./Index";
-import PerawatanPreventifTeknisiDetail from "./Detail";
-import PerawatanPreventifTeknisiEdit from "./Edit";
+import PerawatanKorektif from "./Index";
+import KorektifAdd from "./Add";
+import KorektifDetail from "./Detail";
 
-export default function PerawatanPreventifTeknisi() {
+
+export default function MasterProses() {
   const [pageMode, setPageMode] = useState("index");
   const [dataID, setDataID] = useState();
 
   function getPageMode() {
     switch (pageMode) {
       case "index":
-        return <PerawatanPreventifTeknisiIndex onChangePage={handleSetPageMode} />;
-      case "edit":
-        return (
-          <PerawatanPreventifTeknisiEdit onChangePage={handleSetPageMode} withID={dataID} />
-        );
+        return <PerawatanKorektif onChangePage={handleSetPageMode} />;
+      case "add":
+        return <KorektifAdd onChangePage={handleSetPageMode} />;
         case "detail":
           return (
-            <PerawatanPreventifTeknisiDetail
+            <KorektifDetail
               onChangePage={handleSetPageMode}
               withID={dataID}
             />

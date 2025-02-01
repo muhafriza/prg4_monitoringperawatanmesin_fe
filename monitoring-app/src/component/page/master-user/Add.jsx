@@ -12,6 +12,7 @@ export default function MasterKaryawanAdd({ onChangePage }) {
   const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [showAdditionalInput, setShowAdditionalInput] = useState(false);
   const [currentFilter, setCurrentFilter] = useState({
     p1: "",
     p2: "Aktif",
@@ -22,6 +23,7 @@ export default function MasterKaryawanAdd({ onChangePage }) {
     rol_id: "",
     app_id: "APP60",
     usr_status: "Aktif",
+    upt: "", // Menambahkan upt ke form data
   });
 
   const [userOptions, setUserOptions] = useState([]); // State untuk menyimpan data pengguna
@@ -57,21 +59,35 @@ export default function MasterKaryawanAdd({ onChangePage }) {
   }, [currentFilter]); // Jalankan effect jika currentFilter berubah
 
   const userSchema = object({
-    usr_id: string().max(50, "maksimum 100 karakter").required("harus diisi"),
-    rol_id: string(),
+    usr_id: string().required("Pilih User terlebih dahulu"),
+    rol_id: string().required("Role/Peran Harus diisi"),
     app_id: string(),
     usr_status: string(),
+    upt: string().when("role_baru", {
+      is: "PIC",
+      then: (schema) => schema.required("UPT wajib diisi jika role adalah PIC"),
+      otherwise: (schema) => schema.optional(),
+    }),
   });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    const validationError = validateInput(name, value, userSchema);
+    // Jika role yang dipilih adalah "PIC", tampilkan input tambahan
+    if (name === "rol_id") {
+      setShowAdditionalInput(value === "PIC"); // Menampilkan input tambahan untuk PIC
+    }
+
+    // Menyimpan nilai input ke dalam formDataRef.current
+    console.log(`${formDataRef.current.rol_id}: ${value}`);
     formDataRef.current[name] = value;
+
+    const validationError = validateInput(name, value, userSchema);
     setErrors((prevErrors) => ({
       ...prevErrors,
       [validationError.name]: validationError.error,
     }));
+    console.log(validationError);
   };
 
   const handleAdd = async (e) => {
@@ -83,23 +99,35 @@ export default function MasterKaryawanAdd({ onChangePage }) {
       setErrors
     );
 
+    // console.log(formDataRef.current);
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
       setIsError((prevError) => ({ ...prevError, error: false }));
       setErrors({});
 
+      const rol_final =
+        formDataRef.current.rol_id === "PIC"
+          ? `${formDataRef.current.rol_id} ${formDataRef.current.upt}`
+          : formDataRef.current.rol_id;
+
+      console.log(formDataRef.current.upt);
       try {
         // Call the stored procedure here, assuming the API endpoint is set up for this
-        const data = await UseFetch(
-          API_LINK + "MasterUser/CreateUser",
-          formDataRef.current
-        );
+        const data = await UseFetch(API_LINK + "MasterUser/CreateUser", {
+          usr_id: formDataRef.current.usr_id,
+          rol_id: rol_final,
+          app_id: "APP60",
+          usr_status: "Aktif",
+        });
 
-        if (data === "ERROR") {
-          throw new Error("Terjadi kesalahan: Gagal menyimpan data User.");
-        } else {
+        // Check if the 'hasil' field is 'ERROR' or 'OK'
+        if (data && data[0]?.hasil === "ERROR") {
+          SweetAlert("Error", data[0]?.pesan, "error");
+        } else if (data && data[0]?.hasil === "OK") {
           SweetAlert("Sukses", "Data User berhasil disimpan", "success");
           onChangePage("index");
+        } else {
+          throw new Error("Terjadi kesalahan: Gagal menyimpan data User.");
         }
       } catch (error) {
         window.scrollTo(0, 0);
@@ -111,7 +139,9 @@ export default function MasterKaryawanAdd({ onChangePage }) {
       } finally {
         setIsLoading(false);
       }
-    } else window.scrollTo(0, 0);
+    } else {
+      window.scrollTo(0, 0);
+    }
   };
 
   if (isLoading) return <Loading />;
@@ -125,7 +155,7 @@ export default function MasterKaryawanAdd({ onChangePage }) {
       )}
       <form onSubmit={handleAdd}>
         <div className="card">
-          <div className="card-header bg-primary fw-medium text-white">
+          <div className="card-header bg-primary lead fw-medium text-white">
             Tambah Data User Baru
           </div>
 
@@ -133,7 +163,7 @@ export default function MasterKaryawanAdd({ onChangePage }) {
             <div className="row">
               <div className="col-lg-3">
                 <label htmlFor="userDropdown" className="form-label">
-                  Pilih User
+                  Pilih User<span style={{ color: "red" }}> *</span>
                 </label>
                 <select
                   id="userDropdown"
@@ -155,36 +185,57 @@ export default function MasterKaryawanAdd({ onChangePage }) {
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="role">Role</label>
+              <div className="col-lg-3">
+                <label htmlFor="role">
+                  Role<span style={{ color: "red" }}> *</span>
+                </label>
                 <select
-                  id="role"
+                  id="rol_id"
                   name="rol_id"
-                  className="form-control"
+                  className="form-select"
                   onChange={handleInputChange}
                 >
-                  <option value="ROL60">Administrator UPT</option>
-                  <option value="ROL61">PIC UPT</option>
-                  <option value="ROL62">TEKNISI</option>
+                  <option value="ADMINISTRATOR UPT">Administrator UPT</option>
+                  <option value="PIC">PIC UPT</option>
+                  <option value="TEKNISI">TEKNISI</option>
                 </select>
               </div>
+
+              {showAdditionalInput && (
+                <div className="form-group col-lg-4">
+                  <label htmlFor="upt">
+                    Data Tambahan untuk PIC
+                    <span style={{ color: "red" }}> *</span>
+                  </label>
+                  <select
+                    id="upt"
+                    name="upt"
+                    className="form-select"
+                    onChange={handleInputChange}
+                  >
+                    <option value="">Pilih UPT</option>
+                    <option value="INFORMATICS">INFORMATICS</option>
+                    <option value="ALAT BERAT">ALAT BERAT</option>
+                    <option value="OTOMOTIVE">OTOMOTIVE</option>
+                    <option value="PERAWATAN">PERAWATAN</option>
+                    <option value="P4">P4</option>
+                  </select>
+                </div>
+              )}
             </div>
           </div>
-
-          
-
-          <div className="float-end my-4 mx-1">
-            <Button
-              classType="secondary me-2 px-4 py-2"
-              label="BATAL"
-              onClick={() => onChangePage("index")}
-            />
-            <Button
-              classType="primary ms-2 px-4 py-2"
-              type="submit"
-              label="SIMPAN"
-            />
-          </div>
+        </div>
+        <div className="float-end my-4 mx-1">
+          <Button
+            classType="secondary me-2 px-4 py-2"
+            label="BATAL"
+            onClick={() => onChangePage("index")}
+          />
+          <Button
+            classType="primary ms-2 px-4 py-2"
+            type="submit"
+            label="SIMPAN"
+          />
         </div>
       </form>
     </>

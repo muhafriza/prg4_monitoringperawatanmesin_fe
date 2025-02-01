@@ -10,6 +10,9 @@ import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { ValidationError } from "yup";
 
 const inisialisasiData = [
   {
@@ -33,12 +36,13 @@ const dataFilterStatus = [
 export default function MasterUserIndex({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [dataExport, setDataExport] = useState([]);
   const [currentData, setCurrentData] = useState(inisialisasiData);
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
     sort: "kry_nama_depan",
-    status: "",
+    status: "Aktif",
     APP: "APP60",
   });
 
@@ -57,15 +61,20 @@ export default function MasterUserIndex({ onChangePage }) {
   }
 
   function handleSearch() {
+    console.log("Current Filter before Update:", currentFilter);
+
     setIsLoading(true);
     setCurrentFilter((prevFilter) => {
-      return {
+      const updatedFilter = {
         ...prevFilter,
         page: 1,
         query: searchQuery.current.value,
         sort: searchFilterSort.current.value,
         status: searchFilterStatus.current.value,
       };
+
+      console.log("Updated Filter:", updatedFilter);
+      return updatedFilter;
     });
   }
 
@@ -91,8 +100,95 @@ export default function MasterUserIndex({ onChangePage }) {
       })
       .then(() => setIsLoading(false));
   }
+  function formatDate(dateString, format) {
+    const date = new Date(dateString);
+
+    const day = date.getDate();
+    const month = date.getMonth(); // Get month as number (0-based)
+    const year = date.getFullYear();
+
+    const months = [
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember",
+    ];
+
+    switch (format) {
+      case "DD/MM/YYYY":
+        return `${String(day).padStart(2, "0")}/${String(month + 1).padStart(
+          2,
+          "0"
+        )}/${year}`;
+      case "YYYY-MM-DD":
+        return `${year}-${String(month + 1).padStart(2, "0")}-${String(
+          day
+        ).padStart(2, "0")}`;
+      case "D MMMM YYYY":
+        return `${day} ${months[month]} ${year}`;
+      default:
+        return dateString;
+    }
+  }
+  const exportToExcel = () => {
+    if (!dataExport || dataExport.length === 0) {
+      SweetAlert("Gagal", "Tidak ada data untuk diekspor!", "error");
+      return;
+    }
+
+    // 1. Konversi data menjadi worksheet
+    const worksheet = XLSX.utils.json_to_sheet(dataExport);
+
+    // 2. Buat workbook dan tambahkan worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Data Pengguna");
+
+    // 3. Konversi workbook ke file Excel (blob)
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const excelFile = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+    });
+
+    // 4. Simpan file
+    const now = new Date().toISOString().split("T")[0];
+    saveAs(excelFile, `Data-Pengguna_${formatDate(now, "D MMMM YYYY")}.xlsx`);
+  };
 
   useEffect(() => {
+    const fetchDataToExport = async () => {
+      setIsError(false);
+      try {
+        const data = await UseFetch(API_LINK + "MasterUser/ExporttoExcel", {
+          status: "Aktif",
+        });
+
+        console.log(data);
+        if (!data) {
+          setIsError(true);
+          console.log("Error saat fetch data export");
+        } else if (data.length === 0) {
+          setDataExport(inisialisasiData);
+        } else {
+          setDataExport(data);
+          console.log("Data Export" + dataExport);
+        }
+      } catch {
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     const fetchData = async () => {
       setIsError(false);
 
@@ -102,7 +198,7 @@ export default function MasterUserIndex({ onChangePage }) {
           currentFilter
         );
 
-        if (data === "ERROR") {
+        if (!data) {
           setIsError(true);
           console.log("Error nih");
         } else if (data.length === 0) {
@@ -120,6 +216,7 @@ export default function MasterUserIndex({ onChangePage }) {
               "center",
               "center",
               "center",
+              "center",
             ],
           }));
           console.log(formattedData);
@@ -131,6 +228,7 @@ export default function MasterUserIndex({ onChangePage }) {
         setIsLoading(false);
       }
     };
+    fetchDataToExport();
     fetchData();
   }, [currentFilter]);
 
@@ -182,6 +280,13 @@ export default function MasterUserIndex({ onChangePage }) {
                 defaultValue="Aktif"
               />
             </Filter>
+            <Button
+              iconName="file-export"
+              classType="success"
+              title="Export"
+              label="Export to XLSX"
+              onClick={exportToExcel}
+            />
           </div>
         </div>
         <div className="mt-3">

@@ -23,6 +23,7 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
     mes_no_panel: "",
     mes_lab: "",
     mes_nama_mesin: "",
+    mes_upt: "",
     mes_daya_mesin: "",
     mes_jumlah: "",
     mes_kapasitas: "",
@@ -47,6 +48,7 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
       .positive("Jumlah harus lebih besar dari 0")
       .required("Jumlah Mesin harus diisi"),
     mes_kapasitas: string().optional(),
+    mes_upt: string(),
     mes_tipe: string().optional(),
     mes_gambar: string(),
   });
@@ -200,7 +202,7 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
         await Promise.all(uploadPromises);
 
         const data = await UseFetch(
-          API_LINK + 'Mesin/EditMesin',
+          API_LINK + "Mesin/EditMesin",
           formDataRef.current
         );
 
@@ -236,7 +238,7 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
       )}
       <form onSubmit={handleAdd}>
         <div className="card">
-          <div className="card-header bg-primary fw-medium text-white">
+          <div className="card-header bg-primary lead fw-medium text-white">
             Ubah Data Mesin
           </div>
           <div className="card-body p-4">
@@ -250,6 +252,17 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
                   value={formDataRef.current.mes_nama_mesin}
                   onChange={handleInputChange}
                   errorMessage={errors.mes_nama_mesin}
+                />
+              </div>
+              <div className="col-lg-3">
+                <Input
+                  type="text"
+                  forInput="mes_upt"
+                  label="UPT"
+                  isRequired
+                  value={formDataRef.current.mes_upt}
+                  onChange={handleInputChange}
+                  errorMessage={errors.mes_upt}
                 />
               </div>
               <div className="col-lg-3">

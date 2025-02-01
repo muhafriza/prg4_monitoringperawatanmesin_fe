@@ -129,7 +129,7 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
         );
 
         if (!data || data == "ERROR") {
-          console.log("ini data edit form nya: "+formDataRef.current);
+          console.log("ini data edit form nya: " + formDataRef.current);
           throw new Error("Terjadi kesalahan: Gagal menyimpan data produk.");
         } else {
           SweetAlert("Sukses", "Data produk berhasil disimpan", "success");
@@ -159,7 +159,7 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
       )}
       <form onSubmit={handleAdd}>
         <div className="card">
-          <div className="card-header bg-primary fw-medium text-white">
+          <div className="card-header bg-primary lead fw-medium text-white">
             Ubah Data Sparepart
           </div>
           <div className="card-body p-4">

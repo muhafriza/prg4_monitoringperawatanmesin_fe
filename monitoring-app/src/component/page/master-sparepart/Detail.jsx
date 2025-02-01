@@ -28,8 +28,18 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
     const year = date.getFullYear();
 
     const months = [
-      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember",
     ];
 
     switch (format) {
@@ -37,8 +47,8 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
         return `${day}/${month}/${year}`;
       case "YYYY-MM-DD":
         return `${year}-${month}-${day}`;
-        case "D MMMM YYYY":
-          return `${day} ${months[month]} ${year}`;
+      case "D MMMM YYYY":
+        return `${day} ${months[month]} ${year}`;
       default:
         return dateString;
     }
@@ -87,7 +97,7 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
         </div>
       )}
       <div className="card">
-        <div className="card-header bg-primary fw-medium text-white">
+        <div className="card-header bg-primary lead fw-medium text-white">
           Detail Data Sparepart
         </div>
         <div className="card-body p-4">
@@ -155,14 +165,14 @@ export default function MasterSparepartDetail({ onChangePage, withID }) {
               </div>
             </div>
           </div>
-          <div className="float-end my-4 mx-1">
-            <Button
-              classType="secondary px-4 py-2"
-              label="KEMBALI"
-              onClick={() => onChangePage("index")}
-            />
-          </div>
         </div>
+      </div>
+      <div className="float-end my-4 mx-1">
+        <Button
+          classType="secondary px-4 py-2"
+          label="KEMBALI"
+          onClick={() => onChangePage("index")}
+        />
       </div>
     </>
   );

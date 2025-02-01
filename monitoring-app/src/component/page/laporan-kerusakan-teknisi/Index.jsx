@@ -197,7 +197,7 @@ export default function LaporanKerusakan({ onChangePage }) {
               />
             </div>
           )}
-          <div className="card-header bg-primary fw-medium text-white">
+          <div className="card-header bg-primary lead fw-medium text-white">
             Detail Data Sparepart
           </div>
           <div className="flex-fill">

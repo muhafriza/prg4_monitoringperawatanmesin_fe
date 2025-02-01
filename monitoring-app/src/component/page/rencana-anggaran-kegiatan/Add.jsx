@@ -347,7 +347,7 @@ export default function RencanaAnggaranKegiatanAdd({ onChangePage, withID }) {
       )}
       <form onSubmit={handleAdd}>
         <div className="card">
-          <div className="card-header bg-primary fw-medium text-white">
+          <div className="card-header bg-primary lead fw-medium text-white">
             Tambah Rencana Anggaran Kegiatan Baru
           </div>
           <div className="card-body p-4">

@@ -21,7 +21,7 @@ const inisialisasiData = [
     "Dibuat Oleh": null,
     Status: null,
     Aksi: null,
-    Count: 0, 
+    Count: 0,
   },
 ];
 
@@ -133,32 +133,40 @@ export default function JadwalPerawatan({ onChangePage }) {
         }
       })
       .then(() => setIsLoading(false));
-      
   }
 
   useEffect(() => {
     const fetchData = async () => {
       setIsError(false);
-    
+
       try {
         const data = await UseFetch(
           API_LINK + "TransaksiPreventif/GetDataPerawatanPreventif",
           currentFilter
         );
-    
+
         if (data === "ERROR") {
           setIsError(true);
         } else if (data.length === 0) {
           setCurrentData(inisialisasiData);
         } else {
-        console.log(data);
+          console.log(data);
           const formattedData = data.map((value) => {
-            const { ID_Perawatan, Tanggal_Perawatan,Status_Pemeliharaan,Dibuat, TindakanPerbaikan, Nama_Mesin, ...rest } = value; // Menghapus tanggal_masuk
+            const {
+              ID_Perawatan,
+              Tanggal_Perawatan,
+              Status_Pemeliharaan,
+              Dibuat,
+              TindakanPerbaikan,
+              Nama_Mesin,
+              ...rest
+            } = value; // Menghapus tanggal_masuk
             return {
               ...rest,
               "ID Perawatan": ID_Perawatan,
               "Nama Mesin": Nama_Mesin,
-              "Tindakan Perbaikan": TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
+              "Tindakan Perbaikan":
+                TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
               "Dibuat Oleh": Dibuat == null ? "-" : Dibuat,
               "Jadwal Perawatan": formatDate(Tanggal_Perawatan, "D MMMM YYYY"),
               Status: Status_Pemeliharaan,
@@ -171,20 +179,20 @@ export default function JadwalPerawatan({ onChangePage }) {
                 "left",
                 "center",
                 "center",
-                "center"
+                "center",
               ],
             };
           });
           setCurrentData(formattedData);
         }
-      } catch (error){
+      } catch (error) {
         setIsError(true);
-        console.log("Format Data Error: "+error);
+        console.log("Format Data Error: " + error);
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
   }, [currentFilter]);
 
@@ -240,7 +248,7 @@ export default function JadwalPerawatan({ onChangePage }) {
         </div>
         <div className="mt-3">
           {isLoading ? (
-            <Loading /> 
+            <Loading />
           ) : (
             <div className="d-flex flex-column">
               <Table

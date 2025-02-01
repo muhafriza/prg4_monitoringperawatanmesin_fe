@@ -40,9 +40,9 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
     gambarSparepart: string().nullable(),
     merk: string().nullable(),
     stok: string()
-    .matches(/^\d*$/, "Hanya angka yang diperbolehkan") // Validasi angka
-    .min(0, "Stok tidak boleh kurang dari 0") // Menambahkan validasi minimal 0
-    .required("harus diisi"), // Harus diisi
+      .matches(/^\d*$/, "Hanya angka yang diperbolehkan") // Validasi angka
+      .min(0, "Stok tidak boleh kurang dari 0") // Menambahkan validasi minimal 0
+      .required("harus diisi"), // Harus diisi
     tanggalMasuk: string().test(
       "is-valid-date",
       "Tanggal masuk tidak boleh kurang dari hari ini",
@@ -237,7 +237,7 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
       )}
       <form onSubmit={handleAdd}>
         <div className="card">
-          <div className="card-header bg-primary fw-medium text-white">
+          <div className="card-header bg-primary lead fw-medium text-white">
             Ubah Data Sparepart
           </div>
           <div className="card-body p-4">

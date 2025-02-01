@@ -12,44 +12,63 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
   const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
+  const [showAdditionalInput, setShowAdditionalInput] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
-    Role_Deskripsi: "", // Placeholder untuk Role_Deskripsi yang diambil dari API
-    role_baru: "", // Ini untuk dropdown
+    Role_Deskripsi: "",
+    role_baru: "",
+    upt: "",
   });
 
   const userSchema = object({
     username: string().optional(),
-    Role_Deskripsi: string(),
-    role_baru: string(),
+    Role_Deskripsi: string().required(),
+    role_baru: string().required(),
+    upt: string().when("role_baru", {
+      is: "PIC",
+      then: (schema) => schema.required("UPT wajib diisi jika role adalah PIC"),
+      otherwise: (schema) => schema.optional(),
+    }),
   });
 
   useEffect(() => {
     const fetchData = async () => {
       setIsError({ error: false, message: "" });
-      const key = withID;
-
-      const username = key.split("_")[0];
-      const role = key.split("_")[1];
 
       try {
+        const [username, role] = withID.split("_");
+
         const data = await UseFetch(API_LINK + `MasterUser/DetailEditUser`, {
           id: username,
           rol: role,
         });
 
-        if (data === "ERROR" || data.length === 0) {
+        if (!data || data === "ERROR" || data.length === 0) {
           throw new Error("Gagal mengambil data Karyawan.");
         }
 
         const karyawanData = data[0];
+        const roleData = karyawanData.Role_Deskripsi.split(" ")[0];
+        console.log(roleData);
 
-        setFormData({
-          username:username,
-          Role_Deskripsi: karyawanData.Role_Deskripsi, 
-          role_baru: karyawanData.Role_Deskripsi,
-        });
-        
+        if (roleData === "PIC") {
+          const roleParts = karyawanData.Role_Deskripsi.split(" ");
+          setFormData({
+            username,
+            Role_Deskripsi: karyawanData.Role_Deskripsi,
+            role_baru: roleData,
+            upt: roleParts.length > 1 ? roleParts.slice(1).join(" ") : "", // Menggabungkan semua kata setelah "PIC"
+          });
+          setShowAdditionalInput(true);
+        } else {
+          setFormData({
+            username,
+            Role_Deskripsi: karyawanData.Role_Deskripsi,
+            role_baru: roleData,
+            upt: "",
+          });
+        }
+
       } catch (error) {
         window.scrollTo(0, 0);
         setIsError({ error: true, message: error.message });
@@ -63,17 +82,24 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    const validationError = validateInput(name, value, userSchema);
 
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    setFormData((prevData) => {
+      const updatedData = { ...prevData, [name]: value };
 
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      [validationError.name]: validationError.error,
-    }));
+      // Jika role yang dipilih adalah "PIC", tampilkan input tambahan
+      if (name === "role_baru") {
+        setShowAdditionalInput(value === "PIC");
+        updatedData.upt = value === "PIC" ? prevData.upt : ""; // Reset UPT jika bukan PIC
+      }
+
+      const validationError = validateInput(name, value, userSchema);
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [validationError.name]: validationError.error,
+      }));
+
+      return updatedData;
+    });
   };
 
   const handleAdd = async (e) => {
@@ -85,36 +111,38 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
       setErrors
     );
 
-    if (Object.values(validationErrors).every((error) => !error)) {
-      setIsLoading(true);
-      setIsError((prevError) => ({ ...prevError, error: false }));
-      setErrors({});
+    if (Object.values(validationErrors).some((error) => error)) {
+      window.scrollTo(0, 0);
+      return;
+    }
 
-      console.log(formData);
-      try {
-        const data = await UseFetch(
-          API_LINK + "MasterUser/EditUser",
-          formData
-        );
+    setIsLoading(true);
+    setIsError({ error: false, message: "" });
 
-        if (!data) {
-          console.log(data);
-          throw new Error("Terjadi kesalahan: Gagal menyimpan data karyawan.");
-        } else {
-          SweetAlert("Sukses", "Data karyawan berhasil disimpan", "success");
-          onChangePage("index");
-        }
-      } catch (error) {
-        window.scrollTo(0, 0);
-        setIsError((prevError) => ({
-          ...prevError,
-          error: true,
-          message: error.message,
-        }));
-      } finally {
-        setIsLoading(false);
+    try {
+      const roleFinal =
+        formData.role_baru === "PIC"
+          ? `${formData.role_baru} ${formData.upt}`
+          : formData.role_baru;
+
+      const data = await UseFetch(API_LINK + "MasterUser/EditUser", {
+        username: formData.username,
+        Role_Deskripsi: formData.Role_Deskripsi,
+        upt: roleFinal,
+      });
+
+      if (!data) {
+        throw new Error("Terjadi kesalahan: Gagal menyimpan data karyawan.");
       }
-    } else window.scrollTo(0, 0);
+
+      SweetAlert("Sukses", "Data karyawan berhasil disimpan", "success");
+      onChangePage("index");
+    } catch (error) {
+      window.scrollTo(0, 0);
+      setIsError({ error: true, message: error.message });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (isLoading) return <Loading />;
@@ -133,13 +161,13 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
           </div>
           <div className="card-body p-4">
             <div className="row">
-              <div className="form-group">
+              <div className="form-group col-lg-4">
                 <label htmlFor="role_baru">Role</label>
                 <select
                   id="role_baru"
                   name="role_baru"
-                  className="form-control"
-                  value={formData.role_baru || ""} // Pastikan dropdown mengikat nilai role_baru
+                  className="form-select"
+                  value={formData.role_baru || ""}
                   onChange={handleInputChange}
                 >
                   <option value="ADMINISTRATOR UPT">Administrator UPT</option>
@@ -147,6 +175,26 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
                   <option value="TEKNISI">TEKNISI</option>
                 </select>
               </div>
+
+              {showAdditionalInput && (
+                <div className="form-group col-lg-4">
+                  <label htmlFor="upt">Data Tambahan untuk PIC</label>
+                  <select
+                    id="upt"
+                    name="upt"
+                    className="form-select"
+                    value={formData.upt || ""}
+                    onChange={handleInputChange}
+                  >
+                    <option value="">Pilih UPT</option>
+                    <option value="INFORMATICS">INFORMATICS</option>
+                    <option value="ALAT BERAT">ALAT BERAT</option>
+                    <option value="OTOMOTIVE">OTOMOTIVE</option>
+                    <option value="PERAWATAN">PERAWATAN</option>
+                    <option value="P4">P4</option>
+                  </select>
+                </div>
+              )}
             </div>
           </div>
         </div>

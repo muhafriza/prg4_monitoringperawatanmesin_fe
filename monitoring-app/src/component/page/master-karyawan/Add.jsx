@@ -14,7 +14,7 @@ export default function MasterKaryawanAdd({ onChangePage }) {
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [usernames, setUsernames] = useState([]);
-  
+
   const formDataRef = useRef({
     kry_username: "",
     kry_role: "Admin UPT", // Default "Admin UPT"
@@ -30,12 +30,12 @@ export default function MasterKaryawanAdd({ onChangePage }) {
     const fetchUsernames = async () => {
       try {
         const data = await UseFetch(API_LINK + "MasterUser/GetDataAlatMesin");
-        setUsernames(data);  // Assume this returns an array of usernames
+        setUsernames(data); // Assume this returns an array of usernames
       } catch (error) {
         setIsError({ error: true, message: "Gagal memuat data username" });
       }
     };
-    
+
     fetchUsernames();
   }, []);
 
@@ -53,7 +53,11 @@ export default function MasterKaryawanAdd({ onChangePage }) {
     e.preventDefault();
 
     // Validate all inputs
-    const validationErrors = await validateAllInputs(formDataRef.current, userSchema, setErrors);
+    const validationErrors = await validateAllInputs(
+      formDataRef.current,
+      userSchema,
+      setErrors
+    );
 
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
@@ -94,7 +98,7 @@ export default function MasterKaryawanAdd({ onChangePage }) {
       )}
       <form onSubmit={handleAdd}>
         <div className="card">
-          <div className="card-header bg-primary fw-medium text-white">
+          <div className="card-header bg-primary lead fw-medium text-white">
             Tambah Data Karyawan Baru
           </div>
           <div className="card-body p-4">
@@ -110,7 +114,9 @@ export default function MasterKaryawanAdd({ onChangePage }) {
                 >
                   <option value="">Pilih Username</option>
                   {usernames.map((username, index) => (
-                    <option key={index} value={username}>{username}</option>
+                    <option key={index} value={username}>
+                      {username}
+                    </option>
                   ))}
                 </Input>
               </div>
