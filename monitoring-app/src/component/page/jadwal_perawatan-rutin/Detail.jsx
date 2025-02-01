@@ -69,7 +69,7 @@ export default function DetailJadwal({ onChangePage, withID }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "PTransaksiPreventif/DetailPerawatanMesin",
+          API_LINK + "TransaksiPreventif/DetailPerawatanMesin",
           {
             id: withID,
           }
@@ -98,7 +98,7 @@ export default function DetailJadwal({ onChangePage, withID }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "PTransaksiPreventif/DetailSPPerawatanMesin",
+          API_LINK + "TransaksiPreventif/DetailSPPerawatanMesin",
           {
             id: withID,
           }

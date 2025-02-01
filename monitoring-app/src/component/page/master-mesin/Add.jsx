@@ -131,7 +131,7 @@ export default function MasterMesinAdd({ onChangePage }) {
 
         // Send data to API using FormData
         const data = await UseFetch(
-          API_LINK + "MasterMesin/CreateMesin",
+          API_LINK + "Mesin/CreateMesin",
           formDataRef.current
         );
 

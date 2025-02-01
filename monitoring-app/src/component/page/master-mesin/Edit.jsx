@@ -92,7 +92,7 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
       setIsError({ error: false, message: "" });
 
       try {
-        const data = await UseFetch(`${API_LINK}MasterMesin/DetailMesin`, {
+        const data = await UseFetch(`${API_LINK}Mesin/DetailMesin`, {
           id: withID,
         });
 

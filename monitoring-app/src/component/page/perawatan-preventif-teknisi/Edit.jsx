@@ -193,7 +193,7 @@ export default function PerawatanPreventifTeknisiEdit({
 
       try {
         const data = await UseFetch(
-          API_LINK + "PTransaksiPreventif/UpdatePerawatanPreventif",
+          API_LINK + "TransaksiPreventif/UpdatePerawatanPreventif",
           formData
         );
 
@@ -226,7 +226,7 @@ export default function PerawatanPreventifTeknisiEdit({
 
       try {
         const data = await UseFetch(
-          API_LINK + "PTransaksiPreventif/DetailSPPerawatanMesin",
+          API_LINK + "TransaksiPreventif/DetailSPPerawatanMesin",
           {
             id: withID,
           }
@@ -254,7 +254,7 @@ export default function PerawatanPreventifTeknisiEdit({
 
       try {
         const data = await UseFetch(
-          API_LINK + "PTransaksiPreventif/DetailPerawatanMesin",
+          API_LINK + "TransaksiPreventif/DetailPerawatanMesin",
           {
             id: withID,
           }

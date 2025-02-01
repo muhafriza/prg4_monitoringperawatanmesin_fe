@@ -141,7 +141,7 @@ export default function LaporanKerusakan({ onChangePage }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "PTransaksiPreventif/GetDataPerawatanPreventif",
+          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventif",
           currentFilter
         );
 

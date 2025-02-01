@@ -76,7 +76,7 @@ export default function MasterMesinIndex({ onChangePage }) {
   function handleSetStatus(id) {
     setIsLoading(true);
     setIsError(false);
-    UseFetch(API_LINK + "MasterMesin/SetStatusMesin", {
+    UseFetch(API_LINK + "Mesin/SetStatusMesin", {
       mes_id_mesin: id,
     })
       .then((data) => {
@@ -186,14 +186,14 @@ export default function MasterMesinIndex({ onChangePage }) {
 
       try {
         // Fetch data with the dynamic filters and pagination
-        const data = await UseFetch(API_LINK + "MasterMesin/GetDataMesin", {
+        const data = await UseFetch(API_LINK + "Mesin/GetDataMesin", {
           page: currentFilter.page,
           query: currentFilter.query,
           sort: currentFilter.sort,
           status: currentFilter.status,
           itemPerPage: currentFilter.itemPerPage,
         });
-        
+
         if (data === "ERROR") {
           setIsError(true);
         } else if (data.length === 0) {

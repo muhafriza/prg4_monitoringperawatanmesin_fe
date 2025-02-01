@@ -106,11 +106,11 @@ const routeList = [
     element: <PerawatanPreventifTeknisi />,
   },
   {
-    path: "/riwayat_preventif",
+    path: "/riwayat_preventif_admin",
     element: <RiwayatPerawatanPreventif />,
   },
   {
-    path: "/perawatan_korektif",
+    path: "/perawatan_korektif_admin",
     element: <KorektifPic />,
   },
 
