@@ -11,8 +11,6 @@ export default function PerawatanPreventifTeknisi() {
     switch (pageMode) {
       case "index":
         return <PerawatanPreventifTeknisiIndex onChangePage={handleSetPageMode} />;
-      case "add":
-        return <PerawatanPreventifTeknisiIndex onChangePage={handleSetPageMode} />;
       case "edit":
         return (
           <PerawatanPreventifTeknisiEdit onChangePage={handleSetPageMode} withID={dataID} />
