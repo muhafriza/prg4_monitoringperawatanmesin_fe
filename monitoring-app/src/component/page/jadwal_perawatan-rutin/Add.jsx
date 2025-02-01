@@ -36,6 +36,7 @@ export default function Add({ onChangePage }) {
     sparepart: "",
     qty: "",
   });
+  const [displayedSchedules, setDisplayedSchedules] = useState([]);
   const [sparepartOptions, setSparepartOptions] = useState([]);
   const [spareparts, setSpareparts] = useState([{ sparepart: "", qty: "" }]);
 
@@ -231,15 +232,13 @@ export default function Add({ onChangePage }) {
     formDataRef.current.sparepart = sparepartString;
     formDataRef.current.qty = qtyString;
 
-    const datesList = generatedDates.map((date) => `<li>${date}</li>`).join(""); // Gabungkan tanggal menjadi string untuk ditampilkan
-
     const confirmation = await Swal.fire({
-      title: "Jadwal yang dihasilkan:",
-      html: `<ul>${datesList}</ul><br>Jika Anda setuju, jadwal akan disimpan.`,
+      title: "Information",
+      html: `Yakin ingin menyimpan Jadwal Perawatan?.`,
       icon: "info",
       showCancelButton: true,
-      confirmButtonText: "Ya, simpan",
-      cancelButtonText: "Batal",
+      confirmButtonText: "YA, SIMPAN",
+      cancelButtonText: "BATAL",
     });
 
     // Jika pengguna memilih "Ya"
@@ -261,19 +260,15 @@ export default function Add({ onChangePage }) {
 
           console.log("Respons dari API: ", data);
           if (data[0].Message != "Jadwal berhasil disimpan") {
-            // swal.close();
-            SweetAlert("Gagal", data[0].Message, "info", "Ok");
+            Swal.fire("Gagal", data[0].Message, "info", "Ok");
           } else {
-            // swal.close();
             Swal.fire("Success!", "Berhasil menyimpan data.", "success");
             onChangePage("index");
           }
         } catch (error) {
-          // swal.close();
           Swal.fire("Error!", "Terjadi kesalahan saat mengirim data.", "error");
           setIsError({ error: true, message: error.message });
         } finally {
-          // swal.close();
           setIsLoading(false);
         }
       } else {
@@ -282,6 +277,9 @@ export default function Add({ onChangePage }) {
     } else {
       console.log("User memilih Tidak");
     }
+  };
+  const TampilkanJadwal = async () => {
+    setDisplayedSchedules(generatedDates);
   };
 
   if (isLoading) return <Loading />;
@@ -438,19 +436,64 @@ export default function Add({ onChangePage }) {
               label="Tambah Sparepart"
               onClick={addSparepartField}
             />
-            {generatedDates.length > 0 && (
-              <div className="mt-4">
-                <h5>Jadwal Perawatan:</h5>
-                <ul>
-                  {generatedDates.map((date, index) => (
-                    <li key={index}>
-                      Perawatan Hari ke-{index + 1}:{" "}
-                      {formatDate(date, "D MMMM YYYY")}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <Button
+              classType="secondary me-2 px-4 py-2"
+              label="TAMPILKAN JADWAL"
+              onClick={TampilkanJadwal}
+            />
+          </div>
+        </div>
+        <div className="card mt-4">
+          <div className="card-header bg-primary lead fw-medium text-white">
+            Jadwal Yang Dihasilkan
+          </div>
+          <div className="card-body p-4">
+            <div className="mt-3">
+              {isLoading ? (
+                <Loading />
+              ) : (
+                <div className="d-flex flex-column">
+                  <table className="table table-hover table-bordered table-striped table-light border">
+                    <thead align="center">
+                      <tr>
+                        <th style={{ maxWidth: "1px" }}>NO</th>
+                        <th>ID Mesin</th>
+                        <th>Jenis Tindakan</th>
+                        <th>Jadwal Pemeliharaan</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {displayedSchedules &&
+                      Array.isArray(displayedSchedules) &&
+                      displayedSchedules.length > 0 ? (
+                        displayedSchedules.map((date, index) => (
+                          <tr key={`schedule-${index}`}>
+                            <td align="center" style={{ maxWidth: "10px" }}>
+                              {index + 1}
+                            </td>
+                            <td>
+                              {formDataRef.current?.mes_id_mesin || "N/A"}
+                            </td>
+                            <td>
+                              {formDataRef.current?.jenis_tindakan || "N/A"}
+                            </td>
+                            <td align="center">
+                              {formatDate(date, "D MMMM YYYY")}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="4" align="center">
+                            Tidak ada Jadwal yang dihasilkan.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div className="float-end my-4 mx-1">

@@ -59,7 +59,7 @@ export default function RiwayatPreventif({ onChangePage }) {
 const exportToExcel = async () => {
   if (!dataPrevetif || dataPrevetif.length === 0) {
     console.log(dataPrevetif);
-    SweetAlert("Gagal", "Tidak ada data untuk diekspor!", "error");
+    Swal.fire("Gagal", "Tidak ada data untuk dieksport!", "error");
     return;
   }
 
@@ -157,7 +157,7 @@ const exportToExcel = async () => {
   const exportToExcelByID = (id) => {
     if (!DataPreventifById || DataPreventifById.length === 0) {
       console.log(dataPrevetif);
-      SweetAlert("Gagal", "Tidak ada data untuk diekspor!", "error");
+      Swal.fire("Gagal", "Tidak ada data untuk dieksport!", "error");
       return;
     }
 
@@ -351,6 +351,7 @@ const exportToExcel = async () => {
         );
 
         if (data === "ERROR") {
+          // console.log("Ini Data",data);
           setIsError(true);
         } else if (data.length === 0) {
           setCurrentData(inisialisasiData);
