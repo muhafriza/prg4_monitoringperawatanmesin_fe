@@ -110,7 +110,7 @@ const routeList = [
     element: <RiwayatPerawatanPreventif />,
   },
   {
-    path: "/perawatan_korektif",
+    path: "/perawatan_korektif_pic",
     element: <KorektifPic />,
   },
 

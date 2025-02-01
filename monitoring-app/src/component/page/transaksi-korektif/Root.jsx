@@ -4,7 +4,7 @@ import KorektifAdd from "./Add";
 import KorektifDetail from "./Detail";
 
 
-export default function MasterProses() {
+export default function KorektifPic() {
   const [pageMode, setPageMode] = useState("index");
   const [dataID, setDataID] = useState();
 
