@@ -15,6 +15,7 @@ import { decryptId } from "../../util/Encryptor";
 import * as XLSX from "xlsx";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import Swal from "sweetalert2";
 
 const inisialisasiData = [
   {
@@ -76,25 +77,56 @@ export default function MasterMesinIndex({ onChangePage }) {
   }
 
   // Handle changing the machine's status
-  function handleSetStatus(id) {
-    setIsLoading(true);
+  const handleSetStatus = (id) => {
+    console.log("A",currentData);
     setIsError(false);
-    UseFetch(API_LINK + "Mesin/SetStatusMesin", {
-      mes_id_mesin: id,
-    })
-      .then((data) => {
-        if (data === "ERROR" || data.length === 0) setIsError(true);
-        else {
-          SweetAlert(
-            "Sukses",
-            "Status data Mesin berhasil diubah menjadi " + data[0].Status,
-            "success"
-          );
-          handleSetCurrentPage(currentFilter.page);
-        }
-      })
-      .finally(() => setIsLoading(false));
-  }
+
+    Swal.fire({
+      title: "Warning",
+      html: `Yakin ingin mengubah status pengguna ini?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "YA",
+      cancelButtonText: "BATAL",
+    }).then((confirmation) => {
+      if (confirmation.isConfirmed) {
+        setIsLoading(true);
+        // Mengganti async/await dengan promise .then()
+        UseFetch(API_LINK + "Mesin/SetStatusMesin", {
+          mes_id_mesin: id,
+        })
+          .then((response) => {
+            // Validasi respons dari API
+            if (response === "ERROR" || !response || response.length === 0) {
+              setIsError(true);
+              SweetAlert("Error", "Gagal mengubah status pengguna.", "error");
+              setIsLoading(false);
+            } else {
+              SweetAlert(
+                "Sukses",
+                `Status data Mesin berhasil diubah menjadi ${response[0].Status}`,
+                "success"
+              );
+              setIsLoading(false);
+              handleSetCurrentPage(currentFilter.page); // Refresh data setelah berhasil
+            }
+          })
+          .catch((error) => {
+            setIsError(true);
+            SweetAlert(
+              "Error",
+              "Terjadi kesalahan saat mengubah status pengguna.",
+              "error"
+            );
+            console.error("Error in handleSetStatus:", error);
+            setIsLoading(false);
+          });
+      } else {
+        setIsLoading(false); // Jika user memilih "BATAL", hentikan loading
+      }
+    });
+  };
+
   const exportToExcel = async () => {
     if (!dataExport || dataExport.length === 0) {
       console.log(dataExport);

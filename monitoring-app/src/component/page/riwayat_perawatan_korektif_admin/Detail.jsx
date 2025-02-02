@@ -6,7 +6,7 @@ import Label from "../../part/Label";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
-export default function DetailRiwayatPreventif({ onChangePage, withID }) {
+export default function DetailRiwayatKorektif({ onChangePage, withID }) {
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -69,7 +69,7 @@ export default function DetailRiwayatPreventif({ onChangePage, withID }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/DetailPerawatanMesin",
+          API_LINK + "Korektif/DetailPerawatanMesin",
           {
             id: withID,
           }
@@ -98,13 +98,13 @@ export default function DetailRiwayatPreventif({ onChangePage, withID }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/DetailSPPerawatanMesin",
+          API_LINK + "Korektif/DetailSPPerawatanMesin",
           {
             id: withID,
           }
         );
 
-        if (data === "ERROR" || data.length === 0) {
+        if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal mengambil data Sparepart.");
         } else {
           setFetchDataDetailSP(data); // Menyimpan hasil fetchDetailSP ke state
@@ -249,7 +249,7 @@ export default function DetailRiwayatPreventif({ onChangePage, withID }) {
                   <Label
                     forLabel="Tanggal_Selesai"
                     title="Tanggal Selesai"
-                    data={formatDate(formData.Tanggal_Selesai, "D MMMM YYYY")}
+                    data={formData.Modified_Date ? formatDate(formData.Modified_Date, "D MMMM YYYY") : ""}
                   />
                 </div>
                 <div className="col-lg-3">

@@ -16,6 +16,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { ValidationError } from "yup";
 import ExcelJS from "exceljs";
+import Swal from "sweetalert2";
 
 const inisialisasiData = [
   {
@@ -46,7 +47,8 @@ export default function MasterUserIndex({ onChangePage }) {
     query: "",
     sort: "kry_nama_depan",
     status: "Aktif",
-    APP: "APP60",
+    APP: 'APP60',
+    pagin: 10, 
   });
 
   const searchQuery = useRef();
@@ -85,23 +87,51 @@ export default function MasterUserIndex({ onChangePage }) {
     console.log(id, peran);
     setIsLoading(true);
     setIsError(false);
-    UseFetch(API_LINK + "MasterUser/SetStatusUser", {
-      id: id,
-      peran: peran,
-    })
-      .then((data) => {
-        if (data === "ERROR" || data.length === 0) setIsError(true);
-        else {
-          SweetAlert(
-            "Sukses",
-            "Status data Sparepart berhasil diubah menjadi " + data[0].Status,
-            "success"
-          );
-          setIsLoading(false);
-          handleSetCurrentPage(currentFilter.page);
-        }
-      })
-      .then(() => setIsLoading(false));
+    Swal.fire({
+      title: "Warning",
+      html: `Yakin ingin mengubah status pengguna ini?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "YA",
+      cancelButtonText: "BATAL",
+    }).then((confirmation) => {
+      if (confirmation.isConfirmed) {
+        setIsLoading(true);
+        // Mengganti async/await dengan promise .then()
+        UseFetch(API_LINK + "MasterUser/SetStatusUser", {
+          id: id,
+          peran: peran,
+        })
+          .then((response) => {
+            // Validasi respons dari API
+            if (response === "ERROR" || !response || response.length === 0) {
+              setIsError(true);
+              SweetAlert("Error", "Gagal mengubah status pengguna.", "error");
+              setIsLoading(false);
+            } else {
+              SweetAlert(
+                "Sukses",
+                `Status data Mesin berhasil diubah menjadi ${response[0].Status}`,
+                "success"
+              );
+              setIsLoading(false);
+              handleSetCurrentPage(currentFilter.page); // Refresh data setelah berhasil
+            }
+          })
+          .catch((error) => {
+            setIsError(true);
+            SweetAlert(
+              "Error",
+              "Terjadi kesalahan saat mengubah status pengguna.",
+              "error"
+            );
+            console.error("Error in handleSetStatus:", error);
+            setIsLoading(false);
+          });
+      } else {
+        setIsLoading(false); // Jika user memilih "BATAL", hentikan loading
+      }
+    });
   }
   function formatDate(dateString, format) {
     const date = new Date(dateString);
@@ -245,6 +275,7 @@ export default function MasterUserIndex({ onChangePage }) {
           currentFilter
         );
 
+        console.log("Response: ",currentFilter);
         if (!data) {
           setIsError(true);
           console.log("Error nih");

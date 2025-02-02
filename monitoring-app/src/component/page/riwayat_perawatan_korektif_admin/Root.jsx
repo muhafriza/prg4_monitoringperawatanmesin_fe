@@ -4,7 +4,7 @@ import DetailRiwayatPreventif from "./Detail";
 
 import MasterSparepartAdd from "./Add";
 import MasterSparepartEdit from "./Edit";
-import MasterSparepartDetail from "./Detail";
+import DetailRiwayatKorektif from "./Detail";
 
 export default function RiwayatPerawatanKorektif() {
   const [pageMode, setPageMode] = useState("index");
@@ -22,7 +22,7 @@ export default function RiwayatPerawatanKorektif() {
         );
         case "detail":
           return (
-            <DetailRiwayatPreventif
+            <DetailRiwayatKorektif
               onChangePage={handleSetPageMode}
               withID={dataID}
             />
