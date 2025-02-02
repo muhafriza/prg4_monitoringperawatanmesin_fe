@@ -6,6 +6,9 @@ import Alert from "../../part/Alert";
 import "./style.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import Table from "../../part/Table";
+import Cookies from "js-cookie";
+import { decryptId } from "../../util/Encryptor";
+
 
 import { Chart as ChartJS, defaults } from "chart.js/auto";
 import { Bar, Doughnut, Pie } from "react-chartjs-2";
@@ -43,6 +46,19 @@ const inisialisasiDataProses = [
 ];
 
 export default function BerandaAdministrator() {
+  const getUserInfo = () => {
+      const encryptedUser = Cookies.get("activeUser");
+      if (encryptedUser) {
+        try {
+          const userInfo = JSON.parse(decryptId(encryptedUser));
+          return userInfo;
+        } catch (error) {
+          console.error("Failed to decrypt user info:", error);
+          return null;
+        }
+      }
+      return null;
+    };
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
   const [dataKerusakanTerahir, setDataKerusakanTerahir] =
@@ -50,6 +66,11 @@ export default function BerandaAdministrator() {
   const [dataProsesPerbaikan, setDataProsesPerbaikan] = useState(
     inisialisasiDataProses
   );
+
+  const userInfo = getUserInfo();
+  console.log("Inii user info", userInfo);
+
+  // const peran = userInfo.peran;
 
   function formatDate(dateString, format) {
     const date = new Date(dateString);
