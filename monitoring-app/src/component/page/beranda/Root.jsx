@@ -2,6 +2,7 @@ import BerandaAdministrator from "./Administrator";
 import BerandaTeknisi from "./Teknisi";
 import Cookies from "js-cookie";
 import { decryptId } from "../../util/Encryptor";
+import BerandaPIC from "./Pic";
 
 export default function Beranda() {
   const getUserInfo = () => {
@@ -42,6 +43,13 @@ export default function Beranda() {
     return (
       <div>
         <BerandaTeknisi />
+      </div>
+    );
+  }
+  if(peran.includes("PIC")){
+    return (
+      <div>
+        <BerandaPIC />
       </div>
     );
   }

@@ -11,6 +11,19 @@ import Alert from "../../part/Alert";
 import FileUpload from "../../part/FileUpload";
 import UploadFile from "../../util/UploadFile";
 
+const dataUPT = [
+  { Value: "PEMESINAN", Text: "PEMESINAN" },
+  { Value: "MANUFAKTUR", Text: "MANUFAKTUR" },
+  { Value: "DESAIN DAN METROLOGI", Text: "DESAIN DAN METROLOGI" },
+  { Value: "OTOMASI", Text: "OTOMASI" },
+  { Value: "PERAWATAN", Text: "PERAWATAN" },
+  { Value: "OTOMOTIF", Text: "OTOMOTIF" },
+  { Value: "ALAT BERAT", Text: "ALAT BERAT" },
+  { Value: "SIPIL", Text: "SIPIL" },
+  { Value: "PRODUKSI", Text: "PRODUKSI" },
+  { Value: "LPT3", Text: "LPT3" },
+];
+
 export default function MasterMesinAdd({ onChangePage }) {
   const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
@@ -103,6 +116,7 @@ export default function MasterMesinAdd({ onChangePage }) {
       setErrors
     );
 
+    console.log(formDataRef.current);
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
       setIsError({ error: false, message: "" });
@@ -127,7 +141,7 @@ export default function MasterMesinAdd({ onChangePage }) {
         // Prepare FormData for API request
         const formData = new FormData();
 
-        console.log(formData);
+        console.log("144: ", formData);
 
         // Send data to API using FormData
         const data = await UseFetch(
@@ -179,15 +193,23 @@ export default function MasterMesinAdd({ onChangePage }) {
                 />
               </div>
               <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="mes_upt"
-                  label="UPT"
-                  isRequired
+                <label htmlFor="mes_upt" className="form-label fw-bold">
+                  UPT <span style={{ color: "red" }}>*</span>
+                </label>
+                <select
+                  id="mes_upt"
+                  name="mes_upt"
+                  className="form-select"
                   value={formDataRef.current.mes_upt}
                   onChange={handleInputChange}
-                  errorMessage={errors.mes_upt}
-                />
+                >
+                  <option value="">-- Pilih UPT --</option>
+                  {dataUPT.map((upt) => (
+                    <option key={upt.Value} value={upt.Value}>
+                      {upt.Text}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="col-lg-3">
                 <Input

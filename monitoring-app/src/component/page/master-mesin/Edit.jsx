@@ -10,7 +10,18 @@ import Button from "../../part/Button";
 import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
-
+const dataUPT = [
+  { Value: "PEMESINAN", Text: "PEMESINAN" },
+  { Value: "MANUFAKTUR", Text: "MANUFAKTUR" },
+  { Value: "DESAIN DAN METROLOGI", Text: "DESAIN DAN METROLOGI" },
+  { Value: "OTOMASI", Text: "OTOMASI" },
+  { Value: "PERAWATAN", Text: "PERAWATAN" },
+  { Value: "OTOMOTIF", Text: "OTOMOTIF" },
+  { Value: "ALAT BERAT", Text: "ALAT BERAT" },
+  { Value: "SIPIL", Text: "SIPIL" },
+  { Value: "PRODUKSI", Text: "PRODUKSI" },
+  { Value: "LPT3", Text: "LPT3" },
+];
 export default function MasterMesinEdit({ onChangePage, withID }) {
   const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
@@ -255,15 +266,23 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
                 />
               </div>
               <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="mes_upt"
-                  label="UPT"
-                  isRequired
+                <label htmlFor="mes_upt" className="form-label fw-bold">
+                  UPT <span style={{ color: "red" }}>*</span>
+                </label>
+                <select
+                  id="mes_upt"
+                  name="mes_upt"
+                  className="form-select"
                   value={formDataRef.current.mes_upt}
                   onChange={handleInputChange}
-                  errorMessage={errors.mes_upt}
-                />
+                >
+                  <option value="">-- Pilih UPT --</option>
+                  {dataUPT.map((upt) => (
+                    <option key={upt.Value} value={upt.Value}>
+                      {upt.Text}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="col-lg-3">
                 <Input

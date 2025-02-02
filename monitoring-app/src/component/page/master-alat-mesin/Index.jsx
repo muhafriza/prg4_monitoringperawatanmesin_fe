@@ -10,6 +10,8 @@ import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
+import Cookies from "js-cookie";
+import { decryptId } from "../../util/Encryptor";
 
 const inisialisasiData = [
   {

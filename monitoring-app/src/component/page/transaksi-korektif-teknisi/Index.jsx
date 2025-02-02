@@ -36,11 +36,12 @@ const dataFilterSort = [
 ];
 
 const dataFilterStatus = [
-  { Value: "0", Text: "Belum Selesai" },
-  { Value: "1", Text: "Selesai" },
+  { Value: "Dalam Pengerjaan", Text: "Dalam Pengerjaan" },
+  { Value: "Pending", Text: "Pending" },
+  { Value: "Selesai", Text: "Selesai" },
 ];
 
-export default function KorektifTeknisi({ onChangePage }) {
+export default function index({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
@@ -48,7 +49,7 @@ export default function KorektifTeknisi({ onChangePage }) {
     page: 1,
     query: "",
     sort: "[kor_tanggal_pengajuan] desc",
-    status: "0", // Default ke status "Belum Selesai"
+    status: "Pending", // Default ke status "Belum Selesai"
     itemPerPage: 10,
   });
 
@@ -73,6 +74,7 @@ export default function KorektifTeknisi({ onChangePage }) {
       sort: searchFilterSort.current.value,
       status: searchFilterStatus.current.value,
     }));
+    console.log(currentFilter);
   }
 
   function handleSetStatus(id) {
@@ -118,10 +120,8 @@ export default function KorektifTeknisi({ onChangePage }) {
               "center",
               "center",
               "left",
-              "left",
-              "left",
-              "left",
               "center",
+              "left",
               "center",
               "center",
             ],

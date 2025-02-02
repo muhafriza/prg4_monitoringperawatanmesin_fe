@@ -10,7 +10,10 @@ import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
+import Cookies from "js-cookie";
+import { decryptId } from "../../util/Encryptor";
 import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 
 const inisialisasiData = [
@@ -92,31 +95,75 @@ export default function MasterMesinIndex({ onChangePage }) {
       })
       .finally(() => setIsLoading(false));
   }
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     if (!dataExport || dataExport.length === 0) {
-      SweetAlert("Gagal", "Tidak ada data untuk diekspor!", "error");
+      console.log(dataExport);
+      Swal.fire("Gagal", "Tidak ada data untuk dieksport!", "error");
       return;
     }
 
-    // 1. Konversi data menjadi worksheet
-    const worksheet = XLSX.utils.json_to_sheet(dataExport);
+    // 1. Buat workbook dan worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Data Mesin");
 
-    // 2. Buat workbook dan tambahkan worksheet
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Data Mesin");
+    // 2. Tambahkan header dengan styling
+    const headers = Object.keys(dataExport[0]);
+    const headerRow = worksheet.addRow(headers);
 
-    // 3. Konversi workbook ke file Excel (blob)
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
+    headerRow.eachCell((cell, colNumber) => {
+      cell.font = { bold: true, color: { argb: "FFFFFF" } };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "0074cc" },
+      };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+
+      // Atur ukuran kolom berdasarkan header
+      worksheet.getColumn(colNumber).width = headers[colNumber - 1].length + 5;
     });
-    const excelFile = new Blob([excelBuffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+
+    // 3. Tambahkan data dengan style yang seragam
+    dataExport.forEach((item) => {
+      const rowData = headers.map((key) =>
+        item[key] === null || item[key] === undefined ? "-" : item[key]
+      );
+      const row = worksheet.addRow(rowData);
+
+      row.eachCell((cell, colNumber) => {
+        // Terapkan border ke setiap sel
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+
+        // Atur alignment center untuk semua sel
+        cell.alignment = { horizontal: "center", vertical: "middle" };
+
+        // Atur ukuran kolom berdasarkan panjang isi
+        const column = worksheet.getColumn(colNumber);
+        const cellLength = cell.value ? cell.value.toString().length : 10;
+        column.width = Math.max(column.width || 10, cellLength + 2);
+      });
     });
 
-    // 4. Simpan file
+    // 4. Konversi workbook ke file Excel (Blob)
+    const buffer = await workbook.xlsx.writeBuffer();
+    const excelFile = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    // 5. Simpan file dengan nama yang mengandung tanggal
     const now = new Date().toISOString().split("T")[0];
-    saveAs(excelFile, `Data-Mesin_${formatDate(now, "D MMMM YYYY")}.xlsx`);
+    saveAs(excelFile, `Data-Mesin_${now}.xlsx`);
   };
 
   function formatDate(dateString, format) {
