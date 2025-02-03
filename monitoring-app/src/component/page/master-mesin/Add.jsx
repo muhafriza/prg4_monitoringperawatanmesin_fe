@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { object, string, number } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -152,7 +152,7 @@ export default function MasterMesinAdd({ onChangePage }) {
         if (!data) {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data Mesin.");
         } else {
-          SweetAlert("Sukses", "Data Mesin berhasil disimpan", "success");
+          Swal.fire("Sukses", "Data Mesin berhasil disimpan", "success");
           onChangePage("index");
         }
       } catch (error) {

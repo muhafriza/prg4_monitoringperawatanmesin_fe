@@ -3,7 +3,7 @@ import { object, string, date } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
 import { separator } from "../../util/Formatting";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import UploadFile from "../../util/UploadFile";
 import Button from "../../part/Button";
@@ -194,7 +194,7 @@ export default function SuratPenawaranKonfirmasi({ onChangePage, withID }) {
               "Terjadi kesalahan: Gagal menyimpan data konfirmasi persetujuan pelanggan."
             );
           } else {
-            SweetAlert(
+            Swal.fire(
               "Sukses",
               "Data konfirmasi persetujuan pelanggan berhasil disimpan",
               "success"

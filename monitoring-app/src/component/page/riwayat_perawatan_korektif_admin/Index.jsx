@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { PAGE_SIZE, API_LINK } from "../../util/Constants";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -15,7 +15,7 @@ import { saveAs } from "file-saver";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import Swal from "sweetalert2";
-import logo from "../../../assets/IMG_Logo.png"
+import logo from "../../../assets/IMG_Logo.png";
 import ExcelJS from "exceljs";
 
 const inisialisasiData = [
@@ -54,85 +54,84 @@ export default function RiwayatPreventif({ onChangePage }) {
   const searchQuery = useRef();
   const searchFilterSort = useRef();
   const searchFilterStatus = useRef();
-  
-  
-const exportToExcel = async () => {
-  if (!dataKorektif || dataKorektif.length === 0) {
-    console.log(dataKorektif);
-    Swal.fire("Gagal", "Tidak ada data untuk dieksport!", "error");
-    return;
-  }
+
+  const exportToExcel = async () => {
+    if (!dataKorektif || dataKorektif.length === 0) {
+      console.log(dataKorektif);
+      Swal.fire("Gagal", "Tidak ada data untuk dieksport!", "error");
+      return;
+    }
 
     // 1. Buat workbook dan worksheet
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet("Data Perawatan Korektif");
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Data Perawatan Korektif");
 
-  // 2. Tambahkan header dengan styling, border, dan center alignment
-  const headers = Object.keys(dataKorektif[0]);
-  worksheet.addRow(headers);
-  
-  worksheet.getRow(1).eachCell((cell, colNumber) => {
-    cell.font = { bold: true, color: { argb: "FFFFFF" } };
-    cell.fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "0074cc" },
-    };
-    cell.alignment = { horizontal: "center", vertical: "middle" };
-    cell.border = {
-      top: { style: "thin" },
-      left: { style: "thin" },
-      bottom: { style: "thin" },
-      right: { style: "thin" },
-    };
-    
-    // Atur ukuran kolom nomor 1 menjadi 10
-    if (colNumber === 1) {
-      worksheet.getColumn(colNumber).width = 5;
-    }
-    
-    // Atur ukuran kolom nomor 2 berdasarkan header
-    if (colNumber === 2) {
-      worksheet.getColumn(colNumber).width = headers[colNumber - 1].length + 5;
-    }
-  });
+    // 2. Tambahkan header dengan styling, border, dan center alignment
+    const headers = Object.keys(dataKorektif[0]);
+    worksheet.addRow(headers);
 
-  // 3. Tambahkan data dengan border di setiap sel dan atur ukuran kolom berdasarkan isi
-  dataKorektif.forEach((item) => {
-    const row = worksheet.addRow(Object.values(item));
-    row.eachCell((cell, colNumber) => {
+    worksheet.getRow(1).eachCell((cell, colNumber) => {
+      cell.font = { bold: true, color: { argb: "FFFFFF" } };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "0074cc" },
+      };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
       cell.border = {
         top: { style: "thin" },
         left: { style: "thin" },
         bottom: { style: "thin" },
         right: { style: "thin" },
       };
-      
-      // Atur alignment center untuk kolom nomor 1
+
+      // Atur ukuran kolom nomor 1 menjadi 10
       if (colNumber === 1) {
-        cell.alignment = { horizontal: "center", vertical: "middle" };
+        worksheet.getColumn(colNumber).width = 5;
       }
-      
-      // Atur ukuran kolom berdasarkan panjang isi, kecuali kolom nomor 1 dan 2
-      if (colNumber !== 1 && colNumber !== 2) {
-        const column = worksheet.getColumn(colNumber);
-        const cellLength = cell.value ? cell.value.toString().length : 10;
-        column.width = Math.max(column.width || 10, cellLength + 2);
+
+      // Atur ukuran kolom nomor 2 berdasarkan header
+      if (colNumber === 2) {
+        worksheet.getColumn(colNumber).width =
+          headers[colNumber - 1].length + 5;
       }
     });
-  });
 
-  // 4. Konversi workbook ke file Excel (Blob)
-  const buffer = await workbook.xlsx.writeBuffer();
-  const excelFile = new Blob([buffer], {
-    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  });
+    // 3. Tambahkan data dengan border di setiap sel dan atur ukuran kolom berdasarkan isi
+    dataKorektif.forEach((item) => {
+      const row = worksheet.addRow(Object.values(item));
+      row.eachCell((cell, colNumber) => {
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
 
-  // 5. Simpan file
-  const now = new Date().toISOString().split("T")[0];
-  saveAs(excelFile, `Data-Perawatan-Korektif_${now}.xlsx`);
-};
+        // Atur alignment center untuk kolom nomor 1
+        if (colNumber === 1) {
+          cell.alignment = { horizontal: "center", vertical: "middle" };
+        }
 
+        // Atur ukuran kolom berdasarkan panjang isi, kecuali kolom nomor 1 dan 2
+        if (colNumber !== 1 && colNumber !== 2) {
+          const column = worksheet.getColumn(colNumber);
+          const cellLength = cell.value ? cell.value.toString().length : 10;
+          column.width = Math.max(column.width || 10, cellLength + 2);
+        }
+      });
+    });
+
+    // 4. Konversi workbook ke file Excel (Blob)
+    const buffer = await workbook.xlsx.writeBuffer();
+    const excelFile = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    // 5. Simpan file
+    const now = new Date().toISOString().split("T")[0];
+    saveAs(excelFile, `Data-Perawatan-Korektif_${now}.xlsx`);
+  };
 
   const printRef = useRef();
 
@@ -160,15 +159,15 @@ const exportToExcel = async () => {
       Swal.fire("Gagal", "Tidak ada data untuk dieksport!", "error");
       return;
     }
-  
-      // 1. Buat workbook dan worksheet
+
+    // 1. Buat workbook dan worksheet
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Data Perawatan Korektif");
-  
+
     // 2. Tambahkan header dengan styling, border, dan center alignment
     const headers = Object.keys(dataKorektif[0]);
     worksheet.addRow(headers);
-    
+
     worksheet.getRow(1).eachCell((cell, colNumber) => {
       cell.font = { bold: true, color: { argb: "FFFFFF" } };
       cell.fill = {
@@ -183,18 +182,19 @@ const exportToExcel = async () => {
         bottom: { style: "thin" },
         right: { style: "thin" },
       };
-      
+
       // Atur ukuran kolom nomor 1 menjadi 10
       if (colNumber === 1) {
         worksheet.getColumn(colNumber).width = 5;
       }
-      
+
       // Atur ukuran kolom nomor 2 berdasarkan header
       if (colNumber === 2) {
-        worksheet.getColumn(colNumber).width = headers[colNumber - 1].length + 5;
+        worksheet.getColumn(colNumber).width =
+          headers[colNumber - 1].length + 5;
       }
     });
-  
+
     // 3. Tambahkan data dengan border di setiap sel dan atur ukuran kolom berdasarkan isi
     dataKorektif.forEach((item) => {
       const row = worksheet.addRow(Object.values(item));
@@ -205,12 +205,12 @@ const exportToExcel = async () => {
           bottom: { style: "thin" },
           right: { style: "thin" },
         };
-        
+
         // Atur alignment center untuk kolom nomor 1
         if (colNumber === 1) {
           cell.alignment = { horizontal: "center", vertical: "middle" };
         }
-        
+
         // Atur ukuran kolom berdasarkan panjang isi, kecuali kolom nomor 1 dan 2
         if (colNumber !== 1 && colNumber !== 2) {
           const column = worksheet.getColumn(colNumber);
@@ -219,13 +219,13 @@ const exportToExcel = async () => {
         }
       });
     });
-  
+
     // 4. Konversi workbook ke file Excel (Blob)
     const buffer = await workbook.xlsx.writeBuffer();
     const excelFile = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
-  
+
     // 5. Simpan file
     const now = new Date().toISOString().split("T")[0];
     saveAs(excelFile, `Data-Perawatan-Korektif/${id}_${now}.xlsx`);
@@ -518,12 +518,12 @@ const exportToExcel = async () => {
         </div>
         <br />
         <div className="card p-4" ref={printRef} style={{ display: "block" }}>
-            <img
-              src={logo}
-              alt="Logo AstraTech"
-              className="p-3 ms-1"
-              style={{ height: "70px" }}
-            />
+          <img
+            src={logo}
+            alt="Logo AstraTech"
+            className="p-3 ms-1"
+            style={{ height: "70px" }}
+          />
           <h2 className="text-center">Laporan Perawatan Mesin Rutin </h2>
           <h2 className="text-center">
             {DataKorektifByID
@@ -536,10 +536,12 @@ const exportToExcel = async () => {
           <br />
           <div className="card">
             <div className="card-header bg-success lead fw-medium text-white">
-              Riwayat Perawatan Preventif - {DataKorektifByID
-              ? DataKorektifByID[0]["ID Perawatan Korektif"]
-              : ""}{" "}
-            / Jadwal Pemeliharaan {DataKorektifByID ? DataKorektifByID[0].Jadwal : ""}{" "}
+              Riwayat Perawatan Preventif -{" "}
+              {DataKorektifByID
+                ? DataKorektifByID[0]["ID Perawatan Korektif"]
+                : ""}{" "}
+              / Jadwal Pemeliharaan{" "}
+              {DataKorektifByID ? DataKorektifByID[0].Jadwal : ""}{" "}
             </div>
             <div className="card-body">
               <h4></h4>

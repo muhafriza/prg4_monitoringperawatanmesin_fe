@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { object, string, date } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -123,7 +123,7 @@ export default function KorektifAdd({ onChangePage }) {
             "Terjadi kesalahan: Gagal menyimpan data perawatan korektif."
           );
         } else {
-          SweetAlert(
+          Swal.fire(
             "Sukses",
             "Data perawatan korektif berhasil disimpan",
             "success"

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { PAGE_SIZE, API_LINK, APPLICATION_ID } from "../../util/Constants";
 import { formatDate } from "../../util/Formatting";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -89,7 +89,7 @@ export default function NotifikasiIndex() {
         .then((data) => {
           if (data === "ERROR" || data.length === 0) setIsError(true);
           else {
-            SweetAlert(
+            Swal.fire(
               "Sukses",
               "Semua notifikasi ditandai sudah dibaca",
               "success"

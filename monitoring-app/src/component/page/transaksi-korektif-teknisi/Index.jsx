@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { PAGE_SIZE, API_LINK } from "../../util/Constants";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -86,10 +86,12 @@ export default function index({ onChangePage }) {
       .then((data) => {
         if (data === "ERROR" || data.length === 0) setIsError(true);
         else {
-          SweetAlert(
+          Swal.fire(
             "Sukses",
             "Status berhasil diubah menjadi " +
-              (data[0].kor_status_pemeliharaan === 1 ? "Selesai" : "Belum Selesai"),
+              (data[0].kor_status_pemeliharaan === 1
+                ? "Selesai"
+                : "Belum Selesai"),
             "success"
           );
           handleSetCurrentPage(currentFilter.page);
@@ -113,7 +115,7 @@ export default function index({ onChangePage }) {
         } else {
           const formattedData = data.map((value) => ({
             ...value,
-            Aksi: [ "Detail", "Edit"],
+            Aksi: ["Detail", "Edit"],
             Alignment: [
               "center",
               "center",
@@ -141,7 +143,6 @@ export default function index({ onChangePage }) {
 
   return (
     <>
-    
       <div className="d-flex flex-column">
         {isError && (
           <div className="flex-fill">
@@ -153,7 +154,6 @@ export default function index({ onChangePage }) {
         )}
         <div className="flex-fill">
           <div className="input-group">
-           
             <Input
               ref={searchQuery}
               forInput="pencarianPerawatan"
@@ -182,7 +182,6 @@ export default function index({ onChangePage }) {
                 arrData={dataFilterStatus}
                 defaultValue="0"
               />
-              
             </Filter>
           </div>
         </div>

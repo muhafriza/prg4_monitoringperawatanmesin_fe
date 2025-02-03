@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { PAGE_SIZE, API_LINK } from "../../util/Constants";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -15,7 +15,6 @@ import { decryptId } from "../../util/Encryptor";
 import * as XLSX from "xlsx";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
-import Swal from "sweetalert2";
 
 const inisialisasiData = [
   {
@@ -78,7 +77,7 @@ export default function MasterMesinIndex({ onChangePage }) {
 
   // Handle changing the machine's status
   const handleSetStatus = (id) => {
-    console.log("A",currentData);
+    console.log("A", currentData);
     setIsError(false);
 
     Swal.fire({
@@ -99,12 +98,12 @@ export default function MasterMesinIndex({ onChangePage }) {
             // Validasi respons dari API
             if (response === "ERROR" || !response || response.length === 0) {
               setIsError(true);
-              SweetAlert("Error", "Gagal mengubah status pengguna.", "error");
+              Swal.fire("Error", "Gagal mengubah status pengguna.", "error");
               setIsLoading(false);
             } else {
-              SweetAlert(
-                "Sukses",
-                `Status data Mesin berhasil diubah menjadi ${response[0].Status}`,
+              Swal.fire(
+                "Success",
+                `Status data Mesin berhasil diubah. ${response[0].Status}`,
                 "success"
               );
               setIsLoading(false);
@@ -113,7 +112,7 @@ export default function MasterMesinIndex({ onChangePage }) {
           })
           .catch((error) => {
             setIsError(true);
-            SweetAlert(
+            Swal.fire(
               "Error",
               "Terjadi kesalahan saat mengubah status pengguna.",
               "error"

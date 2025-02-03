@@ -9,7 +9,7 @@ import Label from "../../part/Label";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 import { object, string } from "yup";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import { DateTime } from "luxon";
 
 export default function PerawatanPreventifTeknisiEdit({
@@ -202,7 +202,7 @@ export default function PerawatanPreventifTeknisiEdit({
         if (!data) {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data produk.");
         } else {
-          SweetAlert("Sukses", "Data berhasil disimpan", "success");
+          Swal.fire("Sukses", "Data berhasil disimpan", "success");
           onChangePage("index");
         }
       } catch (error) {

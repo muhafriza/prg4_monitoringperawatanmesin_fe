@@ -13,7 +13,7 @@ import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
 import Icon from "../../part/Icon";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 
 const inisialisasiData = [
   {
@@ -75,7 +75,6 @@ export default function SuratPenawaranIndex({ onChangePage }) {
       };
     });
   }
-  
 
   function handleSearch() {
     setIsLoading(true);
@@ -183,7 +182,7 @@ export default function SuratPenawaranIndex({ onChangePage }) {
               "Terjadi kesalahan: Gagal mengambil data surat penawaran."
             );
           } else {
-            SweetAlert(
+            Swal.fire(
               "Sukses",
               "Surat penawaran berhasil dikirim kepada pelanggan",
               "success"

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { PAGE_SIZE, API_LINK } from "../../util/Constants";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -16,7 +16,6 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { ValidationError } from "yup";
 import ExcelJS from "exceljs";
-import Swal from "sweetalert2";
 
 const inisialisasiData = [
   {
@@ -47,8 +46,8 @@ export default function MasterUserIndex({ onChangePage }) {
     query: "",
     sort: "kry_nama_depan",
     status: "Aktif",
-    APP: 'APP60',
-    pagin: 10, 
+    APP: "APP60",
+    pagin: 10,
   });
 
   const searchQuery = useRef();
@@ -85,7 +84,7 @@ export default function MasterUserIndex({ onChangePage }) {
 
   function handleSetStatus(id, peran) {
     console.log(id, peran);
-    setIsLoading(true);
+    // setIsLoading(true);
     setIsError(false);
     Swal.fire({
       title: "Warning",
@@ -106,12 +105,12 @@ export default function MasterUserIndex({ onChangePage }) {
             // Validasi respons dari API
             if (response === "ERROR" || !response || response.length === 0) {
               setIsError(true);
-              SweetAlert("Error", "Gagal mengubah status pengguna.", "error");
+              Swal.fire("Error", "Gagal mengubah status pengguna.", "error");
               setIsLoading(false);
             } else {
-              SweetAlert(
-                "Sukses",
-                `Status data Mesin berhasil diubah menjadi ${response[0].Status}`,
+              Swal.fire(
+                "Success",
+                `Status data Mesin berhasil diubah. ${response[0].Status}`,
                 "success"
               );
               setIsLoading(false);
@@ -120,7 +119,7 @@ export default function MasterUserIndex({ onChangePage }) {
           })
           .catch((error) => {
             setIsError(true);
-            SweetAlert(
+            Swal.fire(
               "Error",
               "Terjadi kesalahan saat mengubah status pengguna.",
               "error"
@@ -275,7 +274,7 @@ export default function MasterUserIndex({ onChangePage }) {
           currentFilter
         );
 
-        console.log("Response: ",currentFilter);
+        console.log("Response: ", currentFilter);
         if (!data) {
           setIsError(true);
           console.log("Error nih");
@@ -381,7 +380,7 @@ export default function MasterUserIndex({ onChangePage }) {
                   const status = selectedRow ? selectedRow.Status : null; // Ambil nilai Peran
 
                   if (!selectedRow || !peran) {
-                    SweetAlert(
+                    Swal.fire(
                       "Error",
                       "Data Peran atau Row tidak ditemukan!",
                       "error"

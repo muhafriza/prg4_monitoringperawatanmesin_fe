@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { object, string } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import DropDown from "../../part/Dropdown";
@@ -87,10 +87,10 @@ export default function MasterOperatorAdd({ onChangePage }) {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data operator.");
         } else {
           if (data[0].hasil === "OK") {
-            SweetAlert("Sukses", "Data operator berhasil disimpan", "success");
+            Swal.fire("Sukses", "Data operator berhasil disimpan", "success");
             onChangePage("index");
           } else {
-            SweetAlert(
+            Swal.fire(
               "Gagal",
               "Nama karyawan tersebut sudah pernah dimasukkan sebagai operator sebelumnya",
               "error"

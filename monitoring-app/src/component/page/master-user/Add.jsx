@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { object, string } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Loading from "../../part/Loading";
@@ -136,9 +136,9 @@ export default function MasterKaryawanAdd({ onChangePage }) {
 
         // Check if the 'hasil' field is 'ERROR' or 'OK'
         if (data && data[0]?.hasil === "ERROR") {
-          SweetAlert("Error", data[0]?.pesan, "error");
+          Swal.fire("Error", data[0]?.pesan, "error");
         } else if (data && data[0]?.hasil === "OK") {
-          SweetAlert("Sukses", "Data User berhasil disimpan", "success");
+          Swal.fire("Sukses", "Data User berhasil disimpan", "success");
           onChangePage("index");
         } else {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data User.");

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { object, string, number } from "yup"; // Adjusted for new schema validation
 import { API_LINK, FILE_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UploadFile from "../../util/UploadFile";
 import FileUpload from "../../part/FileUpload";
 import UseFetch from "../../util/UseFetch";
@@ -10,6 +10,7 @@ import Button from "../../part/Button";
 import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
+
 const dataUPT = [
   { Value: "PEMESINAN", Text: "PEMESINAN" },
   { Value: "MANUFAKTUR", Text: "MANUFAKTUR" },
@@ -223,7 +224,7 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
         if (!data) {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data mesin.");
         } else {
-          SweetAlert("Sukses", "Data mesin berhasil disimpan", "success");
+          Swal.fire("Sukses", "Data mesin berhasil disimpan", "success");
           onChangePage("index");
         }
       } catch (error) {

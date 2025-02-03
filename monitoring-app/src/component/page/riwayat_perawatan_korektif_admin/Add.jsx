@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { object, string } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -214,13 +214,13 @@ export default function Add({ onChangePage }) {
 
           console.log("Respons dari API: ", data);
           if (data[0].Message != "Jadwal berhasil disimpan") {
-            SweetAlert("Gagal", data[0].Message, "info", "Ok");
+            Swal.fire("Gagal", data[0].Message, "info", "Ok");
           } else {
-            SweetAlert("Sukses", data[0].Message, "success");
+            Swal.fire("Sukses", data[0].Message, "success");
             onChangePage("index");
           }
         } catch (error) {
-          SweetAlert(
+          Swal.fire(
             "Terjadi Kesalahan!",
             "Error saat menyimpan data.",
             "Error",

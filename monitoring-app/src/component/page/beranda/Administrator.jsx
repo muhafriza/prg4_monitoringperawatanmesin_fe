@@ -8,6 +8,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import Table from "../../part/Table";
 import Cookies from "js-cookie";
 import { decryptId } from "../../util/Encryptor";
+import Paging from "../../part/Paging";
 
 
 import { Chart as ChartJS, defaults } from "chart.js/auto";
@@ -292,6 +293,12 @@ export default function BerandaAdministrator() {
             <div className="card-body lead fw-small px-3 mb-3">
               <Table data={dataKerusakanTerahir} />
             </div>
+            <Paging
+                pageSize={PAGE_SIZE}
+                pageCurrent={currentFilter.page}
+                totalData={currentData[0]["Count"]}
+                navigation={handleSetCurrentPage}
+              />
           </div>
         </div>
       </div>

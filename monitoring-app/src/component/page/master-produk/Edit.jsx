@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { object, string } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import UploadFile from "../../util/UploadFile";
 import Button from "../../part/Button";
@@ -146,7 +146,7 @@ export default function MasterProdukEdit({ onChangePage, withID }) {
         if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data produk.");
         } else {
-          SweetAlert("Sukses", "Data produk berhasil disimpan", "success");
+          Swal.fire("Sukses", "Data produk berhasil disimpan", "success");
           onChangePage("index");
         }
       } catch (error) {
