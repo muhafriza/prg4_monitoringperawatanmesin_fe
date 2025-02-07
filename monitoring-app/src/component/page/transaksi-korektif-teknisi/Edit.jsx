@@ -44,7 +44,7 @@ export default function PerawatanPreventifTeknisiEdit({
 
       try {
         const dataKorektif = await UseFetch(
-          `${API_LINK}Korektif/GetDetailKorektif`,
+          `${API_LINK}Korektif/DetailPerawatanMesin`,
           { id: withID }
         );
         if (!dataKorektif || dataKorektif === "ERROR") {
