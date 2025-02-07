@@ -8,7 +8,10 @@ import Label from "../../part/Label";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
-export default function PerawatanPreventifTeknisiEdit({ onChangePage, withID }) {
+export default function PerawatanPreventifTeknisiEdit({
+  onChangePage,
+  withID,
+}) {
   const [formData, setFormData] = useState({
     ID_Perawatan_Korektif: withID,
     Tanggal_Penjadwalan: "",
@@ -40,7 +43,10 @@ export default function PerawatanPreventifTeknisiEdit({ onChangePage, withID }) 
       setIsError({ error: false, message: "" });
 
       try {
-        const dataKorektif = await UseFetch(`${API_LINK}Korektif/GetDetailKorektif`, { id: withID });
+        const dataKorektif = await UseFetch(
+          `${API_LINK}Korektif/GetDetailKorektif`,
+          { id: withID }
+        );
         if (!dataKorektif || dataKorektif === "ERROR") {
           throw new Error("Gagal mengambil data korektif.");
         }
@@ -54,7 +60,10 @@ export default function PerawatanPreventifTeknisiEdit({ onChangePage, withID }) 
 
     const fetchDataSparepart = async () => {
       try {
-        const data = await UseFetch(`${API_LINK}PTransaksiPreventif/getNamaSparepart`, { status: "Aktif" });
+        const data = await UseFetch(
+          `${API_LINK}PTransaksiPreventif/getNamaSparepart`,
+          { status: "Aktif" }
+        );
         if (data === "ERROR" || data.length === 0) {
           throw new Error("Terjadi kesalahan: Gagal mengambil data Sparepart.");
         }
@@ -97,7 +106,7 @@ export default function PerawatanPreventifTeknisiEdit({ onChangePage, withID }) 
       Sparepart_Kode: sparepartString,
       Qty_Sparepart: qtyString,
     };
-    console.log("Payload: " , payload);
+    console.log("Payload: ", payload);
 
     // setIsLoading(true);
     // setIsError({ error: false, message: "" });
@@ -119,7 +128,10 @@ export default function PerawatanPreventifTeknisiEdit({ onChangePage, withID }) 
       alert("Data berhasil disimpan!");
       onChangePage("index");
     } catch (error) {
-      setIsError({ error: true, message: error.message || "Terjadi kesalahan" });
+      setIsError({
+        error: true,
+        message: error.message || "Terjadi kesalahan",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -138,13 +150,25 @@ export default function PerawatanPreventifTeknisiEdit({ onChangePage, withID }) 
           <div className="card-body p-4">
             <div className="row">
               <div className="col-lg-3">
-                <Label forLabel="ID_Perawatan_Korektif" title="ID Perawatan" data={formData.ID_Perawatan_Korektif} />
+                <Label
+                  forLabel="ID_Perawatan_Korektif"
+                  title="ID Perawatan"
+                  data={formData.ID_Perawatan_Korektif}
+                />
               </div>
               <div className="col-lg-3">
-                <Label forLabel="ID_Mesin" title="ID Mesin" data={formData.ID_Mesin} />
+                <Label
+                  forLabel="ID_Mesin"
+                  title="ID Mesin"
+                  data={formData.ID_Mesin}
+                />
               </div>
               <div className="col-lg-4">
-                <Label forLabel="Nama_Mesin" title="Nama Mesin" data={formData.Nama_Mesin} />
+                <Label
+                  forLabel="Nama_Mesin"
+                  title="Nama Mesin"
+                  data={formData.Nama_Mesin}
+                />
               </div>
               <div className="col-lg-3">
                 <Input
@@ -172,26 +196,47 @@ export default function PerawatanPreventifTeknisiEdit({ onChangePage, withID }) 
                 />
               </div>
               <div className="col-lg-3">
-                <Label forLabel="Created_By" title="Dibuat Oleh" data={formData.Created_By} />
+                <Label
+                  forLabel="Created_By"
+                  title="Dibuat Oleh"
+                  data={formData.Created_By}
+                />
               </div>
               <div className="col-lg-3">
-                <Label forLabel="Created_Date" title="Tanggal Dibuat" data={formData.Created_Date} />
+                <Label
+                  forLabel="Created_Date"
+                  title="Tanggal Dibuat"
+                  data={formData.Created_Date}
+                />
               </div>
               {spareparts.map((sparepart, index) => (
                 <div key={index} className="row mb-3">
                   <div className="col-lg-3">
-                    <label htmlFor={`sparepart-${index}`} className="form-label fw-bold">
-                      {`Sparepart ${index + 1}`} <span style={{ color: "red" }}>*</span>
+                    <label
+                      htmlFor={`sparepart-${index}`}
+                      className="form-label fw-bold"
+                    >
+                      {`Sparepart ${index + 1}`}{" "}
+                      <span style={{ color: "red" }}>*</span>
                     </label>
                     <select
                       id={`sparepart-${index}`}
                       className="form-select"
                       value={sparepart.sparepart}
-                      onChange={(e) => handleSparepartChange(index, "sparepart", e.target.value)}
+                      onChange={(e) =>
+                        handleSparepartChange(
+                          index,
+                          "sparepart",
+                          e.target.value
+                        )
+                      }
                     >
                       <option value="">-- Pilih Sparepart --</option>
                       {sparepartOptions.map((option) => (
-                        <option key={option.kode_sparepart} value={option.kode_sparepart}>
+                        <option
+                          key={option.kode_sparepart}
+                          value={option.kode_sparepart}
+                        >
                           {option.nama_sparepart}
                         </option>
                       ))}
@@ -203,7 +248,9 @@ export default function PerawatanPreventifTeknisiEdit({ onChangePage, withID }) 
                       forInput={`qty-${index}`}
                       label="Jumlah Sparepart"
                       isRequired
-                      onChange={(e) => handleSparepartChange(index, "qty", e.target.value)}
+                      onChange={(e) =>
+                        handleSparepartChange(index, "qty", e.target.value)
+                      }
                       value={sparepart.qty}
                     />
                   </div>
@@ -216,7 +263,11 @@ export default function PerawatanPreventifTeknisiEdit({ onChangePage, withID }) 
                   </div>
                 </div>
               ))}
-              <Button classType="success me-2 px-4 py-2" label="Tambah Sparepart" onClick={addSparepartField} />
+              <Button
+                classType="success me-2 px-4 py-2"
+                label="Tambah Sparepart"
+                onClick={addSparepartField}
+              />
               <Input
                 type="text"
                 forInput="Sparepart_Diganti"
@@ -235,8 +286,16 @@ export default function PerawatanPreventifTeknisiEdit({ onChangePage, withID }) 
               />
             </div>
             <div className="float-end my-4 mx-1">
-              <Button classType="secondary px-4 py-2" label="KEMBALI" onClick={() => onChangePage("index")} />
-              <Button classType="primary ms-2 px-4 py-2" type="submit" label="SIMPAN" />
+              <Button
+                classType="secondary px-4 py-2"
+                label="KEMBALI"
+                onClick={() => onChangePage("index")}
+              />
+              <Button
+                classType="primary ms-2 px-4 py-2"
+                type="submit"
+                label="SIMPAN"
+              />
             </div>
           </div>
         </div>
