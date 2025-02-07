@@ -12,7 +12,7 @@ import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 
 const inisialisasiData = [
   {
@@ -108,7 +108,7 @@ export default function SuratPerintahKerjaIndex({ onChangePage }) {
         .then((data) => {
           if (data === "ERROR" || data.length === 0) setIsError(true);
           else {
-            SweetAlert(
+            Swal.fire(
               "Sukses",
               "Data surat perintah kerja berhasil dikirim",
               "success"

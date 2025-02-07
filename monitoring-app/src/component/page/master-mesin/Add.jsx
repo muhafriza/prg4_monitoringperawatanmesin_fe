@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { object, string, number } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -10,6 +10,19 @@ import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 import FileUpload from "../../part/FileUpload";
 import UploadFile from "../../util/UploadFile";
+
+const dataUPT = [
+  { Value: "PEMESINAN", Text: "PEMESINAN" },
+  { Value: "MANUFAKTUR", Text: "MANUFAKTUR" },
+  { Value: "DESAIN DAN METROLOGI", Text: "DESAIN DAN METROLOGI" },
+  { Value: "OTOMASI", Text: "OTOMASI" },
+  { Value: "PERAWATAN", Text: "PERAWATAN" },
+  { Value: "OTOMOTIF", Text: "OTOMOTIF" },
+  { Value: "ALAT BERAT", Text: "ALAT BERAT" },
+  { Value: "SIPIL", Text: "SIPIL" },
+  { Value: "PRODUKSI", Text: "PRODUKSI" },
+  { Value: "LPT3", Text: "LPT3" },
+];
 
 export default function MasterMesinAdd({ onChangePage }) {
   const [errors, setErrors] = useState({});
@@ -103,6 +116,7 @@ export default function MasterMesinAdd({ onChangePage }) {
       setErrors
     );
 
+    console.log(formDataRef.current);
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
       setIsError({ error: false, message: "" });
@@ -127,7 +141,7 @@ export default function MasterMesinAdd({ onChangePage }) {
         // Prepare FormData for API request
         const formData = new FormData();
 
-        console.log(formData);
+        console.log("144: ", formData);
 
         // Send data to API using FormData
         const data = await UseFetch(
@@ -138,7 +152,7 @@ export default function MasterMesinAdd({ onChangePage }) {
         if (!data) {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data Mesin.");
         } else {
-          SweetAlert("Sukses", "Data Mesin berhasil disimpan", "success");
+          Swal.fire("Sukses", "Data Mesin berhasil disimpan", "success");
           onChangePage("index");
         }
       } catch (error) {
@@ -179,15 +193,23 @@ export default function MasterMesinAdd({ onChangePage }) {
                 />
               </div>
               <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="mes_upt"
-                  label="UPT"
-                  isRequired
+                <label htmlFor="mes_upt" className="form-label fw-bold">
+                  UPT <span style={{ color: "red" }}>*</span>
+                </label>
+                <select
+                  id="mes_upt"
+                  name="mes_upt"
+                  className="form-select"
                   value={formDataRef.current.mes_upt}
                   onChange={handleInputChange}
-                  errorMessage={errors.mes_upt}
-                />
+                >
+                  <option value="">-- Pilih UPT --</option>
+                  {dataUPT.map((upt) => (
+                    <option key={upt.Value} value={upt.Value}>
+                      {upt.Text}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="col-lg-3">
                 <Input

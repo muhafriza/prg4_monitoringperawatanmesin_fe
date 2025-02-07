@@ -5,7 +5,7 @@ import { decryptId } from "../../util/Encryptor";
 import { API_LINK, FILE_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
 import { formatDate } from "../../util/Formatting";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import UploadFile from "../../util/UploadFile";
 import Button from "../../part/Button";
@@ -299,7 +299,7 @@ export default function PermintaanPelangganEdit({ onChangePage, withID }) {
             );
           }
 
-          SweetAlert(
+          Swal.fire(
             "Sukses",
             "Data permintaan pelanggan berhasil disimpan",
             "success"
@@ -472,13 +472,13 @@ export default function PermintaanPelangganEdit({ onChangePage, withID }) {
             "Terjadi kesalahan: Gagal menyetujui permintaan produk/jasa."
           );
         } else if (data[0].Hasil === "NEED BASE RAK") {
-          SweetAlert(
+          Swal.fire(
             "Setujui Produk/Jasa Gagal",
             "Permintaan produk/jasa ini tidak dapat disetujui karena Anda belum membuat basis biaya proses atau material yang dibutuhkan",
             "error"
           );
         } else {
-          SweetAlert(
+          Swal.fire(
             "Sukses",
             "Permintaan produk/jasa berhasil disetujui",
             "success"
@@ -532,7 +532,7 @@ export default function PermintaanPelangganEdit({ onChangePage, withID }) {
             "Terjadi kesalahan: Gagal menolak permintaan produk/jasa."
           );
         } else {
-          SweetAlert(
+          Swal.fire(
             "Sukses",
             "Permintaan produk/jasa berhasil ditolak",
             "success"

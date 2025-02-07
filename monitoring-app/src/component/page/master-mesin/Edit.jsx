@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { object, string, number } from "yup"; // Adjusted for new schema validation
 import { API_LINK, FILE_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UploadFile from "../../util/UploadFile";
 import FileUpload from "../../part/FileUpload";
 import UseFetch from "../../util/UseFetch";
@@ -11,6 +11,18 @@ import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
+const dataUPT = [
+  { Value: "PEMESINAN", Text: "PEMESINAN" },
+  { Value: "MANUFAKTUR", Text: "MANUFAKTUR" },
+  { Value: "DESAIN DAN METROLOGI", Text: "DESAIN DAN METROLOGI" },
+  { Value: "OTOMASI", Text: "OTOMASI" },
+  { Value: "PERAWATAN", Text: "PERAWATAN" },
+  { Value: "OTOMOTIF", Text: "OTOMOTIF" },
+  { Value: "ALAT BERAT", Text: "ALAT BERAT" },
+  { Value: "SIPIL", Text: "SIPIL" },
+  { Value: "PRODUKSI", Text: "PRODUKSI" },
+  { Value: "LPT3", Text: "LPT3" },
+];
 export default function MasterMesinEdit({ onChangePage, withID }) {
   const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
@@ -212,7 +224,7 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
         if (!data) {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data mesin.");
         } else {
-          SweetAlert("Sukses", "Data mesin berhasil disimpan", "success");
+          Swal.fire("Sukses", "Data mesin berhasil disimpan", "success");
           onChangePage("index");
         }
       } catch (error) {
@@ -255,15 +267,23 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
                 />
               </div>
               <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="mes_upt"
-                  label="UPT"
-                  isRequired
+                <label htmlFor="mes_upt" className="form-label fw-bold">
+                  UPT <span style={{ color: "red" }}>*</span>
+                </label>
+                <select
+                  id="mes_upt"
+                  name="mes_upt"
+                  className="form-select"
                   value={formDataRef.current.mes_upt}
                   onChange={handleInputChange}
-                  errorMessage={errors.mes_upt}
-                />
+                >
+                  <option value="">-- Pilih UPT --</option>
+                  {dataUPT.map((upt) => (
+                    <option key={upt.Value} value={upt.Value}>
+                      {upt.Text}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="col-lg-3">
                 <Input

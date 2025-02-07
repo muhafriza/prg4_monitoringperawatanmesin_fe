@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { PAGE_SIZE, API_LINK } from "../../util/Constants";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -10,9 +10,12 @@ import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
+import Cookies from "js-cookie";
+import { decryptId } from "../../util/Encryptor";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { ValidationError } from "yup";
+import ExcelJS from "exceljs";
 
 const inisialisasiData = [
   {
@@ -44,6 +47,7 @@ export default function MasterUserIndex({ onChangePage }) {
     sort: "kry_nama_depan",
     status: "Aktif",
     APP: "APP60",
+    pagin: 10,
   });
 
   const searchQuery = useRef();
@@ -80,25 +84,53 @@ export default function MasterUserIndex({ onChangePage }) {
 
   function handleSetStatus(id, peran) {
     console.log(id, peran);
-    setIsLoading(true);
+    // setIsLoading(true);
     setIsError(false);
-    UseFetch(API_LINK + "MasterUser/SetStatusUser", {
-      id: id,
-      peran: peran,
-    })
-      .then((data) => {
-        if (data === "ERROR" || data.length === 0) setIsError(true);
-        else {
-          SweetAlert(
-            "Sukses",
-            "Status data Sparepart berhasil diubah menjadi " + data[0].Status,
-            "success"
-          );
-          setIsLoading(false);
-          handleSetCurrentPage(currentFilter.page);
-        }
-      })
-      .then(() => setIsLoading(false));
+    Swal.fire({
+      title: "Warning",
+      html: `Yakin ingin mengubah status pengguna ini?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "YA",
+      cancelButtonText: "BATAL",
+    }).then((confirmation) => {
+      if (confirmation.isConfirmed) {
+        setIsLoading(true);
+        // Mengganti async/await dengan promise .then()
+        UseFetch(API_LINK + "MasterUser/SetStatusUser", {
+          id: id,
+          peran: peran,
+        })
+          .then((response) => {
+            // Validasi respons dari API
+            if (response === "ERROR" || !response || response.length === 0) {
+              setIsError(true);
+              Swal.fire("Error", "Gagal mengubah status pengguna.", "error");
+              setIsLoading(false);
+            } else {
+              Swal.fire(
+                "Success",
+                `Status data Mesin berhasil diubah. ${response[0].Status}`,
+                "success"
+              );
+              setIsLoading(false);
+              handleSetCurrentPage(currentFilter.page); // Refresh data setelah berhasil
+            }
+          })
+          .catch((error) => {
+            setIsError(true);
+            Swal.fire(
+              "Error",
+              "Terjadi kesalahan saat mengubah status pengguna.",
+              "error"
+            );
+            console.error("Error in handleSetStatus:", error);
+            setIsLoading(false);
+          });
+      } else {
+        setIsLoading(false); // Jika user memilih "BATAL", hentikan loading
+      }
+    });
   }
   function formatDate(dateString, format) {
     const date = new Date(dateString);
@@ -138,31 +170,75 @@ export default function MasterUserIndex({ onChangePage }) {
         return dateString;
     }
   }
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     if (!dataExport || dataExport.length === 0) {
-      SweetAlert("Gagal", "Tidak ada data untuk diekspor!", "error");
+      console.log(dataExport);
+      Swal.fire("Gagal", "Tidak ada data untuk dieksport!", "error");
       return;
     }
 
-    // 1. Konversi data menjadi worksheet
-    const worksheet = XLSX.utils.json_to_sheet(dataExport);
+    // 1. Buat workbook dan worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Data Pengguna");
 
-    // 2. Buat workbook dan tambahkan worksheet
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Data Pengguna");
+    // 2. Tambahkan header dengan styling
+    const headers = Object.keys(dataExport[0]);
+    const headerRow = worksheet.addRow(headers);
 
-    // 3. Konversi workbook ke file Excel (blob)
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
+    headerRow.eachCell((cell, colNumber) => {
+      cell.font = { bold: true, color: { argb: "FFFFFF" } };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "0074cc" },
+      };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+
+      // Atur ukuran kolom berdasarkan header
+      worksheet.getColumn(colNumber).width = headers[colNumber - 1].length + 5;
     });
-    const excelFile = new Blob([excelBuffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+
+    // 3. Tambahkan data dengan style yang seragam
+    dataExport.forEach((item) => {
+      const rowData = headers.map((key) =>
+        item[key] === null || item[key] === undefined ? "-" : item[key]
+      );
+      const row = worksheet.addRow(rowData);
+
+      row.eachCell((cell, colNumber) => {
+        // Terapkan border ke setiap sel
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+
+        // Atur alignment center untuk semua sel
+        cell.alignment = { horizontal: "center", vertical: "middle" };
+
+        // Atur ukuran kolom berdasarkan panjang isi
+        const column = worksheet.getColumn(colNumber);
+        const cellLength = cell.value ? cell.value.toString().length : 10;
+        column.width = Math.max(column.width || 10, cellLength + 2);
+      });
     });
 
-    // 4. Simpan file
+    // 4. Konversi workbook ke file Excel (Blob)
+    const buffer = await workbook.xlsx.writeBuffer();
+    const excelFile = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    // 5. Simpan file dengan nama yang mengandung tanggal
     const now = new Date().toISOString().split("T")[0];
-    saveAs(excelFile, `Data-Pengguna_${formatDate(now, "D MMMM YYYY")}.xlsx`);
+    saveAs(excelFile, `Data-Pengguna_${now}.xlsx`);
   };
 
   useEffect(() => {
@@ -198,6 +274,7 @@ export default function MasterUserIndex({ onChangePage }) {
           currentFilter
         );
 
+        console.log("Response: ", currentFilter);
         if (!data) {
           setIsError(true);
           console.log("Error nih");
@@ -303,7 +380,7 @@ export default function MasterUserIndex({ onChangePage }) {
                   const status = selectedRow ? selectedRow.Status : null; // Ambil nilai Peran
 
                   if (!selectedRow || !peran) {
-                    SweetAlert(
+                    Swal.fire(
                       "Error",
                       "Data Peran atau Row tidak ditemukan!",
                       "error"

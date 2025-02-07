@@ -2,11 +2,24 @@ import { useRef, useState, useEffect } from "react";
 import { object, string } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
+
+const dataUPT = [
+  { Value: "PEMESINAN", Text: "PEMESINAN" },
+  { Value: "MANUFAKTUR", Text: "MANUFAKTUR" },
+  { Value: "DESAIN DAN METROLOGIS", Text: "DESAIN DAN METROLOGI" },
+  { Value: "OTOMASI", Text: "OTOMASI" },
+  { Value: "PERAWATAN", Text: "PERAWATAN" },
+  { Value: "OTOMOTIF", Text: "OTOMOTIF" },
+  { Value: "ALAT BERAT", Text: "ALAT BERAT" },
+  { Value: "SIPIL", Text: "SIPIL" },
+  { Value: "PRODUKSI", Text: "PRODUKSI" },
+  { Value: "LPT3", Text: "LPT3" },
+];
 
 export default function MasterKaryawanAdd({ onChangePage }) {
   const [errors, setErrors] = useState({});
@@ -111,6 +124,7 @@ export default function MasterKaryawanAdd({ onChangePage }) {
           : formDataRef.current.rol_id;
 
       console.log(formDataRef.current.upt);
+      console.log("INI FINAL ROLE: ", rol_final);
       try {
         // Call the stored procedure here, assuming the API endpoint is set up for this
         const data = await UseFetch(API_LINK + "MasterUser/CreateUser", {
@@ -122,9 +136,9 @@ export default function MasterKaryawanAdd({ onChangePage }) {
 
         // Check if the 'hasil' field is 'ERROR' or 'OK'
         if (data && data[0]?.hasil === "ERROR") {
-          SweetAlert("Error", data[0]?.pesan, "error");
+          Swal.fire("Error", data[0]?.pesan, "error");
         } else if (data && data[0]?.hasil === "OK") {
-          SweetAlert("Sukses", "Data User berhasil disimpan", "success");
+          Swal.fire("Sukses", "Data User berhasil disimpan", "success");
           onChangePage("index");
         } else {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data User.");
@@ -202,10 +216,9 @@ export default function MasterKaryawanAdd({ onChangePage }) {
               </div>
 
               {showAdditionalInput && (
-                <div className="form-group col-lg-4">
-                  <label htmlFor="upt">
-                    Data Tambahan untuk PIC
-                    <span style={{ color: "red" }}> *</span>
+                <div className="col-lg-3">
+                  <label htmlFor="mes_upt" className="form-label fw-bold">
+                    UPT <span style={{ color: "red" }}>*</span>
                   </label>
                   <select
                     id="upt"
@@ -213,12 +226,12 @@ export default function MasterKaryawanAdd({ onChangePage }) {
                     className="form-select"
                     onChange={handleInputChange}
                   >
-                    <option value="">Pilih UPT</option>
-                    <option value="INFORMATICS">INFORMATICS</option>
-                    <option value="ALAT BERAT">ALAT BERAT</option>
-                    <option value="OTOMOTIVE">OTOMOTIVE</option>
-                    <option value="PERAWATAN">PERAWATAN</option>
-                    <option value="P4">P4</option>
+                    <option value="">-- Pilih UPT --</option>
+                    {dataUPT.map((upt) => (
+                      <option key={upt.Value} value={upt.Value}>
+                        {upt.Text}
+                      </option>
+                    ))}
                   </select>
                 </div>
               )}

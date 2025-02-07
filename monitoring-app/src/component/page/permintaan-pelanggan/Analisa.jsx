@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { API_LINK, FILE_LINK } from "../../util/Constants";
 import { separator, clearSeparator } from "../../util/Formatting";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import UploadFile from "../../util/UploadFile";
 import Button from "../../part/Button";
@@ -283,7 +283,7 @@ export default function PermintaanPelangganAnalisa({ onChangePage, withID }) {
               );
             }
 
-            SweetAlert(
+            Swal.fire(
               "Sukses",
               "Data rincian basis biaya proses dan material berhasil disimpan",
               "success"
@@ -627,7 +627,7 @@ export default function PermintaanPelangganAnalisa({ onChangePage, withID }) {
         );
 
         if (data === "ERROR" || data.length === 0) {
-          SweetAlert(
+          Swal.fire(
             "Simpan Data Gagal",
             "Gagal menyimpan daftar " +
               modeBiayaRef.current.toString().toLowerCase(),
@@ -665,7 +665,7 @@ export default function PermintaanPelangganAnalisa({ onChangePage, withID }) {
             setDataProses(formattedData);
           }
 
-          SweetAlert(
+          Swal.fire(
             "Simpan Data Berhasil",
             "Daftar " +
               modeBiayaRef.current.toString().toLowerCase() +

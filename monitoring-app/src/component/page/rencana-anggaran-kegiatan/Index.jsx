@@ -13,7 +13,7 @@ import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
 import Icon from "../../part/Icon";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 
 const inisialisasiData = [
   {
@@ -118,7 +118,7 @@ export default function RencanaAnggaranKegiatanIndex({ onChangePage }) {
         .then((data) => {
           if (data === "ERROR" || data.length === 0) setIsError(true);
           else {
-            SweetAlert(
+            Swal.fire(
               "Sukses",
               "Data rencana anggaran kegiatan berhasil dikirim",
               "success"
@@ -155,7 +155,7 @@ export default function RencanaAnggaranKegiatanIndex({ onChangePage }) {
             "Terjadi kesalahan: Gagal menyetujui rencana anggaran kegiatan."
           );
         } else {
-          SweetAlert(
+          Swal.fire(
             "Sukses",
             "Rencana anggaran kegiatan berhasil disetujui",
             "success"
@@ -203,7 +203,7 @@ export default function RencanaAnggaranKegiatanIndex({ onChangePage }) {
             "Terjadi kesalahan: Gagal menolak rencana anggaran kegiatan."
           );
         } else {
-          SweetAlert(
+          Swal.fire(
             "Sukses",
             "Rencana anggaran kegiatan berhasil ditolak",
             "success"

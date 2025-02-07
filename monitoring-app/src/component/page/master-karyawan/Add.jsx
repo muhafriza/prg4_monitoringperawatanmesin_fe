@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { object, string } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input"; // Importing the Input component
@@ -74,7 +74,7 @@ export default function MasterKaryawanAdd({ onChangePage }) {
         if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data Karyawan.");
         } else {
-          SweetAlert("Sukses", "Data Karyawan berhasil disimpan", "success");
+          Swal.fire("Sukses", "Data Karyawan berhasil disimpan", "success");
           onChangePage("index");
         }
       } catch (error) {

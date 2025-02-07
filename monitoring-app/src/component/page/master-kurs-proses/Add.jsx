@@ -3,7 +3,7 @@ import { object, string } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
 import { separator } from "../../util/Formatting";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import DropDown from "../../part/Dropdown";
@@ -124,7 +124,7 @@ export default function MasterKursProsesAdd({ onChangePage }) {
             "Terjadi kesalahan: Gagal menyimpan data kurs proses."
           );
         } else {
-          SweetAlert("Sukses", "Data kurs proses berhasil disimpan", "success");
+          Swal.fire("Sukses", "Data kurs proses berhasil disimpan", "success");
           onChangePage("index");
         }
       } catch (error) {

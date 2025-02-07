@@ -2,11 +2,24 @@ import { useEffect, useState } from "react";
 import { object, string } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
+
+const dataUPT = [
+  { Value: "PEMESINAN", Text: "PEMESINAN" },
+  { Value: "MANUFAKTUR", Text: "MANUFAKTUR" },
+  { Value: "DESAIN DAN METROLOGI", Text: "DESAIN DAN METROLOGI" },
+  { Value: "OTOMASI", Text: "OTOMASI" },
+  { Value: "PERAWATAN", Text: "PERAWATAN" },
+  { Value: "OTOMOTIF", Text: "OTOMOTIF" },
+  { Value: "ALAT BERAT", Text: "ALAT BERAT" },
+  { Value: "SIPIL", Text: "SIPIL" },
+  { Value: "PRODUKSI", Text: "PRODUKSI" },
+  { Value: "LPT3", Text: "LPT3" },
+];
 
 export default function MasterKaryawanEdit({ onChangePage, withID }) {
   const [errors, setErrors] = useState({});
@@ -68,7 +81,6 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
             upt: "",
           });
         }
-
       } catch (error) {
         window.scrollTo(0, 0);
         setIsError({ error: true, message: error.message });
@@ -135,7 +147,7 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
         throw new Error("Terjadi kesalahan: Gagal menyimpan data karyawan.");
       }
 
-      SweetAlert("Sukses", "Data karyawan berhasil disimpan", "success");
+      Swal.fire("Sukses", "Data karyawan berhasil disimpan", "success");
       onChangePage("index");
     } catch (error) {
       window.scrollTo(0, 0);
@@ -177,8 +189,10 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
               </div>
 
               {showAdditionalInput && (
-                <div className="form-group col-lg-4">
-                  <label htmlFor="upt">Data Tambahan untuk PIC</label>
+                <div className="col-lg-3">
+                  <label htmlFor="mes_upt" className="form-label fw-bold">
+                    UPT <span style={{ color: "red" }}>*</span>
+                  </label>
                   <select
                     id="upt"
                     name="upt"
@@ -186,12 +200,12 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
                     value={formData.upt || ""}
                     onChange={handleInputChange}
                   >
-                    <option value="">Pilih UPT</option>
-                    <option value="INFORMATICS">INFORMATICS</option>
-                    <option value="ALAT BERAT">ALAT BERAT</option>
-                    <option value="OTOMOTIVE">OTOMOTIVE</option>
-                    <option value="PERAWATAN">PERAWATAN</option>
-                    <option value="P4">P4</option>
+                    <option value="">-- Pilih UPT --</option>
+                    {dataUPT.map((upt) => (
+                      <option key={upt.Value} value={upt.Value}>
+                        {upt.Text}
+                      </option>
+                    ))}
                   </select>
                 </div>
               )}
