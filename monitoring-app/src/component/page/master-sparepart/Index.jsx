@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { PAGE_SIZE, API_LINK } from "../../util/Constants";
-import Swal from "sweetalert2";
+import SweetAlert from "../../util/SweetAlert";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -10,11 +10,6 @@ import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
-import Cookies from "js-cookie";
-import { decryptId } from "../../util/Encryptor";
-import * as XLSX from "xlsx";
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
 
 const inisialisasiData = [
   {
@@ -40,11 +35,10 @@ const dataFilterStatus = [
   { Value: "Tidak Aktif", Text: "Tidak Aktif" },
 ];
 
-export default function MasterSparepartIndex({ onChangePage }) {
+export default function MasterSparepart({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
-  const [dataExport, setDataExport] = useState();
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
@@ -52,77 +46,6 @@ export default function MasterSparepartIndex({ onChangePage }) {
     status: "Aktif",
     itemPerPage: 5,
   });
-
-  const exportToExcel = async () => {
-    if (!dataExport || dataExport.length === 0) {
-      console.log(dataExport);
-      Swal.fire("Gagal", "Tidak ada data untuk dieksport!", "error");
-      return;
-    }
-
-    // 1. Buat workbook dan worksheet
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Data Sparepart");
-
-    // 2. Tambahkan header dengan styling
-    const headers = Object.keys(dataExport[0]);
-    const headerRow = worksheet.addRow(headers);
-
-    headerRow.eachCell((cell, colNumber) => {
-      cell.font = { bold: true, color: { argb: "FFFFFF" } };
-      cell.fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "0074cc" },
-      };
-      cell.alignment = { horizontal: "center", vertical: "middle" };
-      cell.border = {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        bottom: { style: "thin" },
-        right: { style: "thin" },
-      };
-
-      // Atur ukuran kolom berdasarkan header
-      worksheet.getColumn(colNumber).width = headers[colNumber - 1].length + 5;
-    });
-
-    // 3. Tambahkan data dengan style yang seragam
-    dataExport.forEach((item) => {
-      const rowData = headers.map((key) =>
-        item[key] === null || item[key] === undefined ? "-" : item[key]
-      );
-      const row = worksheet.addRow(rowData);
-
-      row.eachCell((cell, colNumber) => {
-        // Terapkan border ke setiap sel
-        cell.border = {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          bottom: { style: "thin" },
-          right: { style: "thin" },
-        };
-
-        // Atur alignment center untuk semua sel
-        cell.alignment = { horizontal: "center", vertical: "middle" };
-
-        // Atur ukuran kolom berdasarkan panjang isi
-        const column = worksheet.getColumn(colNumber);
-        const cellLength = cell.value ? cell.value.toString().length : 10;
-        column.width = Math.max(column.width || 10, cellLength + 2);
-      });
-    });
-
-    // 4. Konversi workbook ke file Excel (Blob)
-    const buffer = await workbook.xlsx.writeBuffer();
-    const excelFile = new Blob([buffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
-
-    // 5. Simpan file dengan nama yang mengandung tanggal
-    const now = new Date().toISOString().split("T")[0];
-    saveAs(excelFile, `Data-Sparepart_${now}.xlsx`);
-  };
 
   const searchQuery = useRef();
   const searchFilterSort = useRef();
@@ -137,7 +60,6 @@ export default function MasterSparepartIndex({ onChangePage }) {
       };
     });
   }
-
   function formatDate(dateString, format) {
     const date = new Date(dateString);
 
@@ -191,87 +113,35 @@ export default function MasterSparepartIndex({ onChangePage }) {
   }
 
   function handleSetStatus(id) {
+    setIsLoading(true);
     setIsError(false);
-
-    Swal.fire({
-      title: "Warning",
-      html: `Yakin ingin mengubah status sparepart ini?`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "YA",
-      cancelButtonText: "BATAL",
-    }).then((confirmation) => {
-      if (confirmation.isConfirmed) {
-        setIsLoading(true);
-        // Mengganti async/await dengan promise .then()
-        UseFetch(API_LINK + "MasterSparepart/SetStatusSparepart", {
-          idSparepart: id,
-        })
-          .then((response) => {
-            // Validasi respons dari API
-            if (response === "ERROR" || !response || response.length === 0) {
-              setIsError(true);
-              Swal.fire("Error", "Gagal mengubah status sparepart.", "error");
-              setIsLoading(false);
-            } else {
-              Swal.fire(
-                "Success",
-                `Status data sparepart berhasil diubah. ${response[0].Status}`,
-                "success"
-              );
-              setIsLoading(false);
-              handleSetCurrentPage(currentFilter.page); // Refresh data setelah berhasil
-            }
-          })
-          .catch((error) => {
-            setIsError(true);
-            Swal.fire(
-              "Error",
-              `Terjadi kesalahan saat mengubah status sparepart.}`,
-              "error"
-            );
-            console.error("Error in handleSetStatus:", error);
-            setIsLoading(false);
-          });
-      } else {
-        setIsLoading(false); // Jika user memilih "BATAL", hentikan loading
-      }
-    });
+    UseFetch(API_LINK + "MasterSparepart/SetStatusSparepart", {
+      idSparepart: id,
+    })
+      .then((data) => {
+        if (data === "ERROR" || data.length === 0) setIsError(true);
+        else {
+          SweetAlert(
+            "Sukses",
+            "Status data Sparepart berhasil diubah menjadi " + data[0].Status,
+            "success"
+          );
+          handleSetCurrentPage(currentFilter.page);
+        }
+      })
+      .then(() => setIsLoading(false));
   }
 
   useEffect(() => {
-    const fetchDataToExport = async () => {
-      setIsError(false);
-
-      try {
-        const data = await UseFetch(
-          API_LINK + "MasterSparepart/ExportExcelSparepart",
-          { status: "Aktif" }
-        );
-
-        if (!data) {
-          setIsError(true);
-          console.log("Error saat fetch data export");
-        } else if (data.length === 0) {
-          setDataExport(inisialisasiData);
-        } else {
-          setDataExport(data);
-          console.log("Data Export" + dataExport);
-        }
-      } catch {
-        setIsError(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     const fetchData = async () => {
       setIsError(false);
+    
       try {
         const data = await UseFetch(
           API_LINK + "MasterSparepart/GetDataSparepart",
           currentFilter
         );
-
+    
         if (data === "ERROR") {
           setIsError(true);
           console.log("Error nih Line 147");
@@ -279,7 +149,7 @@ export default function MasterSparepartIndex({ onChangePage }) {
           setCurrentData(inisialisasiData);
         } else {
           const formattedData = data.map((value) => {
-            const { tanggal_masuk, Deskripsi, Status, ...rest } = value; // Menghapus tanggal_masuk
+            const { tanggal_masuk,Deskripsi,Status, ...rest } = value; // Menghapus tanggal_masuk
             return {
               ...rest, // Menyalin sisa properti
               "Tanggal Masuk": formatDate(tanggal_masuk, "D MMMM YYYY"),
@@ -305,9 +175,9 @@ export default function MasterSparepartIndex({ onChangePage }) {
         setIsLoading(false);
       }
     };
+    
 
     fetchData();
-    fetchDataToExport();
   }, [currentFilter]);
 
   return (
@@ -358,13 +228,6 @@ export default function MasterSparepartIndex({ onChangePage }) {
                 defaultValue="Aktif"
               />
             </Filter>
-            <Button
-              iconName="file-export"
-              classType="success"
-              title="Export"
-              label="Export to XLSX"
-              onClick={exportToExcel}
-            />
           </div>
         </div>
         <div className="mt-3">
@@ -373,7 +236,7 @@ export default function MasterSparepartIndex({ onChangePage }) {
           ) : (
             <div className="d-flex flex-column">
               <Table
-                // columns={columns}
+              // columns={columns}
                 data={currentData}
                 onToggle={handleSetStatus}
                 onDetail={onChangePage}

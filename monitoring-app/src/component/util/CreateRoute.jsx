@@ -15,9 +15,8 @@ const JadwalPerawatan = lazy(() => import ("../page/jadwal_perawatan-rutin/Root"
 const LaporanKerusakan = lazy(() => import ("../page/laporan-kerusakan-teknisi/Root"));
 const MasterMesin = lazy(() => import ("../page/master-mesin/Root"));
 const RiwayatPerawatanPreventif = lazy(() => import ("../page/riwayat_perawatan_preventif/Root"));
-const RiwayatPerawatanKorektif = lazy(() => import ("../page/riwayat_perawatan_korektif_admin/Root"));
 
-const KorektifPic = lazy(() => import ("../page/transaksi-korektif-pic/Root"));
+const KorektifPic = lazy(() => import ("../page/transaksi-korektif/Root"));
 const KorektifTeknisi = lazy(() => import ("../page/transaksi-korektif-teknisi/Root"));
 
 
@@ -107,20 +106,16 @@ const routeList = [
     element: <PerawatanPreventifTeknisi />,
   },
   {
-    path: "/riwayat_preventif_admin",
+    path: "/riwayat_preventif",
     element: <RiwayatPerawatanPreventif />,
   },
   {
-    path: "/riwayat_korektif_admin",
-    element: <RiwayatPerawatanKorektif />,
-  },
-  {
-    path: "/perawatan_korektif_pic",
+    path: "/perawatan_korektif",
     element: <KorektifPic />,
   },
 
   {
-    path: "/laporan_kerusakan_teknisi",
+    path: "/perawatan_korektif_teknisi",
     element: <KorektifTeknisi />,
   }
 ];
