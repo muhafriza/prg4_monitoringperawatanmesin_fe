@@ -1,5 +1,7 @@
 import { useState } from "react";
 import LaporanKerusakan from "./Index";
+import PerawatanKorektifTeknisiEdit from "./Edit";
+import Detail from "./Detail";
 
 export default function MasterProses() {
   const [pageMode, setPageMode] = useState("index");
@@ -9,15 +11,13 @@ export default function MasterProses() {
     switch (pageMode) {
       case "index":
         return <LaporanKerusakan onChangePage={handleSetPageMode} />;
-      case "add":
-        return <LaporanKerusakan onChangePage={handleSetPageMode} />;
       case "edit":
         return (
-          <LaporanKerusakan onChangePage={handleSetPageMode} withID={dataID} />
+          <PerawatanKorektifTeknisiEdit onChangePage={handleSetPageMode} withID={dataID} />
         );
         case "detail":
           return (
-            <LaporanKerusakan
+            <Detail
               onChangePage={handleSetPageMode}
               withID={dataID}
             />

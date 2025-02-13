@@ -268,7 +268,7 @@ const exportToExcel = async () => {
         const formattedData = data.map((item) => {
           const {
             Jadwal,
-            ["Tanggal Aktual"]: Tanggal_Aktual,
+            [ "Tanggal Aktual"]: Tanggal_Aktual,
             ["Tanggal Selesai"]: Tanggal_Selesai,
             Created_Date,
             ["Modified Date"]: Modified_date,

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { PAGE_SIZE, API_LINK } from "../../util/Constants";
+import { PAGE_SIZE, API_LINK, FILE_LINK } from "../../util/Constants";
 import SweetAlert from "../../util/SweetAlert";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
@@ -9,7 +9,11 @@ import Paging from "../../part/Paging";
 import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
+import logo from "../../../assets/IMG_Logo.png";
 import Loading from "../../part/Loading";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { saveAs } from "file-saver";
 
 const inisialisasiData = [
   {
@@ -45,10 +49,17 @@ export default function LaporanKerusakan({ onChangePage }) {
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[pre_tanggal_penjadwalan] asc",
+    sort: "[kor_tanggal_pengajuan] asc",
     status: "",
-    itemPerPage: 5,
+    itemPerPage: 10,
   });
+  const [formData, setFormData] = useState({});
+
+  const [teknisi, setTeknisi] = useState();
+  const [pic, setPic] = useState();
+
+  const [fetchDataDetailSP, setFetchDataDetailSP] = useState([]);
+  const printRef = useRef();
 
   const searchQuery = useRef();
   const searchFilterSort = useRef();
@@ -63,12 +74,140 @@ export default function LaporanKerusakan({ onChangePage }) {
       };
     });
   }
+
+  const ExportByID = async (ID) => {
+    console.log("ini ID: " + ID);
+    try {
+      const data = await UseFetch(
+        API_LINK + "Korektif/DetailPerawatanKorektif",
+        {
+          p2: ID, // Gunakan ID yang dipilih
+        }
+      );
+      console.log("Data Export by ID:", data[0]);
+      if (!data || data === "ERROR") {
+        throw new Error("Gagal mengambil data export berdasarkan ID.");
+      } else {
+        setFormData(data[0]);
+        // Panggil fungsi untuk mendapatkan Full Name setelah formData di-set
+        await getFullNameTeknisi(data[0].Modified_By);
+        await getFullNamePIC(data[0].Created_By);
+        await getDetailSP(data[0].ID_Perawatan_Korektif);
+      }
+      exportToPDF(ID);
+    } catch (error) {
+      console.error("Fetch Data Export by ID Error:", error);
+      setIsError(true);
+    }
+    console.log("getDetailSP", fetchDataDetailSP);
+  };
+  const getDetailSP = async (ID) => {
+    try {
+      const data = await UseFetch(
+        API_LINK + "Korektif/DetailSPPerawatanMesin",
+        {
+          p1: ID,
+        }
+      );
+      console.log("INI SPAREPART: ", data);
+      if (data === "ERROR" || data.length === 0) {
+        throw new Error("Terjadi kesalahan: Gagal mengambil data DetailSP.");
+      } else {
+        setFetchDataDetailSP(data);
+      }
+    } catch (error) {
+      setIsError((prevError) => ({
+        ...prevError,
+        error: true,
+        message: error.message,
+      }));
+    }
+  };
+
+  const getFullNameTeknisi = async (modifiedBy) => {
+    try {
+      const data = await UseFetch(API_LINK + "Korektif/GetKaryawanFullName", {
+        p2: modifiedBy, // Gunakan ID yang dipilih
+      });
+      console.log("Data Teknisi:", data);
+      if (!data || data === "ERROR") {
+        throw new Error("Gagal mengambil data Teknisi berdasarkan ID.");
+      } else {
+        setTeknisi(data[0]); // Set teknisi dengan data pertama dari array
+      }
+    } catch (error) {
+      console.error("Fetch Data Teknisi Error:", error);
+      setIsError(true);
+    }
+  };
+
+  const getFullNamePIC = async (createdBy) => {
+    try {
+      const data = await UseFetch(API_LINK + "Korektif/GetKaryawanFullName", {
+        p2: createdBy, // Gunakan ID yang dipilih
+      });
+      console.log("Data PIC:", data);
+      if (!data || data === "ERROR") {
+        throw new Error("Gagal mengambil data PIC berdasarkan ID.");
+      } else {
+        setPic(data[0]); // Set PIC dengan data pertama dari array
+      }
+    } catch (error) {
+      console.error("Fetch Data PIC Error:", error);
+      setIsError(true);
+    }
+  };
+
+  const exportToPDF = async (id) => {
+    const input = printRef.current;
+    if (!input) {
+      console.error("Elemen tidak ditemukan!");
+      return;
+    }
+
+    // Convert all external images to base64
+    const images = input.querySelectorAll("img");
+    for (let img of images) {
+      if (img.src && img.src.startsWith("http")) {
+        try {
+          const response = await fetch(img.src, { mode: "cors" });
+          const blob = await response.blob();
+          const reader = new FileReader();
+          reader.onload = () => {
+            img.src = reader.result; // Replace the image src with base64 data URL
+          };
+          reader.readAsDataURL(blob);
+        } catch (error) {
+          console.error("Error converting image to base64:", error);
+        }
+      }
+    }
+
+    // Wait for images to load
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Render the element to canvas
+    html2canvas(input, { scale: 3 }).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("l", "mm", "a4");
+      const imgWidth = 250; // Lebar A4 dalam mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      pdf.addImage(imgData, "PNG", 25, 10, imgWidth, imgHeight);
+      pdf.save(`Data-Perawatan-Korektif_${id}.pdf`);
+    });
+  };
+
   function formatDate(dateString, format) {
     const date = new Date(dateString);
 
     const day = date.getDate();
     const month = date.getMonth(); // Get month as number (0-based)
     const year = date.getFullYear();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const seconds = date.getSeconds();
+    const dayIndex = date.getDay(); // Get day of the week (0 = Minggu, 6 = Sabtu)
 
     const months = [
       "Januari",
@@ -85,6 +224,16 @@ export default function LaporanKerusakan({ onChangePage }) {
       "Desember",
     ];
 
+    const days = [
+      "Minggu",
+      "Senin",
+      "Selasa",
+      "Rabu",
+      "Kamis",
+      "Jumat",
+      "Sabtu",
+    ];
+
     switch (format) {
       case "DD/MM/YYYY":
         return `${String(day).padStart(2, "0")}/${String(month + 1).padStart(
@@ -97,6 +246,16 @@ export default function LaporanKerusakan({ onChangePage }) {
         ).padStart(2, "0")}`;
       case "D MMMM YYYY":
         return `${day} ${months[month]} ${year}`;
+      case "D MMMM YYYY HH:mm:ss":
+        return `${day} ${months[month]} ${year} ${String(hours).padStart(
+          2,
+          "0"
+        )}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
+          2,
+          "0"
+        )}`;
+      case "dddd, D MMMM YYYY": // Format baru: Selasa, 12 Februari 2025
+        return `${days[dayIndex]}, ${day} ${months[month]} ${year}`;
       default:
         return dateString;
     }
@@ -141,7 +300,7 @@ export default function LaporanKerusakan({ onChangePage }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventif",
+          API_LINK + "Korektif/GetDataPerawatanKorektif",
           currentFilter
         );
 
@@ -153,23 +312,38 @@ export default function LaporanKerusakan({ onChangePage }) {
           console.log(data);
           const formattedData = data.map((value) => {
             const {
-              Tanggal_Perawatan,
-              Status_Pemeliharaan,
+              ["Tanggal Pengajuan"]: kor_tanggal_pengajuan,
+              ["Status Pemeliharaan"]: Status,
               Dibuat,
               TindakanPerbaikan,
-              Nama_Mesin,
+              kor_sparepart_diganti,
+              mes_id_mesin,
+              ["Tanggal Perawatan"]: Tanggal_Perawatan,
               ...rest
-            } = value; // Menghapus tanggal_masuk
+            } = value;
+            const tanggal_pengajuan =
+              kor_tanggal_pengajuan != null
+                ? new Date(kor_tanggal_pengajuan).toLocaleDateString("id-ID")
+                : "-";
             return {
               ...rest,
-              "Nama Mesin": Nama_Mesin,
-              "Tindakan Perbaikan":
-                TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
-              "Dibuat Oleh": Dibuat == null ? "-" : Dibuat,
-              "Jadwal Perawatan": formatDate(Tanggal_Perawatan, "D MMMM YYYY"),
-              Status: Status_Pemeliharaan,
-              Aksi: ["Detail"],
-              Alignment: ["center", "left", "left", "left", "center", "center"],
+              "Tanggal Pengajuan": formatDate(tanggal_pengajuan, "D MMMM YYYY"),
+              "Dibuat Oleh": Dibuat || "-", // Pembuat data
+              Status: Status,
+              Aksi:
+                Status != "Selesai" ? ["Detail", "Edit"] : ["Detail", "Print"], // Tombol aksi, bisa disesuaikan dengan tombol yang ada
+              Alignment: [
+                "center",
+                "center",
+                "center",
+                "left",
+                "left",
+                "LEFT",
+                "center",
+                "left",
+                "center",
+                "center",
+              ],
             };
           });
           setCurrentData(formattedData);
@@ -187,77 +361,251 @@ export default function LaporanKerusakan({ onChangePage }) {
 
   return (
     <>
-      <div className="card">
-        <div className="d-flex flex-column">
-          {isError && (
-            <div className="flex-fill">
-              <Alert
-                type="warning"
-                message="Terjadi kesalahan: Gagal mengambil data Sparepart. "
-              />
-            </div>
-          )}
-          <div className="card-header bg-primary lead fw-medium text-white">
-            Detail Data Sparepart
-          </div>
+      <div className="d-flex flex-column">
+        {isError && (
           <div className="flex-fill">
-            <div className="input-group">
-              <Button
-                iconName="add"
-                classType="success"
-                label="Laporan Kerusakan"
-                onClick={() => onChangePage("add")}
-              />
-              <Input
-                ref={searchQuery}
-                forInput="pencarianSparepart"
-                placeholder="Cari"
-              />
-              <Button
-                iconName="search"
-                classType="primary px-4"
-                title="Cari"
-                onClick={handleSearch}
-              />
-              <Filter>
-                <DropDown
-                  ref={searchFilterSort}
-                  forInput="ddUrut"
-                  label="Urut Berdasarkan"
-                  type="none"
-                  arrData={dataFilterSort}
-                  defaultValue="[spa_nama_sparepart] asc"
+            <Alert
+              type="warning"
+              message="Terjadi kesalahan: Gagal mengambil data Sparepart. "
+            />
+          </div>
+        )}
+        <div className="card">
+          <div className="card-header bg-primary lead fw-medium text-white">
+            Perawatan Korektif
+          </div>
+          <div className="card-body p-4">
+            <div className="flex-fill">
+              <div className="input-group">
+                <Input
+                  ref={searchQuery}
+                  forInput="pencarianSparepart"
+                  placeholder="Cari"
                 />
-                <DropDown
-                  ref={searchFilterStatus}
-                  forInput="ddStatus"
-                  label="Status"
-                  type="none"
-                  arrData={dataFilterStatus}
-                  defaultValue="Aktif"
+                <Button
+                  iconName="search"
+                  classType="primary px-4"
+                  title="Cari"
+                  onClick={handleSearch}
                 />
-              </Filter>
+                <Filter>
+                  <DropDown
+                    ref={searchFilterSort}
+                    forInput="ddUrut"
+                    label="Urut Berdasarkan"
+                    type="none"
+                    arrData={dataFilterSort}
+                    defaultValue="[spa_nama_sparepart] asc"
+                  />
+                  <DropDown
+                    ref={searchFilterStatus}
+                    forInput="ddStatus"
+                    label="Status"
+                    type="none"
+                    arrData={dataFilterStatus}
+                    defaultValue="Aktif"
+                  />
+                </Filter>
+              </div>
+              <div className="mt-3">
+                {isLoading ? (
+                  <Loading />
+                ) : (
+                  <div className="d-flex flex-column">
+                    <Table
+                      data={currentData}
+                      onToggle={handleSetStatus}
+                      onDetail={onChangePage}
+                      onEdit={onChangePage}
+                      onPrint={ExportByID}
+                    />
+                    <Paging
+                      pageSize={PAGE_SIZE}
+                      pageCurrent={currentFilter.page}
+                      totalData={currentData[0]["Count"]}
+                      navigation={handleSetCurrentPage}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-          <div className="mt-3">
-            {isLoading ? (
-              <Loading />
-            ) : (
-              <div className="d-flex flex-column">
-                <Table
-                  data={currentData}
-                  onToggle={handleSetStatus}
-                  onDetail={onChangePage}
-                  onEdit={onChangePage}
-                />
-                <Paging
-                  pageSize={PAGE_SIZE}
-                  pageCurrent={currentFilter.page}
-                  totalData={currentData[0]["Count"]}
-                  navigation={handleSetCurrentPage}
-                />
-              </div>
-            )}
+        </div>
+      </div>
+      <br />
+      <div
+        className="card shadow-sm p-4"
+        ref={printRef}
+        style={{ display: "block" }}
+      >
+        <img
+          src={logo}
+          alt="Logo AstraTech"
+          className="p-3 ms-1"
+          style={{ height: "70px" }}
+        />
+        <h2 className="text-center">Laporan Perawatan Korektif Mesin</h2>
+
+        <hr />
+        <br />
+        <div className="row d-flex align-items-start justify-content-between">
+          {/* Tabel Kiri */}
+          <div className="col-lg-3">
+            <table className="table">
+              <tbody>
+                <tr>
+                  <th style={{ border: "none" }}>Nomor Laporan</th>
+                  <td style={{ border: "none" }}>
+                    : {formData.ID_Perawatan_Korektif}
+                  </td>
+                </tr>
+                <tr>
+                  <th style={{ border: "none" }}>Tanggal Laporan</th>
+                  <td style={{ border: "none" }}>
+                    :{" "}
+                    {formatDate(
+                      new Date().toISOString().split("T")[0],
+                      "D MMMM YYYY"
+                    )}
+                  </td>
+                </tr>
+                <tr>
+                  <th style={{ border: "none" }}>Teknisi</th>
+                  <td style={{ border: "none" }}>
+                    : {teknisi ? teknisi.Full_Name : "-"}
+                  </td>
+                </tr>
+                <tr>
+                  <th style={{ border: "none" }}>Departemen</th>
+                  <td style={{ border: "none" }}>: UPT PERAWATAN</td>
+                </tr>
+                <tr>
+                  <th style={{ border: "none" }}>Status</th>
+                  <td style={{ border: "none" }}>
+                    : {formData.Status_Pemeliharaan}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Label "TANGGAL" di sebelah kanan */}
+          <div className="col-lg-3 d-flex align-items-start">
+            {/* <label className="fw-bold me-2">TANGGAL :</label> */}
+            <span>
+              {formatDate(
+                new Date().toISOString().split("T")[0],
+                "dddd, D MMMM YYYY"
+              )}
+            </span>
+          </div>
+        </div>
+
+        {/* <hr />   */}
+
+        <div className="card">
+          <div className="card-header bg-primary text-white">
+            <h5 className="mb-0">Detail Perawatan Korektif</h5>
+          </div>
+          <div className="card-body">
+            <table className="table table-bordered">
+              <tbody>
+                <tr>
+                  <th>ID Mesin</th>
+                  <td>{formData.ID_Mesin || "-"}</td>
+                </tr>
+                <tr>
+                  <th>Nama Mesin</th>
+                  <td>{formData.Nama_Mesin}</td>
+                </tr>
+                <tr>
+                  <th>Tanggal Penjadwalan</th>
+                  <td>
+                    {formData.Tanggal_Penjadwalan
+                      ? formatDate(formData.Tanggal_Penjadwalan, "D MMMM YYYY")
+                      : "-"}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Deskripsi Kerusakan</th>
+                  <td>{formData.Deskripsi_Kerusakan}</td>
+                </tr>
+                <tr>
+                  <th>Pengaju</th>
+                  <td>{pic ? pic.Full_Name : "-"}</td>
+                </tr>
+                <tr>
+                  <th>Departemen Pengaju</th>
+                  <td>{formData.upt != null ? formData.upt : "-"}</td>
+                </tr>
+                <tr>
+                  <th>Tanggal Pengajuan</th>
+                  <td>
+                    {formData.Created_Date != null
+                      ? formatDate(
+                          formData.Created_Date,
+                          "D MMMM YYYY HH:mm:ss"
+                        )
+                      : "-"}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Tindakan Perbaikan</th>
+                  <td>{formData.Tindakan_Perbaikan || "Belum Ada Tindakan"}</td>
+                </tr>
+                <tr>
+                  <th>Tanggal Aktual</th>
+                  <td>
+                    {formData.Tanggal_Aktual
+                      ? formatDate(formData.Tanggal_Aktual, "D MMMM YYYY")
+                      : "-"}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Gambar Kerusakan</th>
+                  <td>
+                    {formData.gambar_mesin ? (
+                      <img
+                        src={FILE_LINK + formData.gambar_mesin}
+                        alt="Gambar Mesin"
+                        className="img-fluid"
+                        style={{ maxHeight: "300px", objectFit: "cover" }}
+                      />
+                    ) : (
+                      "Tidak ada gambar"
+                    )}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h5 className="mt-4">Detail Sparepart</h5>
+            <table className="table table-bordered table-striped">
+              <thead align="center">
+                <tr>
+                  <th>NO</th>
+                  <th>NAMA SPAREPART</th>
+                  <th>JUMLAH</th>
+                </tr>
+              </thead>
+              <tbody>
+                {fetchDataDetailSP && fetchDataDetailSP.length > 0 ? (
+                  fetchDataDetailSP.map((item, index) => (
+                    <tr key={index}>
+                      <td align="center">{index + 1}</td>
+                      <td>{item["Nama Sparepart"]}</td>
+                      <td align="right">{item.Jumlah}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="3" align="center">
+                      Tidak Ada Sparepart.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

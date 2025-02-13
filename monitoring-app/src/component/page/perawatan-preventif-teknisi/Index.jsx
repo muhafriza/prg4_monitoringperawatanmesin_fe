@@ -45,9 +45,9 @@ export default function PerawatanKorektif({ onChangePage }) {
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[pre_tanggal_penjadwalan] asc",
+    sort: "[pre_status_pemeliharaan] asc",
     status: "",
-    itemPerPage: 5,
+    itemPerPage: 10,
   });
 
   const searchQuery = useRef();
@@ -63,6 +63,9 @@ export default function PerawatanKorektif({ onChangePage }) {
       };
     });
   }
+
+  
+
   function formatDate(dateString, format) {
     const date = new Date(dateString);
 
@@ -153,6 +156,7 @@ export default function PerawatanKorektif({ onChangePage }) {
           console.log(data);
           const formattedData = data.map((value) => {
             const {
+              ID_Perawatan,
               Tanggal_Perawatan,
               Status_Pemeliharaan,
               Dibuat,
@@ -167,6 +171,7 @@ export default function PerawatanKorektif({ onChangePage }) {
 
             return {
               ...rest,
+              "ID Perawatan": ID_Perawatan,
               "Nama Mesin": Nama_Mesin,
               "Tindakan Perbaikan":
                 TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
@@ -176,6 +181,7 @@ export default function PerawatanKorektif({ onChangePage }) {
               Aksi: aksi,
               Alignment: [
                 "center",
+                "CENTER",
                 "left",
                 "left",
                 "left",
@@ -209,58 +215,65 @@ export default function PerawatanKorektif({ onChangePage }) {
             />
           </div>
         )}
-        <div className="flex-fill">
-          <div className="input-group">
-            <Input
-              ref={searchQuery}
-              forInput="pencarianSparepart"
-              placeholder="Cari"
-            />
-            <Button
-              iconName="search"
-              classType="primary px-4"
-              title="Cari"
-              onClick={handleSearch}
-            />
-            <Filter>
-              <DropDown
-                ref={searchFilterSort}
-                forInput="ddUrut"
-                label="Urut Berdasarkan"
-                type="none"
-                arrData={dataFilterSort}
-                defaultValue="[spa_nama_sparepart] asc"
-              />
-              <DropDown
-                ref={searchFilterStatus}
-                forInput="ddStatus"
-                label="Status"
-                type="none"
-                arrData={dataFilterStatus}
-                defaultValue="Aktif"
-              />
-            </Filter>
+        <div className="card">
+          <div className="card-header bg-primary lead fw-medium text-white">
+            Perawatan Preventif
           </div>
-        </div>
-        <div className="mt-3">
-          {isLoading ? (
-            <Loading />
-          ) : (
-            <div className="d-flex flex-column">
-              <Table
-                data={currentData}
-                onToggle={handleSetStatus}
-                onDetail={onChangePage}
-                onEdit={onChangePage}
-              />
-              <Paging
-                pageSize={PAGE_SIZE}
-                pageCurrent={currentFilter.page}
-                totalData={currentData[0]["Count"]}
-                navigation={handleSetCurrentPage}
-              />
+          <div className="card-body p-4">
+            <div className="flex-fill">
+              <div className="input-group">
+                <Input
+                  ref={searchQuery}
+                  forInput="pencarianSparepart"
+                  placeholder="Cari"
+                />
+                <Button
+                  iconName="search"
+                  classType="primary px-4"
+                  title="Cari"
+                  onClick={handleSearch}
+                />
+                <Filter>
+                  <DropDown
+                    ref={searchFilterSort}
+                    forInput="ddUrut"
+                    label="Urut Berdasarkan"
+                    type="none"
+                    arrData={dataFilterSort}
+                    defaultValue="[spa_nama_sparepart] asc"
+                  />
+                  <DropDown
+                    ref={searchFilterStatus}
+                    forInput="ddStatus"
+                    label="Status"
+                    type="none"
+                    arrData={dataFilterStatus}
+                    defaultValue="Aktif"
+                  />
+                </Filter>
+              </div>
             </div>
-          )}
+            <div className="mt-3">
+              {isLoading ? (
+                <Loading />
+              ) : (
+                <div className="d-flex flex-column">
+                  <Table
+                    data={currentData}
+                    onToggle={handleSetStatus}
+                    onDetail={onChangePage}
+                    onEdit={onChangePage}
+                  />
+                  <Paging
+                    pageSize={PAGE_SIZE}
+                    pageCurrent={currentFilter.page}
+                    totalData={currentData[0]["Count"]}
+                    navigation={handleSetCurrentPage}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </>

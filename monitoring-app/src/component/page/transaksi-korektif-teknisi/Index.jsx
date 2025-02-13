@@ -101,7 +101,7 @@ export default function KorektifTeknisi({ onChangePage }) {
       setIsError(false);
       try {
         const data = await UseFetch(
-          API_LINK + "Korektif/GetDataPerawatanKorektif",
+          API_LINK + "Korektif/DetailPerawatanKorektif",
           currentFilter
         );
         if (data === "ERROR") {
@@ -141,7 +141,6 @@ export default function KorektifTeknisi({ onChangePage }) {
 
   return (
     <>
-    
       <div className="d-flex flex-column">
         {isError && (
           <div className="flex-fill">
@@ -153,7 +152,6 @@ export default function KorektifTeknisi({ onChangePage }) {
         )}
         <div className="flex-fill">
           <div className="input-group">
-           
             <Input
               ref={searchQuery}
               forInput="pencarianPerawatan"

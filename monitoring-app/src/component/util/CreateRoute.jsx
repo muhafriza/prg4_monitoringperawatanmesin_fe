@@ -114,7 +114,7 @@ const routeList = [
     element: <LaporanKerusakan />,
   },
   {
-    path: "/perawatan_preventif",
+    path: "/perawatan_preventif-teknisi",
     element: <PerawatanPreventifTeknisi />,
   },
   {
@@ -131,7 +131,7 @@ const routeList = [
     element: <KorektifTeknisi />,
   },
   {
-    path: "/laporan_kerusakan_admin_2",
+    path: "/laporan_kerusakan_admin",
     element: <LaporanKerusakanAdmin />,
   },
 ];
