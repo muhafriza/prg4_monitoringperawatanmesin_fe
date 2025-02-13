@@ -10,8 +10,9 @@ import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import Swal from "sweetalert2";
 
 const inisialisasiData = [
   {
@@ -50,29 +51,86 @@ export default function MasterSparepartIndex({ onChangePage }) {
     itemPerPage: 5,
   });
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     if (!dataExport || dataExport.length === 0) {
-      SweetAlert("Gagal", "Tidak ada data untuk diekspor!", "error");
+      console.log(dataExport);
+      Swal.fire("Gagal", "Tidak ada data untuk dieksport!", "error");
       return;
     }
 
-    // 1. Konversi data menjadi worksheet
-    const worksheet = XLSX.utils.json_to_sheet(dataExport);
+    // 1. Buat workbook dan worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Data Sparepart");
 
-    // 2. Buat workbook dan tambahkan worksheet
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Data Sparepart");
+    // 2. Tambahkan header dengan styling
+    const headers = Object.keys(dataExport[0]);
+    worksheet.addRow(headers);
 
-    // 3. Konversi workbook ke file Excel (blob)
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
+    worksheet.getRow(1).eachCell((cell, colNumber) => {
+      cell.font = { bold: true, color: { argb: "FFFFFF" } };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "0074cc" },
+      };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+
+      worksheet.getColumn(colNumber).width = Math.max(
+        headers[colNumber - 1].length + 5,
+        10
+      );
     });
-    const excelFile = new Blob([excelBuffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+
+    // 3. Hitung panjang maksimum setiap kolom untuk menentukan ukuran kolom
+    const columnWidths = headers.map((_, colIndex) => {
+      return (
+        Math.max(
+          headers[colIndex].length,
+          ...dataExport.map((row) =>
+            row[headers[colIndex]]
+              ? row[headers[colIndex]].toString().length
+              : 0
+          )
+        ) + 2
+      );
     });
 
-    // 4. Simpan file
+    // 4. Tambahkan data dan styling
+    dataExport.forEach((item) => {
+      const rowData = headers.map((header) => item[header] || ""); // Mengisi sel kosong dengan string kosong
+      const row = worksheet.addRow(rowData);
+
+      row.eachCell((cell, colNumber) => {
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+
+        cell.alignment = { horizontal: "center", vertical: "middle" };
+
+        // Atur ukuran kolom berdasarkan data yang ada
+        worksheet.getColumn(colNumber).width = Math.max(
+          columnWidths[colNumber - 1],
+          10
+        );
+      });
+    });
+
+    // 5. Konversi workbook ke file Excel (Blob)
+    const buffer = await workbook.xlsx.writeBuffer();
+    const excelFile = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    // 6. Simpan file
     const now = new Date().toISOString().split("T")[0];
     saveAs(excelFile, `Data-Sparepart_${formatDate(now, "D MMMM YYYY")}.xlsx`);
   };
@@ -90,7 +148,6 @@ export default function MasterSparepartIndex({ onChangePage }) {
       };
     });
   }
-  
 
   function formatDate(dateString, format) {
     const date = new Date(dateString);
@@ -145,35 +202,45 @@ export default function MasterSparepartIndex({ onChangePage }) {
   }
 
   function handleSetStatus(id) {
-    setIsLoading(true);
-    setIsError(false);
-    UseFetch(API_LINK + "MasterSparepart/SetStatusSparepart", {
-      idSparepart: id,
-    })
-      .then((data) => {
-        if (data === "ERROR" || data.length === 0) setIsError(true);
-        else {
-          SweetAlert(
-            "Sukses",
-            "Status data Sparepart berhasil diubah menjadi " + data[0].Status,
-            "success"
-          );
+    Swal.fire({
+      title: "Perhatian",
+      text: "Yakin Ingin Mengubah Status Sparepart ini?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Ya, Ubah Status",
+    }).then((result) => {
+      setIsLoading(true);
+      setIsError(false);
+      if (result.isConfirmed) {
+        UseFetch(API_LINK + "MasterSparepart/SetStatusSparepart", {
+          idSparepart: id,
+        }).then((data) => {
+          if (data === "ERROR" || data.length === 0) setIsError(true);
+          Swal.fire({
+            title: "Deleted!",
+            text:
+              "Status data Sparepart berhasil diubah menjadi " + data[0].Status,
+            icon: "success",
+          });
           handleSetCurrentPage(currentFilter.page);
-        }
-      })
-      .then(() => setIsLoading(false));
+        });
+      } else {
+        setIsLoading(false);
+      }
+    });
   }
 
   useEffect(() => {
     const fetchDataToExport = async () => {
       setIsError(false);
-  
       try {
         const data = await UseFetch(
           API_LINK + "MasterSparepart/ExportExcelSparepart",
           { status: "Aktif" }
         );
-  
+
         if (!data) {
           setIsError(true);
           console.log("Error saat fetch data export");

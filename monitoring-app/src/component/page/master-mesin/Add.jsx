@@ -3,6 +3,7 @@ import { object, string, number } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
 import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -138,7 +139,7 @@ export default function MasterMesinAdd({ onChangePage }) {
         if (!data) {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data Mesin.");
         } else {
-          SweetAlert("Sukses", "Data Mesin berhasil disimpan", "success");
+          Swal.fire("Sukses", "Data Mesin berhasil disimpan", "success");
           onChangePage("index");
         }
       } catch (error) {
@@ -179,15 +180,32 @@ export default function MasterMesinAdd({ onChangePage }) {
                 />
               </div>
               <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="mes_upt"
-                  label="UPT"
-                  isRequired
-                  value={formDataRef.current.mes_upt}
+                <label htmlFor="mes_upt" className="fw-bold">
+                  UPT
+                  <span style={{ color: "red" }}> *</span>
+                </label>
+                <select
+                  id="mes_upt"
+                  name="mes_upt"
+                  className="form-select"
                   onChange={handleInputChange}
+                  value={formDataRef.current.mes_upt}
                   errorMessage={errors.mes_upt}
-                />
+                >
+                  <option value="">Pilih UPT</option>
+                  <option value="PEMESIANAN">PEMESIANAN</option>
+                  <option value="MANUFAKTUR">MANUFAKTUR</option>
+                  <option value="DESAIN DAN METROLOGI">
+                    DESAIN DAN METROLOGI
+                  </option>
+                  <option value="OTOMASI">OTOMASI</option>
+                  <option value="PERAWATAN">PERAWATAN</option>
+                  <option value="OTOMOTIF">OTOMOTIF</option>
+                  <option value="ALAT BERAT">ALAT BERAT</option>
+                  <option value="SIPIL">SIPIL</option>
+                  <option value="PRODUKSI">PRODUKSI</option>
+                  <option value="LPT3">LPT3</option>
+                </select>
               </div>
               <div className="col-lg-3">
                 <Input

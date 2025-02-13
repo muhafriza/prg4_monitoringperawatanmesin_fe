@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { PAGE_SIZE, API_LINK } from "../../util/Constants";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -10,9 +10,10 @@ import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
-import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { ValidationError } from "yup";
+import ExcelJS from "exceljs";
+
 
 const inisialisasiData = [
   {
@@ -44,7 +45,81 @@ export default function MasterUserIndex({ onChangePage }) {
     sort: "kry_nama_depan",
     status: "Aktif",
     APP: "APP60",
+    p6: 10,
   });
+
+  const exportToExcel = async () => {
+    if (!dataExport || dataExport.length === 0) {
+      console.log(dataExport);
+      Swal.fire("Gagal", "Tidak ada data untuk dieksport!", "error");
+      return;
+    }
+  
+    // 1. Buat workbook dan worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Data User");
+  
+    // 2. Tambahkan header dengan styling
+    const headers = Object.keys(dataExport[0]);
+    worksheet.addRow(headers);
+  
+    worksheet.getRow(1).eachCell((cell, colNumber) => {
+      cell.font = { bold: true, color: { argb: "FFFFFF" } };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "0074cc" },
+      };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+  
+      worksheet.getColumn(colNumber).width = Math.max(headers[colNumber - 1].length + 5, 10);
+    });
+  
+    // 3. Hitung panjang maksimum setiap kolom untuk menentukan ukuran kolom
+    const columnWidths = headers.map((_, colIndex) => {
+      return Math.max(
+        headers[colIndex].length,
+        ...dataExport.map((row) => (row[headers[colIndex]] ? row[headers[colIndex]].toString().length : 0))
+      ) + 2;
+    });
+  
+    // 4. Tambahkan data dan styling
+    dataExport.forEach((item) => {
+      const rowData = headers.map((header) => item[header] || ""); // Mengisi sel kosong dengan string kosong
+      const row = worksheet.addRow(rowData);
+  
+      row.eachCell((cell, colNumber) => {
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+  
+        cell.alignment = { horizontal: "center", vertical: "middle" };
+  
+        // Atur ukuran kolom berdasarkan data yang ada
+        worksheet.getColumn(colNumber).width = Math.max(columnWidths[colNumber - 1], 10);
+      });
+    });
+  
+    // 5. Konversi workbook ke file Excel (Blob)
+    const buffer = await workbook.xlsx.writeBuffer();
+    const excelFile = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+  
+    // 6. Simpan file
+    const now = new Date().toISOString().split("T")[0];
+    saveAs(excelFile, `Data-User_${formatDate(now, "D MMMM YYYY")}.xlsx`);
+  };
+  
 
   const searchQuery = useRef();
   const searchFilterSort = useRef();
@@ -79,26 +154,34 @@ export default function MasterUserIndex({ onChangePage }) {
   }
 
   function handleSetStatus(id, peran) {
-    console.log(id, peran);
-    setIsLoading(true);
-    setIsError(false);
-    UseFetch(API_LINK + "MasterUser/SetStatusUser", {
-      id: id,
-      peran: peran,
-    })
-      .then((data) => {
-        if (data === "ERROR" || data.length === 0) setIsError(true);
-        else {
-          SweetAlert(
-            "Sukses",
-            "Status data Sparepart berhasil diubah menjadi " + data[0].Status,
-            "success"
-          );
-          setIsLoading(false);
+    Swal.fire({
+      title: "Perhatian",
+      text: "Yakin Ingin Mengubah Status User ini?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Ya, Ubah Status",
+    }).then((result) => {
+      setIsLoading(true);
+      setIsError(false);
+      if (result.isConfirmed) {
+        UseFetch(API_LINK + "MasterUser/SetStatusUser", {
+          idSparepart: id,
+          peran: peran,
+        }).then((data) => {
+          if (data === "ERROR" || data.length === 0) setIsError(true);
+          Swal.fire({
+            title: "Deleted!",
+            text: "Status data User berhasil diubah menjadi " + data[0].Status,
+            icon: "success",
+          });
           handleSetCurrentPage(currentFilter.page);
-        }
-      })
-      .then(() => setIsLoading(false));
+        });
+      } else {
+        setIsLoading(false);
+      }
+    });
   }
   function formatDate(dateString, format) {
     const date = new Date(dateString);
@@ -138,32 +221,6 @@ export default function MasterUserIndex({ onChangePage }) {
         return dateString;
     }
   }
-  const exportToExcel = () => {
-    if (!dataExport || dataExport.length === 0) {
-      SweetAlert("Gagal", "Tidak ada data untuk diekspor!", "error");
-      return;
-    }
-
-    // 1. Konversi data menjadi worksheet
-    const worksheet = XLSX.utils.json_to_sheet(dataExport);
-
-    // 2. Buat workbook dan tambahkan worksheet
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Data Pengguna");
-
-    // 3. Konversi workbook ke file Excel (blob)
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
-    });
-    const excelFile = new Blob([excelBuffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
-    });
-
-    // 4. Simpan file
-    const now = new Date().toISOString().split("T")[0];
-    saveAs(excelFile, `Data-Pengguna_${formatDate(now, "D MMMM YYYY")}.xlsx`);
-  };
 
   useEffect(() => {
     const fetchDataToExport = async () => {
@@ -303,7 +360,7 @@ export default function MasterUserIndex({ onChangePage }) {
                   const status = selectedRow ? selectedRow.Status : null; // Ambil nilai Peran
 
                   if (!selectedRow || !peran) {
-                    SweetAlert(
+                    Swal.fire(
                       "Error",
                       "Data Peran atau Row tidak ditemukan!",
                       "error"

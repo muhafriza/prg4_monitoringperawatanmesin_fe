@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { object, string } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Loading from "../../part/Loading";
@@ -135,7 +135,7 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
         throw new Error("Terjadi kesalahan: Gagal menyimpan data karyawan.");
       }
 
-      SweetAlert("Sukses", "Data karyawan berhasil disimpan", "success");
+      Swal.fire("Sukses", "Data karyawan berhasil disimpan", "success");
       onChangePage("index");
     } catch (error) {
       window.scrollTo(0, 0);
@@ -187,11 +187,16 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
                     onChange={handleInputChange}
                   >
                     <option value="">Pilih UPT</option>
-                    <option value="INFORMATICS">INFORMATICS</option>
-                    <option value="ALAT BERAT">ALAT BERAT</option>
-                    <option value="OTOMOTIVE">OTOMOTIVE</option>
+                    <option value="PEMESIANAN">PEMESIANAN</option>
+                    <option value="MANUFAKTUR">MANUFAKTUR</option>
+                    <option value="DESAIN DAN METROLOGI">DESAIN DAN METROLOGI</option>
+                    <option value="OTOMASI">OTOMASI</option>
                     <option value="PERAWATAN">PERAWATAN</option>
-                    <option value="P4">P4</option>
+                    <option value="OTOMOTIF">OTOMOTIF</option>
+                    <option value="ALAT BERAT">ALAT BERAT</option>
+                    <option value="SIPIL">SIPIL</option>
+                    <option value="PRODUKSI">PRODUKSI</option>
+                    <option value="LPT3">LPT3</option>
                   </select>
                 </div>
               )}

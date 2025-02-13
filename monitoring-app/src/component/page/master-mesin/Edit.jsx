@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { object, string, number } from "yup"; // Adjusted for new schema validation
 import { API_LINK, FILE_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UploadFile from "../../util/UploadFile";
 import FileUpload from "../../part/FileUpload";
 import UseFetch from "../../util/UseFetch";
@@ -212,7 +212,7 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
         if (!data) {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data mesin.");
         } else {
-          SweetAlert("Sukses", "Data mesin berhasil disimpan", "success");
+          Swal.fire("Sukses", "Data mesin berhasil disimpan", "success");
           onChangePage("index");
         }
       } catch (error) {
@@ -255,15 +255,31 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
                 />
               </div>
               <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="mes_upt"
-                  label="UPT"
-                  isRequired
-                  value={formDataRef.current.mes_upt}
+                <label htmlFor="mes_upt" className="fw-bold">
+                  UPT
+                  <span style={{ color: "red" }}> *</span>
+                </label>
+                <select
+                  id="mes_upt"
+                  name="mes_upt"
+                  className="form-select"
                   onChange={handleInputChange}
-                  errorMessage={errors.mes_upt}
-                />
+                  value={formDataRef.current.mes_upt}
+                >
+                  <option value="">Pilih UPT</option>
+                  <option value="PEMESIANAN">PEMESIANAN</option>
+                  <option value="MANUFAKTUR">MANUFAKTUR</option>
+                  <option value="DESAIN DAN METROLOGI">
+                    DESAIN DAN METROLOGI
+                  </option>
+                  <option value="OTOMASI">OTOMASI</option>
+                  <option value="PERAWATAN">PERAWATAN</option>
+                  <option value="OTOMOTIF">OTOMOTIF</option>
+                  <option value="ALAT BERAT">ALAT BERAT</option>
+                  <option value="SIPIL">SIPIL</option>
+                  <option value="PRODUKSI">PRODUKSI</option>
+                  <option value="LPT3">LPT3</option>
+                </select>
               </div>
               <div className="col-lg-3">
                 <Input

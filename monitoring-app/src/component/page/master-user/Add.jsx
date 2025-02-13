@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { object, string } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Loading from "../../part/Loading";
@@ -122,9 +122,9 @@ export default function MasterKaryawanAdd({ onChangePage }) {
 
         // Check if the 'hasil' field is 'ERROR' or 'OK'
         if (data && data[0]?.hasil === "ERROR") {
-          SweetAlert("Error", data[0]?.pesan, "error");
+          Swal.fire("Error", data[0]?.pesan, "error");
         } else if (data && data[0]?.hasil === "OK") {
-          SweetAlert("Sukses", "Data User berhasil disimpan", "success");
+          Swal.fire("Sukses", "Data User berhasil disimpan", "success");
           onChangePage("index");
         } else {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data User.");
@@ -214,11 +214,18 @@ export default function MasterKaryawanAdd({ onChangePage }) {
                     onChange={handleInputChange}
                   >
                     <option value="">Pilih UPT</option>
-                    <option value="INFORMATICS">INFORMATICS</option>
-                    <option value="ALAT BERAT">ALAT BERAT</option>
-                    <option value="OTOMOTIVE">OTOMOTIVE</option>
+                    <option value="PEMESIANAN">PEMESIANAN</option>
+                    <option value="MANUFAKTUR">MANUFAKTUR</option>
+                    <option value="DESAIN DAN METROLOGI">
+                      DESAIN DAN METROLOGI
+                    </option>
+                    <option value="OTOMASI">OTOMASI</option>
                     <option value="PERAWATAN">PERAWATAN</option>
-                    <option value="P4">P4</option>
+                    <option value="OTOMOTIF">OTOMOTIF</option>
+                    <option value="ALAT BERAT">ALAT BERAT</option>
+                    <option value="SIPIL">SIPIL</option>
+                    <option value="PRODUKSI">PRODUKSI</option>
+                    <option value="LPT3">LPT3</option>
                   </select>
                 </div>
               )}

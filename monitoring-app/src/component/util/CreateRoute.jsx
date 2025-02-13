@@ -10,15 +10,27 @@ const MasterKursProses = lazy(() => import("../page/master-kurs-proses/Root"));
 const MasterAlatMesin = lazy(() => import("../page/master-alat-mesin/Root"));
 const MasterOperator = lazy(() => import("../page/master-operator/Root"));
 const MasterSparepart = lazy(() => import("../page/master-sparepart/Root"));
-const MasterUser = lazy(() => import ("../page/master-user/Root"));
-const JadwalPerawatan = lazy(() => import ("../page/jadwal_perawatan-rutin/Root"));
-const LaporanKerusakan = lazy(() => import ("../page/laporan-kerusakan-teknisi/Root"));
-const MasterMesin = lazy(() => import ("../page/master-mesin/Root"));
-const RiwayatPerawatanPreventif = lazy(() => import ("../page/riwayat_perawatan_preventif/Root"));
+const MasterUser = lazy(() => import("../page/master-user/Root"));
+const JadwalPerawatan = lazy(() =>
+  import("../page/jadwal_perawatan-rutin/Root")
+);
+const LaporanKerusakan = lazy(() =>
+  import("../page/laporan-kerusakan-teknisi/Root")
+);
+const MasterMesin = lazy(() => import("../page/master-mesin/Root"));
+const RiwayatPerawatanPreventif = lazy(() =>
+  import("../page/riwayat_perawatan_preventif/Root")
+);
 
-const KorektifPic = lazy(() => import ("../page/transaksi-korektif/Root"));
-const KorektifTeknisi = lazy(() => import ("../page/transaksi-korektif-teknisi/Root"));
+const LaporanKerusakanAdmin = lazy(() =>
+  import("../page/laporan-kerusakan-admin/Root")
+);
 
+const KorektifPic = lazy(() => import("../page/transaksi-korektif-pic/Root"));
+
+const KorektifTeknisi = lazy(() =>
+  import("../page/transaksi-korektif-teknisi/Root")
+);
 
 const PermintaanPelanggan = lazy(() =>
   import("../page/permintaan-pelanggan/Root")
@@ -31,9 +43,8 @@ const SuratPerintahKerja = lazy(() =>
   import("../page/surat-perintah-kerja/Root")
 );
 
-
 const routeList = [
-  { 
+  {
     path: "/",
     element: <Beranda />,
   },
@@ -84,11 +95,11 @@ const routeList = [
   {
     path: "/master_sparepart",
     element: <MasterSparepart />,
-   },
-   {
+  },
+  {
     path: "/jadwal_perawatanrutin",
     element: <JadwalPerawatan />,
-   },
+  },
   {
     path: "/master_mesin",
     element: <MasterMesin />,
@@ -97,8 +108,9 @@ const routeList = [
     path: "/master_user",
     element: <MasterUser />,
   },
+  
   {
-    path: "/laporan_kerusakan",
+    path: "/perawatan_korektif_teknisi",
     element: <LaporanKerusakan />,
   },
   {
@@ -110,14 +122,18 @@ const routeList = [
     element: <RiwayatPerawatanPreventif />,
   },
   {
-    path: "/perawatan_korektif_admin",
+    path: "/perawatan_korektif_pic",
     element: <KorektifPic />,
   },
 
   {
     path: "/perawatan_korektif_teknisi",
     element: <KorektifTeknisi />,
-  }
+  },
+  {
+    path: "/laporan_kerusakan_admin_2",
+    element: <LaporanKerusakanAdmin />,
+  },
 ];
 
 export default routeList;
