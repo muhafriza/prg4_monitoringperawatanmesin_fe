@@ -15,74 +15,52 @@ export default function MasterMesinAdd({ onChangePage }) {
   const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(false);
-  const [previewImage, setPreviewImage] = useState(null);
 
   const formDataRef = useRef({
-    mes_kondisi_operasional: "",
-    mes_no_panel: "",
-    mes_lab: "",
-    mes_nama_mesin: "",
-    mes_upt: "",
-    mes_daya_mesin: "",
-    mes_kapasitas: "",
-    mes_tipe: "",
-    mes_status: "Aktif",
-    mes_gambar: "", // File gambar
+    kondisi: "",
+    no_panel: "",
+    lab: "",
+    nama_mesin: "",
+    daya_mesin: "",
+    jumlah: "",
+    kapasitas: "",
+    tipe: "",
+    status: "Aktif", // Default "Aktif"
+    //mes_gambar: "", // File gambar
   });
 
   const fileGambarRef = useRef(null); // Reference for file upload input
   const userSchema = object({
-    mes_kondisi_operasional: string()
-      .max(50, "Maksimum 50 karakter")
-      .required("mes_kondisi_operasional harus diisi"),
-    mes_no_panel: string().max(25, "Maksimum 25 karakter"),
-    mes_lab: string().max(50, "Maksimum 50 karakter"),
-    mes_nama_mesin: string()
-      .max(100, "Maksimum 100 karakter")
-      .required("Nama Mesin harus diisi"),
-    mes_daya_mesin: number()
+    kondisi: string().max(50, "Maksimum 50 karakter").required("Kondisi harus diisi"),
+    no_panel: string().max(25, "Maksimum 25 karakter"),
+    lab: string().max(50, "Maksimum 50 karakter"),
+    nama_mesin: string().max(100, "Maksimum 100 karakter").required("Nama Mesin harus diisi"),
+    daya_mesin: number()
       .typeError("Daya Mesin harus berupa angka")
+      .positive("Harus angka positif")
       .required("Daya Mesin harus diisi"),
-    mes_kapasitas: string().max(25, "Maksimum 25 karakter"),
-    mes_tipe: string().max(25, "Maksimum 25 karakter"),
-    mes_status: string(),
-    mes_gambar: string(),
-    mes_upt: string().required("UPT Harus diisi"),
-  });
-
-  const handleFileChange = (ref, extAllowed) => {
-    const file = ref.current.files[0];
-
-    if (file) {
-      const fileExt = file.name.split(".").pop().toLowerCase();
-      const fileSize = file.size;
-      let error = "";
-
-      if (fileSize / 1024 / 1024 > 10) error = "Berkas terlalu besar";
-      else if (!extAllowed.split(",").includes(fileExt))
-        error = "Format berkas tidak valid";
-
-      if (error) {
-        ref.current.value = "";
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          [ref.current.name]: error,
-        }));
-        setPreviewImage(null); // Reset preview jika ada error
-        console.log("Error File:", error); // Debug log
-        return; // Hentikan eksekusi jika error
+    jumlah: number()
+      .typeError("Jumlah harus berupa angka")
+      .positive("Harus angka positif")
+      .integer("Harus bilangan bulat")
+      .required("Jumlah harus diisi"),
+    kapasitas: string().max(25, "Maksimum 25 karakter"),
+    tipe: string().max(25, "Maksimum 25 karakter"),
+    status: string(),
+    mes_gambar: string().test(
+      "mes_gambar",
+      "File harus berupa gambar (.jpg, .png, .pdf)",
+      (value) => {
+        // Optional: Validate if it's a valid file
+        if (value) {
+          const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+          return allowedTypes.includes(value.type);
+        }
+        return true; // Allow if no file is uploaded
       }
-
-      const reader = new FileReader();
-      reader.onload = () => setPreviewImage(reader.result);
-      reader.readAsDataURL(file);
-
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        [ref.current.name]: null,
-      }));
-    }
-  };
+    ),
+  });
+  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -97,45 +75,28 @@ export default function MasterMesinAdd({ onChangePage }) {
   const handleAdd = async (e) => {
     e.preventDefault();
 
-    const validationErrors = await validateAllInputs(
-      formDataRef.current,
-      userSchema,
-      setErrors
-    );
+    // Validate all inputs
+    const validationErrors = await validateAllInputs(formDataRef.current, userSchema, setErrors);
 
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
       setIsError({ error: false, message: "" });
       setErrors({});
 
-      const uploadPromises = [];
-
-      // Handle file upload if present
-      if (fileGambarRef.current.files.length > 0) {
-        uploadPromises.push(
-          UploadFile(fileGambarRef.current).then((data) => {
-            // Store the file URL (assuming data.Hasil contains the file URL or path)
-            formDataRef.current["mes_gambar"] = data.Hasil;
-          })
-        );
-      }
-
       try {
-        // Wait for all uploads to complete
-        await Promise.all(uploadPromises);
+        // Handle file upload if there's a file
+        if (fileGambarRef.current && fileGambarRef.current.files.length > 0) {
+          const fileUploadResult = await UploadFile(fileGambarRef.current);
+          formDataRef.current["mes_gambar"] = fileUploadResult.Hasil;
+        }
 
-        // Prepare FormData for API request
-        const formData = new FormData();
-
-        console.log(formData);
-
-        // Send data to API using FormData
+        // Send data to API
         const data = await UseFetch(
-          API_LINK + "Mesin/CreateMesin",
+          API_LINK + "MasterMesin/CreateMesin",
           formDataRef.current
         );
 
-        if (!data) {
+        if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data Mesin.");
         } else {
           SweetAlert("Sukses", "Data Mesin berhasil disimpan", "success");
@@ -162,7 +123,7 @@ export default function MasterMesinAdd({ onChangePage }) {
       )}
       <form onSubmit={handleAdd}>
         <div className="card">
-          <div className="card-header bg-primary lead fw-medium text-white">
+          <div className="card-header bg-primary fw-medium text-white">
             Tambah Data Mesin Baru
           </div>
           <div className="card-body p-4">
@@ -170,110 +131,95 @@ export default function MasterMesinAdd({ onChangePage }) {
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="mes_nama_mesin"
-                  label="Nama Mesin"
-                  isRequired
-                  value={formDataRef.current.mes_nama_mesin}
-                  onChange={handleInputChange}
-                  errorMessage={errors.mes_nama_mesin}
-                />
-              </div>
-              <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="mes_upt"
-                  label="UPT"
-                  isRequired
-                  value={formDataRef.current.mes_upt}
-                  onChange={handleInputChange}
-                  errorMessage={errors.mes_upt}
-                />
-              </div>
-              <div className="col-lg-3">
-                <Input
-                  type="text"
-                  forInput="mes_kondisi_operasional"
+                  forInput="kondisi"
                   label="Kondisi Operasional (%)"
                   isRequired
-                  value={formDataRef.current.mes_kondisi_operasional}
+                  value={formDataRef.current.kondisi}
                   onChange={handleInputChange}
-                  errorMessage={errors.mes_kondisi_operasional}
+                  errorMessage={errors.kondisi}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="mes_no_panel"
+                  forInput="no_panel"
                   label="No Panel"
-                  value={formDataRef.current.mes_no_panel}
+                  value={formDataRef.current.no_panel}
                   onChange={handleInputChange}
-                  errorMessage={errors.mes_no_panel}
+                  errorMessage={errors.no_panel}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="mes_lab"
+                  forInput="lab"
                   label="Lab"
-                  value={formDataRef.current.mes_lab}
+                  value={formDataRef.current.lab}
                   onChange={handleInputChange}
-                  errorMessage={errors.mes_lab}
+                  errorMessage={errors.lab}
                 />
               </div>
-
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="mes_daya_mesin"
+                  forInput="nama_mesin"
+                  label="Nama Mesin"
+                  isRequired
+                  value={formDataRef.current.nama_mesin}
+                  onChange={handleInputChange}
+                  errorMessage={errors.nama_mesin}
+                />
+              </div>
+              <div className="col-lg-3">
+                <Input
+                  type="text"
+                  forInput="daya_mesin"
                   label="Daya Mesin (W)"
                   isRequired
-                  value={formDataRef.current.mes_daya_mesin}
+                  value={formDataRef.current.daya_mesin}
                   onChange={handleInputChange}
-                  errorMessage={errors.mes_daya_mesin}
+                  errorMessage={errors.daya_mesin}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="mes_kapasitas"
-                  label="mes_kapasitas"
-                  value={formDataRef.current.mes_kapasitas}
+                  forInput="jumlah"
+                  label="Jumlah"
+                  isRequired
+                  value={formDataRef.current.jumlah}
                   onChange={handleInputChange}
-                  errorMessage={errors.mes_kapasitas}
+                  errorMessage={errors.jumlah}
                 />
               </div>
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="mes_tipe"
-                  label="mes_tipe"
-                  value={formDataRef.current.mes_tipe}
+                  forInput="kapasitas"
+                  label="Kapasitas"
+                  value={formDataRef.current.kapasitas}
                   onChange={handleInputChange}
-                  errorMessage={errors.mes_tipe}
+                  errorMessage={errors.kapasitas}
+                />
+              </div>
+              <div className="col-lg-3">
+                <Input
+                  type="text"
+                  forInput="tipe"
+                  label="Tipe"
+                  value={formDataRef.current.tipe}
+                  onChange={handleInputChange}
+                  errorMessage={errors.tipe}
                 />
               </div>
               <div className="col-lg-4">
                 <FileUpload
                   forInput="mes_gambar"
-                  label="Gambar Mesin (.jpg, .png)"
-                  formatFile=".jpg,.png"
+                  label="Gambar Alat/Mesin (.pdf, .jpg, .png)"
+                  formatFile=".pdf,.jpg,.png"
                   ref={fileGambarRef}
-                  onChange={() => handleFileChange(fileGambarRef, "jpg,png")}
                   errorMessage={errors.mes_gambar}
                 />
-                {previewImage && (
-                  <div className="mt-3">
-                    <img
-                      src={previewImage}
-                      alt="Preview Gambar"
-                      style={{
-                        maxWidth: "200px",
-                        maxHeight: "200px",
-                        objectFit: "cover",
-                      }}
-                    />
-                  </div>
-                )}
               </div>
             </div>
           </div>

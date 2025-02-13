@@ -133,17 +133,14 @@ export default function JadwalPerawatan({ onChangePage }) {
           setCurrentData(inisialisasiData);
         } else {
           const formattedData = data.map((value) => {
-            const { kor_tanggal_pengajuan, Status, Dibuat, TindakanPerbaikan, kor_sparepart_diganti, mes_id_mesin,Tanggal_Perawatan, ...rest } = value;
+            const { ["Tanggal Perawatan"]: jadwal, ["Tanggal Pengajuan"]: pengajuan, ["Status Pemeliharaan"]: status, ...rest } = value;
             return {
               ...rest,
-              // "Nama Mesin": mes_id_mesin,  // ID mesin atau nama mesin
-              // "Tindakan Perbaikan": kor_tindakan_perbaikan || "-", // Tindakan Perbaikan
-              // "Sparepart Diganti": kor_sparepart_diganti || "-",  // Sparepart Diganti
-              "Dibuat Oleh": Dibuat || "-",  // Pembuat data
-              "Tanggal Pengajuan": formatDate(kor_tanggal_pengajuan, "D MMMM YYYY"), // Tanggal pengajuan
-              // Status: Status,
+              "Tanggal Penjadwalan": jadwal ? formatDate(jadwal, "D MMMM YYYY") : "Jadwal belum di buat",
+              "Tanggal Pengajuan": pengajuan ? formatDate(pengajuan, "D MMMM YYYY") : "-",
+              "Status Pemeliharaan": status ? status : "-",
               Aksi: ["Detail"],  // Tombol aksi, bisa disesuaikan dengan tombol yang ada
-              Alignment: ["center", "left", "left", "left", "center", "center", "center"]
+              Alignment: ["center", "center", "left", "left", "left", "center", "center", "center", "center"]
             };
           });
           setCurrentData(formattedData);
@@ -180,7 +177,7 @@ export default function JadwalPerawatan({ onChangePage }) {
           <Input
             ref={searchQuery}
             forInput="pencarianPerawatanKorektif"
-            placeholder="Cari"
+            placeholder="Cari berdasarkan Nama Mesin, Tanggal Pengajuan format ( YYYY-MM-DD ), atau Kerusakan"
           />
           <Button
             iconName="search"

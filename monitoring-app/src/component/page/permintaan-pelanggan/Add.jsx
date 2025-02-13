@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { object, string, date } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import UploadFile from "../../util/UploadFile";
 import Button from "../../part/Button";
@@ -257,7 +257,7 @@ export default function PermintaanPelangganAdd({ onChangePage }) {
             })
           );
 
-          SweetAlert(
+          Swal.fire(
             "Sukses",
             "Data permintaan pelanggan berhasil disimpan",
             "success"

@@ -1,16 +1,16 @@
 import { useState } from "react";
-import KorektifTeknisiIndex from "./Index";
+import Index from "./Index";
 import KorektifTekEdit from "./Edit";
 import KorektifTeknisiDetail from "./Detail";
 
-export default function MasterProses() {
+export default function KorektifTeknisi() {
   const [pageMode, setPageMode] = useState("index");
   const [dataID, setDataID] = useState();
 
   function getPageMode() {
     switch (pageMode) {
       case "index":
-        return <KorektifTeknisiIndex onChangePage={handleSetPageMode} />;
+        return <Index onChangePage={handleSetPageMode} />;
       case "edit":
         return (
           <KorektifTekEdit onChangePage={handleSetPageMode} withID={dataID} />

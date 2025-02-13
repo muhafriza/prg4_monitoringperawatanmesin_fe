@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { object, string } from "yup";
 import { API_LINK, FILE_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UploadFile from "../../util/UploadFile";
 import FileUpload from "../../part/FileUpload";
 import UseFetch from "../../util/UseFetch";
@@ -209,7 +209,7 @@ export default function JadwalEdit({ onChangePage, withID }) {
         if (!data) {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data produk.");
         } else {
-          SweetAlert("Sukses", "Data produk berhasil disimpan", "success");
+          Swal.fire("Sukses", "Data produk berhasil disimpan", "success");
           onChangePage("index");
         }
       } catch (error) {

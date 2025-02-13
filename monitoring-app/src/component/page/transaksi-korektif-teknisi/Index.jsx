@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { PAGE_SIZE, API_LINK } from "../../util/Constants";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -36,11 +36,12 @@ const dataFilterSort = [
 ];
 
 const dataFilterStatus = [
-  { Value: "0", Text: "Belum Selesai" },
-  { Value: "1", Text: "Selesai" },
+  { Value: "Dalam Pengerjaan", Text: "Dalam Pengerjaan" },
+  { Value: "Pending", Text: "Pending" },
+  { Value: "Selesai", Text: "Selesai" },
 ];
 
-export default function KorektifTeknisi({ onChangePage }) {
+export default function index({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
@@ -48,7 +49,7 @@ export default function KorektifTeknisi({ onChangePage }) {
     page: 1,
     query: "",
     sort: "[kor_tanggal_pengajuan] desc",
-    status: "0", // Default ke status "Belum Selesai"
+    status: "Pending", // Default ke status "Belum Selesai"
     itemPerPage: 10,
   });
 
@@ -73,6 +74,7 @@ export default function KorektifTeknisi({ onChangePage }) {
       sort: searchFilterSort.current.value,
       status: searchFilterStatus.current.value,
     }));
+    console.log(currentFilter);
   }
 
   function handleSetStatus(id) {
@@ -84,10 +86,12 @@ export default function KorektifTeknisi({ onChangePage }) {
       .then((data) => {
         if (data === "ERROR" || data.length === 0) setIsError(true);
         else {
-          SweetAlert(
+          Swal.fire(
             "Sukses",
             "Status berhasil diubah menjadi " +
-              (data[0].kor_status_pemeliharaan === 1 ? "Selesai" : "Belum Selesai"),
+              (data[0].kor_status_pemeliharaan === 1
+                ? "Selesai"
+                : "Belum Selesai"),
             "success"
           );
           handleSetCurrentPage(currentFilter.page);
@@ -111,17 +115,15 @@ export default function KorektifTeknisi({ onChangePage }) {
         } else {
           const formattedData = data.map((value) => ({
             ...value,
-            Aksi: [ "Detail", "Edit"],
+            Aksi: ["Detail", "Edit"],
             Alignment: [
               "center",
               "center",
               "center",
               "center",
               "left",
-              "left",
-              "left",
-              "left",
               "center",
+              "left",
               "center",
               "center",
             ],
@@ -141,7 +143,6 @@ export default function KorektifTeknisi({ onChangePage }) {
 
   return (
     <>
-    
       <div className="d-flex flex-column">
         {isError && (
           <div className="flex-fill">
@@ -153,7 +154,6 @@ export default function KorektifTeknisi({ onChangePage }) {
         )}
         <div className="flex-fill">
           <div className="input-group">
-           
             <Input
               ref={searchQuery}
               forInput="pencarianPerawatan"
@@ -182,7 +182,6 @@ export default function KorektifTeknisi({ onChangePage }) {
                 arrData={dataFilterStatus}
                 defaultValue="0"
               />
-              
             </Filter>
           </div>
         </div>

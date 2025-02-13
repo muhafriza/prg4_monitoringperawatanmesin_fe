@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { PAGE_SIZE, API_LINK } from "../../util/Constants";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -10,6 +10,8 @@ import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
+import Cookies from "js-cookie";
+import { decryptId } from "../../util/Encryptor";
 
 const inisialisasiData = [
   {
@@ -82,7 +84,7 @@ export default function MasterPelangganIndex({ onChangePage }) {
       .then((data) => {
         if (data === "ERROR" || data.length === 0) setIsError(true);
         else {
-          SweetAlert(
+          Swal.fire(
             "Sukses",
             "Status data pelanggan berhasil diubah menjadi " + data[0].Status,
             "success"

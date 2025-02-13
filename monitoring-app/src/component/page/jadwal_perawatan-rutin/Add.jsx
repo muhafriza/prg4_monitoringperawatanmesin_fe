@@ -3,7 +3,6 @@ import { object, string } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
 import DropDown from "../../part/Dropdown";
-import SweetAlert from "../../util/SweetAlert";
 import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
@@ -12,11 +11,16 @@ import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
 const dataUPT = [
-  { Value: "INFORMATICS", Text: "INFORMATICS" },
+  { Value: "PEMESINAN", Text: "PEMESINAN" },
   { Value: "PERAWATAN", Text: "PERAWATAN" },
   { Value: "ALAT BERAT", Text: "ALAT BERAT" },
-  { Value: "MO", Text: "MO" },
-  { Value: "PRODUKSI", Text: "PRODUKSI" },
+  { Value: "OTOMOTIF", Text: "OTOMOTIF" },
+  { Value: "MANUFAKTUR", Text: "MANUFAKTUR" },
+  { Value: "OTOMASI", Text: "OTOMASI" },
+  { Value: "DESAIN DAN METROLOGI", Text: "DESAIN DAN METROLOGI" },
+  { Value: "OTOMASI", Text: "OTOMASI" },
+  { Value: "SIPIL", Text: "SIPIL" },
+  { Value: "LPT3", Text: "LPT3" },
 ];
 
 export default function Add({ onChangePage }) {

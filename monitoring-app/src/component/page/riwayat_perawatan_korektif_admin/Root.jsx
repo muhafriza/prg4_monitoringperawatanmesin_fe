@@ -1,22 +1,28 @@
 import { useState } from "react";
-import PerawatanKorektif from "./Index";
-import KorektifAdd from "./Add";
-import KorektifDetail from "./Detail";
+import RiwayatPreventif from "./Index";
+import DetailRiwayatPreventif from "./Detail";
 
+import MasterSparepartAdd from "./Add";
+import MasterSparepartEdit from "./Edit";
+import DetailRiwayatKorektif from "./Detail";
 
-export default function MasterProses() {
+export default function RiwayatPerawatanKorektif() {
   const [pageMode, setPageMode] = useState("index");
   const [dataID, setDataID] = useState();
 
   function getPageMode() {
     switch (pageMode) {
       case "index":
-        return <PerawatanKorektif onChangePage={handleSetPageMode} />;
+        return <RiwayatPreventif onChangePage={handleSetPageMode} />;
       case "add":
-        return <KorektifAdd onChangePage={handleSetPageMode} />;
+        return <MasterSparepartAdd onChangePage={handleSetPageMode} />;
+      case "edit":
+        return (
+          <MasterSparepartEdit onChangePage={handleSetPageMode} withID={dataID} />
+        );
         case "detail":
           return (
-            <KorektifDetail
+            <DetailRiwayatKorektif
               onChangePage={handleSetPageMode}
               withID={dataID}
             />
