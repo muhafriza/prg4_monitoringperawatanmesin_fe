@@ -190,11 +190,11 @@ export default function LaporanKerusakan({ onChangePage }) {
     // Render the element to canvas
     html2canvas(input, { scale: 3 }).then((canvas) => {
       const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("l", "mm", "a4");
-      const imgWidth = 250; // Lebar A4 dalam mm
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgWidth = 210; // Lebar A4 dalam mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      pdf.addImage(imgData, "PNG", 25, 10, imgWidth, imgHeight);
+      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
       pdf.save(`Data-Perawatan-Korektif_${id}.pdf`);
     });
   };
@@ -435,7 +435,7 @@ export default function LaporanKerusakan({ onChangePage }) {
       </div>
       <br />
       <div
-        className="card shadow-sm p-4"
+        className="card col-lg-6 shadow-sm p-4"
         ref={printRef}
         style={{ display: "block" }}
       >
@@ -451,7 +451,7 @@ export default function LaporanKerusakan({ onChangePage }) {
         <br />
         <div className="row d-flex align-items-start justify-content-between">
           {/* Tabel Kiri */}
-          <div className="col-lg-3">
+          <div className="col-lg-6  ">
             <table className="table">
               <tbody>
                 <tr>
