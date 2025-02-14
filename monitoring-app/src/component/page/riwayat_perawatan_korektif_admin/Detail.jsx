@@ -6,7 +6,7 @@ import Label from "../../part/Label";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
-export default function DetailJadwal({ onChangePage, withID }) {
+export default function DetailRiwayatKorektif({ onChangePage, withID }) {
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -14,7 +14,20 @@ export default function DetailJadwal({ onChangePage, withID }) {
   const [fetchDataDetailSP, setFetchDataDetailSP] = useState(null);
 
   // Use state instead of useRef for form data
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({
+    ID_Mesin: "",
+    Nama_Mesin: "",
+    gambar_mesin: "",
+    Tanggal_Penjadwalan: "",
+    Tanggal_Aktual: "",
+    Tanggal_Selesai: "",
+    Tindakan_Perbaikan: "",
+    Catatan_Tambahan: "",
+    Status_Pemeliharaan: "",
+    Created_By: "",
+    Created_Date: "",
+    Modified_By: "",
+  });
 
   function formatDate(dateString, format) {
     const date = new Date(dateString);
@@ -56,18 +69,17 @@ export default function DetailJadwal({ onChangePage, withID }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "Korektif/DetailPerawatanKorektif",
+          API_LINK + "Korektif/DetailPerawatanMesin",
           {
             id: withID,
           }
         );
-        console.log("Response: ", data);
+        console.log(data);
 
         if (data === "ERROR" || data.length === 0) {
-          throw new Error("Terjadi kesalahan: Gagal mengambil data Detail.");
+          throw new Error("Terjadi kesalahan: Gagal mengambil data Sparepart.");
         } else {
-          setFormData(data[0]);
-          console.log("Ini Form Data: ", formData);
+          setFormData((prevFormData) => ({ ...prevFormData, ...data[0] }));
         }
       } catch (error) {
         window.scrollTo(0, 0);
@@ -86,7 +98,7 @@ export default function DetailJadwal({ onChangePage, withID }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "Korektif/DetailSPPerawatanKorektif",
+          API_LINK + "Korektif/DetailSPPerawatanMesin",
           {
             id: withID,
           }
@@ -179,7 +191,7 @@ export default function DetailJadwal({ onChangePage, withID }) {
                 <hr />
               </div>
             </div>
-            <div className="col-lg-8 ml-5">
+            <div className="col-lg-8">
               <div className="row">
                 <div className="col-lg-3">
                   <Label
@@ -199,36 +211,24 @@ export default function DetailJadwal({ onChangePage, withID }) {
                   <Label
                     forLabel="Tanggal_Penjadwalan"
                     title="Tanggal Penjadwalan"
-                    data={
-                      formData.Tanggal_Penjadwalan
-                        ? formatDate(
-                            formData.Tanggal_Penjadwalan,
-                            "D MMMM YYYY"
-                          )
-                        : "-"
-                    }
+                    data={formatDate(
+                      formData.Tanggal_Penjadwalan,
+                      "D MMMM YYYY"
+                    )}
                   />
                 </div>
                 <div className="col-lg-3">
                   <Label
                     forLabel="Tindakan_Perbaikan"
-                    title="Tindakan Perbaikan"
-                    data={
-                      formData.Tindakan_Perbaikan
-                        ? formData.Tindakan_Perbaikan
-                        : "Belum Ada Tindakan Perbaikan"
-                    }
+                    title="TindakanPerbaikan"
+                    data={formData.Tindakan_Perbaikan}
                   />
                 </div>
                 <div className="col-lg-4">
                   <Label
                     forLabel="Tanggal_Aktual"
                     title="Tanggal Aktual"
-                    data={
-                      formData.Tanggal_Aktual
-                        ? formatDate(formData.Tanggal_Aktual, "D MMMM YYYY")
-                        : "-"
-                    }
+                    data={formatDate(formData.Tanggal_Aktual, "D MMMM YYYY")}
                   />
                 </div>
                 <div className="col-lg-3">
@@ -247,13 +247,20 @@ export default function DetailJadwal({ onChangePage, withID }) {
                 </div>
                 <div className="col-lg-4">
                   <Label
+                    forLabel="Tanggal_Selesai"
+                    title="Tanggal Selesai"
+                    data={
+                      formData.Modified_Date
+                        ? formatDate(formData.Modified_Date, "D MMMM YYYY")
+                        : ""
+                    }
+                  />
+                </div>
+                <div className="col-lg-3">
+                  <Label
                     forLabel="Catatan_Tambahan"
                     title="Catatan Tambahan"
-                    data={
-                      formData.Sparepart
-                        ? formData.Sparepart
-                        : "Tidak Ada Keterangan Tambahan"
-                    }
+                    data={formData.Catatan_Tambahan}
                   />
                 </div>
                 <div className="col-lg-3">

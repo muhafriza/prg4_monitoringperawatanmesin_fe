@@ -2,12 +2,14 @@ import { useRef, useState, useEffect } from "react";
 import { object, string, date } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
+import Cookies from "js-cookie";
+import { decryptId } from "../../util/Encryptor";
 
 export default function KorektifAdd({ onChangePage }) {
   const [errors, setErrors] = useState({});
@@ -15,26 +17,35 @@ export default function KorektifAdd({ onChangePage }) {
   const [isLoading, setIsLoading] = useState(false);
   const [mesinOptions, setMesinOptions] = useState([]);
   const [selectedMesin, setSelectedMesin] = useState("");
+  const getUserInfo = () => {
+    const encryptedUser = Cookies.get("activeUser");
+    if (encryptedUser) {
+      try {
+        const userInfo = JSON.parse(decryptId(encryptedUser));
+        return userInfo;
+      } catch (error) {
+        console.error("Failed to decrypt user info:", error);
+        return null;
+      }
+    }
+    return null;
+  };
+  const userInfo = getUserInfo();
+  const upt = userInfo.upt;
 
   const formDataRef = useRef({
-    kor_mes_id_mesin: "",   
+    kor_mes_id_mesin: "",
     kor_deskripsi_kerusakan: "",
   });
 
-  const [currentFilter, setCurrentFilter] = useState({
-    name: "",
+  const [FilterMesinUPT, setCurrentFilter] = useState({
+    upt: upt,
     status: "Aktif",
   });
-
-    // useEffect(() => {
-    //   // Automatically update the formDataRef if necessary
-    //   formDataRef.current.kor_tanggal_pengajuan = new Date().toISOString(); // Updates to current time when component mounts
-    // }, []); 
 
   const userSchema = object({
     kor_mes_id_mesin: string().required("ID Mesin is required"),
     kor_deskripsi_kerusakan: string().max(255, "Deskripsi Kerusakan too long"),
-   
   });
 
   useEffect(() => {
@@ -42,9 +53,12 @@ export default function KorektifAdd({ onChangePage }) {
       setIsError((prevError) => ({ ...prevError, error: false }));
 
       try {
-        const data = await UseFetch(API_LINK + "Korektif/getNamaMesin", currentFilter);
+        const data = await UseFetch(
+          API_LINK + "Korektif/getNamaMesin",
+          FilterMesinUPT
+        );
         // console.log(data);
-        if (data === "ERROR" || data.length === 0) {
+        if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal mengambil data Mesin.");
         } else {
           setMesinOptions(data); // Set data yang diterima ke dalam mesinOptions
@@ -76,39 +90,42 @@ export default function KorektifAdd({ onChangePage }) {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    console.log(1)
+    console.log(1);
     const validationErrors = await validateAllInputs(
       formDataRef.current,
       userSchema,
       setErrors
     );
-    
-    console.log(2)
+
+    console.log(2);
     if (Object.values(validationErrors).every((error) => !error)) {
-      console.log(3)
+      console.log(3);
       setIsLoading(true);
       setIsError({ error: false, message: "" });
       setErrors({});
-      
-      try {
-        // formDataRef.current.kor_status_pemeliharaan =
-        //   formDataRef.current.kor_status_pemeliharaan || 0;
 
+      try {
         const data = await UseFetch(
           API_LINK + "Korektif/Createkorektif",
           formDataRef.current
         );
+        console.log(data);
 
         if (!data) {
-          throw new Error("Terjadi kesalahan: Gagal menyimpan data perawatan korektif.");
+          throw new Error(
+            "Terjadi kesalahan: Gagal menyimpan data perawatan korektif."
+          );
         } else {
-          SweetAlert("Sukses", "Data perawatan korektif berhasil disimpan", "success");
+          Swal.fire(
+            "Sukses",
+            "Data perawatan korektif berhasil disimpan",
+            "success"
+          );
           onChangePage("index");
         }
-        
       } catch (error) {
         setIsError({ error: true, message: error.message });
-        console.error(error); 
+        console.error(error);
       } finally {
         setIsLoading(false);
       }
@@ -154,9 +171,11 @@ export default function KorektifAdd({ onChangePage }) {
                     </option>
                   ))}
                 </select>
-                {errors.kor_mes_id_mesin && <div className="text-danger">{errors.kor_mes_id_mesin}</div>}
+                {errors.kor_mes_id_mesin && (
+                  <div className="text-danger">{errors.kor_mes_id_mesin}</div>
+                )}
               </div>
-              
+
               <div className="col-lg-4">
                 <Input
                   type="text"

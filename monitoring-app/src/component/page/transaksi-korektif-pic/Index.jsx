@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { PAGE_SIZE, API_LINK } from "../../util/Constants";
-import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -10,6 +10,8 @@ import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
+import Cookies from "js-cookie";
+import { decryptId } from "../../util/Encryptor";
 
 const inisialisasiData = [
   {
@@ -38,12 +40,28 @@ const dataFilterStatus = [
 ];
 
 export default function JadwalPerawatan({ onChangePage }) {
+  const getUserInfo = () => {
+    const encryptedUser = Cookies.get("activeUser");
+    if (encryptedUser) {
+      try {
+        const userInfo = JSON.parse(decryptId(encryptedUser));
+        return userInfo;
+      } catch (error) {
+        console.error("Failed to decrypt user info:", error);
+        return null;
+      }
+    }
+    return null;
+  };
+  const userInfo = getUserInfo();
+  const upt = userInfo.upt;
+
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
-    query: "",
+    query: upt,
     sort: "[kor_tanggal_pengajuan] asc",
     status: "",
     itemPerPage: 10,
@@ -69,14 +87,29 @@ export default function JadwalPerawatan({ onChangePage }) {
     const month = date.getMonth();
     const year = date.getFullYear();
     const months = [
-      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember",
     ];
     switch (format) {
       case "DD/MM/YYYY":
-        return `${String(day).padStart(2, "0")}/${String(month + 1).padStart(2, "0")}/${year}`;
+        return `${String(day).padStart(2, "0")}/${String(month + 1).padStart(
+          2,
+          "0"
+        )}/${year}`;
       case "YYYY-MM-DD":
-        return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        return `${year}-${String(month + 1).padStart(2, "0")}-${String(
+          day
+        ).padStart(2, "0")}`;
       case "D MMMM YYYY":
         return `${day} ${months[month]} ${year}`;
       default:
@@ -106,7 +139,7 @@ export default function JadwalPerawatan({ onChangePage }) {
       .then((data) => {
         if (data === "ERROR" || data.length === 0) setIsError(true);
         else {
-          SweetAlert(
+          Swal.fire(
             "Sukses",
             "Status data Sparepart berhasil diubah menjadi " + data[0].Status,
             "success"
@@ -118,6 +151,8 @@ export default function JadwalPerawatan({ onChangePage }) {
   }
 
   useEffect(() => {
+  console.log("USER INFO NICH: ", userInfo);
+
     const fetchData = async () => {
       setIsError(false);
 
@@ -126,6 +161,7 @@ export default function JadwalPerawatan({ onChangePage }) {
           API_LINK + "Korektif/GetDataPerawatanKorektif",
           currentFilter
         );
+        console.log(upt);
 
         if (data === "ERROR") {
           setIsError(true);
@@ -133,17 +169,33 @@ export default function JadwalPerawatan({ onChangePage }) {
           setCurrentData(inisialisasiData);
         } else {
           const formattedData = data.map((value) => {
-            const { kor_tanggal_pengajuan, Status, Dibuat, TindakanPerbaikan, kor_sparepart_diganti, mes_id_mesin,Tanggal_Perawatan, ...rest } = value;
+            const {
+              ["Tanggal Perawatan"]: jadwal,
+              ["Tanggal Pengajuan"]: pengajuan,
+              ["Status Pemeliharaan"]: status,
+              ...rest
+            } = value;
             return {
               ...rest,
-              // "Nama Mesin": mes_id_mesin,  // ID mesin atau nama mesin
-              // "Tindakan Perbaikan": kor_tindakan_perbaikan || "-", // Tindakan Perbaikan
-              // "Sparepart Diganti": kor_sparepart_diganti || "-",  // Sparepart Diganti
-              "Dibuat Oleh": Dibuat || "-",  // Pembuat data
-              "Tanggal Pengajuan": formatDate(kor_tanggal_pengajuan, "D MMMM YYYY"), // Tanggal pengajuan
-              // Status: Status,
-              Aksi: ["Detail"],  // Tombol aksi, bisa disesuaikan dengan tombol yang ada
-              Alignment: ["center", "left", "left", "left", "center", "center", "center"]
+              "Tanggal Penjadwalan": jadwal
+                ? formatDate(jadwal, "D MMMM YYYY")
+                : "Jadwal belum di buat",
+              "Tanggal Pengajuan": pengajuan
+                ? formatDate(pengajuan, "D MMMM YYYY")
+                : "-",
+              "Status Pemeliharaan": status ? status : "-",
+              Aksi: ["Detail"], // Tombol aksi, bisa disesuaikan dengan tombol yang ada
+              Alignment: [
+                "center",
+                "center",
+                "left",
+                "left",
+                "left",
+                "center",
+                "center",
+                "center",
+                "center",
+              ],
             };
           });
           setCurrentData(formattedData);
@@ -174,13 +226,13 @@ export default function JadwalPerawatan({ onChangePage }) {
           <Button
             iconName="add"
             classType="success"
-            label="Buat Jadwal Perawatan Korektif"
+            label="Buat Laporan Kerusakan"
             onClick={() => onChangePage("add")}
           />
           <Input
             ref={searchQuery}
             forInput="pencarianPerawatanKorektif"
-            placeholder="Cari"
+            placeholder="Cari berdasarkan Nama Mesin, Tanggal Pengajuan format ( YYYY-MM-DD ), atau Kerusakan"
           />
           <Button
             iconName="search"
