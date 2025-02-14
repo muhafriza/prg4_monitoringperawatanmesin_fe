@@ -14,7 +14,6 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import Swal from "sweetalert2";
 import logo from "../../../assets/IMG_Logo.png";
 import ExcelJS from "exceljs";
 
