@@ -123,21 +123,39 @@ export default function Login() {
           if (data === "ERROR")
             throw new Error("Terjadi kesalahan: Gagal memilih peran pengguna.");
           else {
-            const userInfo = {
-              username: formDataRef.current.username,
-              role: role,
-              nama: nama,
-              peran: peran,
-              lastLogin: data[1]
-                ? data[1].lastLogin
-                : new Date().toISOString().split("T")[0] +
-                  " " +
-                  new Date().toISOString().split("T")[1],
-            };
-
-            let user = encryptId(JSON.stringify(userInfo));
-            Cookies.set("activeUser", user, { expires: 1 });
-            window.location.href = ROOT_LINK;
+            if (peran.includes("PIC")) {
+              const upt = peran.split(" ").slice(1).join(" ");
+              const userInfo = {
+                username: formDataRef.current.username,
+                role: role,
+                nama: nama,
+                peran: peran,
+                upt: upt,
+                lastLogin: data[1]
+                  ? data[1].lastLogin
+                  : new Date().toISOString().split("T")[0] +
+                    " " +
+                    new Date().toISOString().split("T")[1],
+              };
+              let user = encryptId(JSON.stringify(userInfo));
+              Cookies.set("activeUser", user, { expires: 1 });
+              window.location.href = ROOT_LINK;
+            } else {
+              const userInfo = {
+                username: formDataRef.current.username,
+                role: role,
+                nama: nama,
+                peran: peran,
+                lastLogin: data[1]
+                  ? data[1].lastLogin
+                  : new Date().toISOString().split("T")[0] +
+                    " " +
+                    new Date().toISOString().split("T")[1],
+              };
+              let user = encryptId(JSON.stringify(userInfo));
+              Cookies.set("activeUser", user, { expires: 1 });
+              window.location.href = ROOT_LINK;
+            }
           }
         }
       }
