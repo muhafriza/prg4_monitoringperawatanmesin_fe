@@ -14,6 +14,7 @@ import Loading from "../../part/Loading";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { saveAs } from "file-saver";
+// import "style.css";
 
 const inisialisasiData = [
   {
@@ -593,8 +594,8 @@ export default function LaporanKerusakan({ onChangePage }) {
                   fetchDataDetailSP.map((item, index) => (
                     <tr key={index}>
                       <td align="center">{index + 1}</td>
-                      <td>{item["Nama Sparepart"]}</td>
-                      <td align="right">{item.Jumlah}</td>
+                      <td align="center">{item["Nama Sparepart"]}</td>
+                      <td align="center">{item.Jumlah}</td>
                     </tr>
                   ))
                 ) : (
