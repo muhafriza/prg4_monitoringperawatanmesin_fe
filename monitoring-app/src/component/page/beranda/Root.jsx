@@ -1,5 +1,6 @@
 import BerandaAdministrator from "./Administrator";
 import BerandaTeknisi from "./Teknisi";
+import BerandaPIC from "./Pic";
 import Cookies from "js-cookie";
 import { decryptId } from "../../util/Encryptor";
 
@@ -42,6 +43,13 @@ export default function Beranda() {
     return (
       <div>
         <BerandaTeknisi />
+      </div>
+    );
+  }
+  if(peran.includes("PIC")){
+    return (
+      <div>
+        <BerandaPIC />
       </div>
     );
   }
