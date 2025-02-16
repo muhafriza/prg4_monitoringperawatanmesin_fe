@@ -12,11 +12,15 @@ import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
 const dataUPT = [
-  { Value: "INFORMATICS", Text: "INFORMATICS" },
+  { Value: "PEMESINAN", Text: "PEMESINAN" },
+  { Value: "MANUFAKTUR", Text: "MANUFAKTUR" },
+  { Value: "DESAIN DAN METROLOGI", Text: "DESAIN DAN METROLOGI" },
   { Value: "PERAWATAN", Text: "PERAWATAN" },
+  { Value: "OTOMOTIF", Text: "OTOMOTIF" },
   { Value: "ALAT BERAT", Text: "ALAT BERAT" },
-  { Value: "MO", Text: "MO" },
+  { Value: "SIPIL", Text: "SIPIL" },
   { Value: "PRODUKSI", Text: "PRODUKSI" },
+  { Value: "LPT3", Text: "LPT3" },
 ];
 
 export default function Add({ onChangePage }) {

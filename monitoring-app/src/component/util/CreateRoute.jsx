@@ -34,6 +34,9 @@ const KorektifTeknisi = lazy(() =>
 const RiwayatPerawatanKorektif = lazy(() =>
   import("../page/riwayat_perawatan_korektif_admin/Root")
 );
+const DetailPreventif = lazy(() =>
+  import("../page/perawatan_preventif_pic/Root")
+);
 
 const PermintaanPelanggan = lazy(() =>
   import("../page/permintaan-pelanggan/Root")
@@ -140,6 +143,10 @@ const routeList = [
   {
     path: "/riwayat_korektif_admin",
     element: <RiwayatPerawatanKorektif />,
+  },
+  {
+    path: "/pemeliharaan_preventif_pic",
+    element: <DetailPreventif />,
   },
 ];
 

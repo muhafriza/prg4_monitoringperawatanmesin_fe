@@ -151,7 +151,7 @@ export default function JadwalPerawatan({ onChangePage }) {
   }
 
   useEffect(() => {
-  console.log("USER INFO NICH: ", userInfo);
+    console.log("USER INFO NICH: ", userInfo);
 
     const fetchData = async () => {
       setIsError(false);
@@ -195,6 +195,8 @@ export default function JadwalPerawatan({ onChangePage }) {
                 "center",
                 "center",
                 "center",
+                "center",
+                "center",
               ],
             };
           });
@@ -221,64 +223,71 @@ export default function JadwalPerawatan({ onChangePage }) {
           />
         </div>
       )}
-      <div className="flex-fill">
-        <div className="input-group">
-          <Button
-            iconName="add"
-            classType="success"
-            label="Buat Laporan Kerusakan"
-            onClick={() => onChangePage("add")}
-          />
-          <Input
-            ref={searchQuery}
-            forInput="pencarianPerawatanKorektif"
-            placeholder="Cari berdasarkan Nama Mesin, Tanggal Pengajuan format ( YYYY-MM-DD ), atau Kerusakan"
-          />
-          <Button
-            iconName="search"
-            classType="primary px-4"
-            title="Cari"
-            onClick={handleSearch}
-          />
-          <Filter>
-            <DropDown
-              ref={searchFilterSort}
-              forInput="ddUrut"
-              label="Urut Berdasarkan"
-              type="none"
-              arrData={dataFilterSort}
-              defaultValue="[kor_tanggal_pengajuan] asc"
-            />
-            <DropDown
-              ref={searchFilterStatus}
-              forInput="ddStatus"
-              label="Status"
-              type="none"
-              arrData={dataFilterStatus}
-              defaultValue="Pending"
-            />
-          </Filter>
+      <div className="card">
+        <div className="card-header bg-primary lead fw-medium text-white">
+          Perawatan Korektif
         </div>
-      </div>
-      <div className="mt-3">
-        {isLoading ? (
-          <Loading />
-        ) : (
-          <div className="d-flex flex-column">
-            <Table
-              data={currentData}
-              onToggle={handleSetStatus}
-              onDetail={onChangePage}
-              onEdit={onChangePage}
-            />
-            <Paging
-              pageSize={PAGE_SIZE}
-              pageCurrent={currentFilter.page}
-              totalData={currentData[0]["Count"]}
-              navigation={handleSetCurrentPage}
-            />
+        <div className="card-body p-4">
+          <div className="flex-fill">
+            <div className="input-group">
+              <Button
+                iconName="add"
+                classType="success"
+                label="Buat Laporan Kerusakan"
+                onClick={() => onChangePage("add")}
+              />
+              <Input
+                ref={searchQuery}
+                forInput="pencarianPerawatanKorektif"
+                placeholder="Cari berdasarkan Nama Mesin, Tanggal Pengajuan format ( YYYY-MM-DD ), atau Kerusakan"
+              />
+              <Button
+                iconName="search"
+                classType="primary px-4"
+                title="Cari"
+                onClick={handleSearch}
+              />
+              <Filter>
+                <DropDown
+                  ref={searchFilterSort}
+                  forInput="ddUrut"
+                  label="Urut Berdasarkan"
+                  type="none"
+                  arrData={dataFilterSort}
+                  defaultValue="[kor_tanggal_pengajuan] asc"
+                />
+                <DropDown
+                  ref={searchFilterStatus}
+                  forInput="ddStatus"
+                  label="Status"
+                  type="none"
+                  arrData={dataFilterStatus}
+                  defaultValue="Pending"
+                />
+              </Filter>
+            </div>
           </div>
-        )}
+          <div className="mt-3">
+            {isLoading ? (
+              <Loading />
+            ) : (
+              <div className="d-flex flex-column">
+                <Table
+                  data={currentData}
+                  onToggle={handleSetStatus}
+                  onDetail={onChangePage}
+                  onEdit={onChangePage}
+                />
+                <Paging
+                  pageSize={PAGE_SIZE}
+                  pageCurrent={currentFilter.page}
+                  totalData={currentData[0]["Count"]}
+                  navigation={handleSetCurrentPage}
+                />
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
