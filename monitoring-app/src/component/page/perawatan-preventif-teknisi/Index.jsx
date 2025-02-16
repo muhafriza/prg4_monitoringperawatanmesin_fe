@@ -166,7 +166,7 @@ export default function PerawatanKorektif({ onChangePage }) {
             } = value;
             const aksi =
               Status_Pemeliharaan === "Selesai"
-                ? ["Detail", "Print"]
+                ? ["Detail"]
                 : ["Detail", "Edit"];
 
             return {

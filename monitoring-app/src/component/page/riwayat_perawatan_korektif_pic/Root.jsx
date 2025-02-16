@@ -1,8 +1,8 @@
 import { useState } from "react";
 import RiwayatPreventif from "./Index";
-import DetailRiwayatPreventifPIC from "./Detail";
+import DetailRiwayatKorektifPIC from "./Detail";
 
-export default function RiwayatPerawatanPreventifPIC() {
+export default function RiwayatPerawatanKorektifPIC() {
   const [pageMode, setPageMode] = useState("index");
   const [dataID, setDataID] = useState();
 
@@ -10,13 +10,13 @@ export default function RiwayatPerawatanPreventifPIC() {
     switch (pageMode) {
       case "index":
         return <RiwayatPreventif onChangePage={handleSetPageMode} />;
-        case "detail":
-          return (
-            <DetailRiwayatPreventifPIC
-              onChangePage={handleSetPageMode}
-              withID={dataID}
-            />
-          );
+      case "detail":
+        return (
+          <DetailRiwayatKorektifPIC
+            onChangePage={handleSetPageMode}
+            withID={dataID}
+          />
+        );
     }
   }
 

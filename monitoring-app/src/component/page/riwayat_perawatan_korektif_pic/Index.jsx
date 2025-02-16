@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { PAGE_SIZE, API_LINK } from "../../util/Constants";
-import SweetAlert from "../../util/SweetAlert";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -15,9 +14,11 @@ import { saveAs } from "file-saver";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import Swal from "sweetalert2";
+import logo from "../../../assets/IMG_Logo.png";
 import ExcelJS from "exceljs";
 import Cookies from "js-cookie";
 import { decryptId } from "../../util/Encryptor";
+import Label from "../../part/Label";
 
 const inisialisasiData = [
   {
@@ -34,16 +35,11 @@ const inisialisasiData = [
 ];
 
 const dataFilterSort = [
-  { Value: "[pre_tanggal_penjadwalan] asc", Text: "Tanggal Penjadwalan [↑]" },
-  { Value: "[pre_tanggal_penjadwalan] desc", Text: "Tanggal Penjadawalan [↓]" },
+  { Value: "[kor_tanggal_penjadwalan] asc", Text: "Tanggal Penjadwalan [↑]" },
+  { Value: "[kor_tanggal_penjadwalan] desc", Text: "Tanggal Penjadawalan [↓]" },
 ];
 
-export default function PerawatanPreventif({ onChangePage }) {
-  const [isError, setIsError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentData, setCurrentData] = useState(inisialisasiData);
-  const [dataPrevetif, setDataPreventif] = useState();
-  const [DataPreventifById, setDataPreventifById] = useState();
+export default function RiwayatPreventifPIC({ onChangePage }) {
   const getUserInfo = () => {
     const encryptedUser = Cookies.get("activeUser");
     if (encryptedUser) {
@@ -59,32 +55,88 @@ export default function PerawatanPreventif({ onChangePage }) {
   };
   const userInfo = getUserInfo();
   const upt = userInfo.upt;
+
+  const [isError, setIsError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentData, setCurrentData] = useState(inisialisasiData);
+  const [dataKorektif, setDataKorektif] = useState();
+  const [DataKorektifByID, setDataKorektifByID] = useState();
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[pre_status_pemeliharaan] asc",
-    status: "",
+    sort: "[kor_status_pemeliharaan] asc",
+    status: upt,
     itemPerPage: 10,
-    upt: upt,
   });
 
   const searchQuery = useRef();
   const searchFilterSort = useRef();
   const searchFilterStatus = useRef();
+  const [fetchDataDetailSP, setFetchDataDetailSP] = useState();
+  const [teknisi, setTeknisi] = useState();
+
+  const getFullNameTeknisi = async (modifiedBy) => {
+    try {
+      const data = await UseFetch(API_LINK + "Korektif/GetKaryawanFullName", {
+        p2: modifiedBy, // Gunakan ID yang dipilih
+      });
+      console.log("Data Teknisi:", data);
+      if (!data || data === "ERROR") {
+        throw new Error("Gagal mengambil data Teknisi berdasarkan ID.");
+      } else {
+        setTeknisi(data[0]); // Set teknisi dengan data pertama dari array
+      }
+    } catch (error) {
+      console.error("Fetch Data Teknisi Error:", error);
+      setIsError(true);
+    }
+  };
+  const fetchDetailSP = async () => {
+    try {
+      const data = await UseFetch(
+        API_LINK + "Korektif/DetailSPPerawatanMesin",
+        {
+          id: idKO,
+        }
+      );
+
+      console.log("Respone ", data);
+      if (data === "ERROR") {
+        throw new Error("Terjadi kesalahan: Gagal mengambil data Sparepart.");
+      } else {
+        const formattedData = data.map((item) => {
+          return {
+            ...item,
+            Alignment: ["center", "center", "center"],
+          };
+        });
+        setFetchDataDetailSP(formattedData); // Menyimpan hasil fetchDetailSP ke state
+      }
+    } catch (error) {
+      window.scrollTo(0, 0);
+      setIsError((prevError) => ({
+        ...prevError,
+        error: true,
+        message: error.message,
+      }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const exportToExcel = async () => {
-    if (!dataPrevetif || dataPrevetif.length === 0) {
-      console.log(dataPrevetif);
+    if (!dataKorektif || dataKorektif.length === 0) {
+      console.log(dataKorektif);
       Swal.fire("Gagal", "Tidak ada data untuk dieksport!", "error");
       return;
     }
 
     // 1. Buat workbook dan worksheet
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Data Perawatan Preventif");
+    const worksheet = workbook.addWorksheet("Data Perawatan Korektif");
 
     // 2. Tambahkan header dengan styling, border, dan center alignment
-    const headers = Object.keys(dataPrevetif[0]);
+    const headers = Object.keys(dataKorektif[0]);
     worksheet.addRow(headers);
 
     worksheet.getRow(1).eachCell((cell, colNumber) => {
@@ -115,7 +167,7 @@ export default function PerawatanPreventif({ onChangePage }) {
     });
 
     // 3. Tambahkan data dengan border di setiap sel dan atur ukuran kolom berdasarkan isi
-    dataPrevetif.forEach((item) => {
+    dataKorektif.forEach((item) => {
       const row = worksheet.addRow(Object.values(item));
       row.eachCell((cell, colNumber) => {
         cell.border = {
@@ -147,7 +199,7 @@ export default function PerawatanPreventif({ onChangePage }) {
 
     // 5. Simpan file
     const now = new Date().toISOString().split("T")[0];
-    saveAs(excelFile, `Data-Perawatan-Preventif_${now}.xlsx`);
+    saveAs(excelFile, `Data-Perawatan-Korektif_${now}.xlsx`);
   };
 
   const printRef = useRef();
@@ -161,48 +213,91 @@ export default function PerawatanPreventif({ onChangePage }) {
 
     html2canvas(input, { scale: 2 }).then((canvas) => {
       const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("l", "mm", "a4");
-      const imgWidth = 250; // Lebar A4 dalam mm
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgWidth = 210; // Lebar A4 dalam mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      pdf.addImage(imgData, "PNG", 25, 10, imgWidth, imgHeight);
-      pdf.save(`Data-Perawatan-Preventif/${id}.pdf`);
+      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+      pdf.save(`Data-Perawatan-Korektif/${id}.pdf`);
     });
   };
 
-  const exportToExcelByID = (id) => {
-    if (!DataPreventifById || DataPreventifById.length === 0) {
-      console.log(dataPrevetif);
+  const exportToExcelByID = async (id) => {
+    if (!DataKorektifByID || DataKorektifByID.length === 0) {
+      console.log(DataKorektifByID);
       Swal.fire("Gagal", "Tidak ada data untuk dieksport!", "error");
       return;
     }
 
-    // 1. Konversi data menjadi worksheet
-    const worksheet = XLSX.utils.json_to_sheet(DataPreventifById);
+    // 1. Buat workbook dan worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Data Perawatan Korektif");
 
-    // 2. Buat workbook dan tambahkan worksheet
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(
-      workbook,
-      worksheet,
-      "Data Perawatan Preventif By ID"
-    );
+    // 2. Tambahkan header dengan styling, border, dan center alignment
+    const headers = Object.keys(DataKorektifByID[0]);
+    worksheet.addRow(headers);
 
-    // 3. Konversi workbook ke file Excel (blob)
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
+    worksheet.getRow(1).eachCell((cell, colNumber) => {
+      cell.font = { bold: true, color: { argb: "FFFFFF" } };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "0074cc" },
+      };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+
+      // Atur ukuran kolom nomor 1 menjadi 10
+      if (colNumber === 1) {
+        worksheet.getColumn(colNumber).width = 5;
+      }
+
+      // Atur ukuran kolom nomor 2 berdasarkan header
+      if (colNumber === 2) {
+        worksheet.getColumn(colNumber).width =
+          headers[colNumber - 1].length + 5;
+      }
     });
-    const excelFile = new Blob([excelBuffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+
+    // 3. Tambahkan data dengan border di setiap sel dan atur ukuran kolom berdasarkan isi
+    DataKorektifByID.forEach((item) => {
+      const row = worksheet.addRow(Object.values(item));
+      row.eachCell((cell, colNumber) => {
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+
+        // Atur alignment center untuk kolom nomor 1
+        if (colNumber === 1) {
+          cell.alignment = { horizontal: "center", vertical: "middle" };
+        }
+
+        // Atur ukuran kolom berdasarkan panjang isi, kecuali kolom nomor 1 dan 2
+        if (colNumber !== 1 && colNumber !== 2) {
+          const column = worksheet.getColumn(colNumber);
+          const cellLength = cell.value ? cell.value.toString().length : 10;
+          column.width = Math.max(column.width || 10, cellLength + 2);
+        }
+      });
     });
 
-    // 4. Simpan file
+    // 4. Konversi workbook ke file Excel (Blob)
+    const buffer = await workbook.xlsx.writeBuffer();
+    const excelFile = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    // 5. Simpan file
     const now = new Date().toISOString().split("T")[0];
-    saveAs(
-      excelFile,
-      `Data-Perawatan-Preventif/${id}_${formatDate(now, "D MMMM YYYY")}.xlsx`
-    );
+    saveAs(excelFile, `Data-Perawatan-Korektif/${id}_${now}.xlsx`);
   };
 
   function handleSetCurrentPage(newCurrentPage) {
@@ -266,13 +361,14 @@ export default function PerawatanPreventif({ onChangePage }) {
       };
     });
   }
-  const fetchDataPreventifByID = async (ID) => {
-    console.log("ini ID: " + ID);
+  const [idKO, setIdKO] = useState();
+
+  const fetchDataKorektifByID = async (ID) => {
     try {
       const data = await UseFetch(
-        API_LINK + "TransaksiPreventif/GetDataPerawatanPreventifToExport",
+        API_LINK + "Korektif/GetDataPerawatanKorektifToExport",
         {
-          p1: "pre_idPerawatan_mesin", // Sesuaikan dengan parameter yang benar
+          p1: "kor_id_perawatan_korektif", // Sesuaikan dengan parameter yang benar
           p2: ID, // Gunakan ID yang dipilih
         }
       );
@@ -286,19 +382,20 @@ export default function PerawatanPreventif({ onChangePage }) {
             Jadwal,
             ["Tanggal Aktual"]: Tanggal_Aktual,
             ["Tanggal Selesai"]: Tanggal_Selesai,
-            Created_Date,
+            ["Created Date"]: Created_Date,
             ["Modified Date"]: Modified_date,
+            ["Modified By"]: teknisi,
             ...rest
           } = item;
+          setIdKO(item["ID Perawatan Korektif"]);
+          getFullNameTeknisi(teknisi);
           return {
             ...rest,
             Jadwal: formatDate(Jadwal, "D MMMM YYYY"),
             "Tanggal Aktual": formatDate(Tanggal_Aktual, "D MMMM YYYY"),
-            "Tanggal Selesai":
-              Tanggal_Selesai != null
-                ? formatDate(Tanggal_Selesai, "D MMMM YYYY")
-                : "-",
+            "Tanggal Selesai": formatDate(Tanggal_Selesai, "D MMMM YYYY"),
             "Created Date": formatDate(Created_Date, "D MMMM YYYY"),
+            Teknisi: teknisi,
             "Modified Date": formatDate(Modified_date, "D MMMM YYYY"),
             Alignment: [
               "center",
@@ -312,7 +409,7 @@ export default function PerawatanPreventif({ onChangePage }) {
             ],
           };
         });
-        setDataPreventifById(formattedData);
+        setDataKorektifByID(formattedData);
       }
     } catch (error) {
       console.error("Fetch Data Export by ID Error:", error);
@@ -320,7 +417,10 @@ export default function PerawatanPreventif({ onChangePage }) {
     }
   };
   useEffect(() => {
-    if (DataPreventifById) {
+    if (DataKorektifByID) {
+      fetchDetailSP();
+      // console.log("105: ",teknisi);
+      console.log("TES PIC: ", DataKorektifByID[0]["Created By"]);
       Swal.fire({
         title: "Info",
         html: "Pilih Format <b>Excel</b> atau <b>PDF</b>",
@@ -332,13 +432,14 @@ export default function PerawatanPreventif({ onChangePage }) {
         cancelButtonColor: "red",
       }).then((result) => {
         if (result.isConfirmed) {
-          exportToExcelByID(DataPreventifById[0]["ID Perawatan Preventif"]);
+          console.log("BY ID: ", DataKorektifByID[0]);
+          exportToExcelByID(idKO);
         } else if (result.dismiss === Swal.DismissReason.cancel) {
-          exportToPDF(DataPreventifById[0]["ID Perawatan Preventif"]);
+          exportToPDF(idKO);
         }
       });
     }
-  }, [DataPreventifById]);
+  }, [DataKorektifByID]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -346,10 +447,11 @@ export default function PerawatanPreventif({ onChangePage }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventifToExport",
+          API_LINK + "Korektif/GetDataPerawatanKorektifToExportPIC",
           {
-            p1: "pre_idPerawatan_mesin", // Sesuaikan dengan parameter yang benar
+            p1: "kor_id_perawatan_korektif", // Sesuaikan dengan parameter yang benar
             p2: "",
+            p3: upt,
           }
         );
 
@@ -357,7 +459,7 @@ export default function PerawatanPreventif({ onChangePage }) {
         if (!data || data === "ERROR") {
           throw new Error("Gagal mengambil data export.");
         }
-        setDataPreventif(data);
+        setDataKorektif(data);
       } catch (error) {
         console.error("Fetch Data Export Error:", error);
         setIsError(true);
@@ -365,7 +467,7 @@ export default function PerawatanPreventif({ onChangePage }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventifPIC",
+          API_LINK + "Korektif/getDataPerawatanKorektifSelesaiPIC",
           currentFilter
         );
 
@@ -392,12 +494,11 @@ export default function PerawatanPreventif({ onChangePage }) {
               "Nama Mesin": Nama_Mesin,
               "Tindakan Perbaikan":
                 TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
-              Teknisi: Dikerjakan_Oleh == null ? "-" : Dikerjakan_Oleh,
-              "Tanggal Selesai": Tanggal_selesai
-                ? formatDate(Tanggal_selesai, "D MMMM YYYY")
-                : "-",
+              "Dikerjakan Oleh":
+                Dikerjakan_Oleh == null ? "-" : Dikerjakan_Oleh,
+              "Tanggal Selesai": formatDate(Tanggal_selesai, "D MMMM YYYY"),
               Status: Status_Pemeliharaan,
-              Aksi: ["Detail"],
+              Aksi: ["Detail", "Print"],
               Alignment: [
                 "center",
                 "center",
@@ -437,7 +538,7 @@ export default function PerawatanPreventif({ onChangePage }) {
         )}
         <div className="card">
           <div className="card-header bg-primary lead fw-medium text-white">
-            Riwayat Perawatan Preventif
+            Riwayat Perawatan Korektif
           </div>
           <div className="card-body p-4">
             <div className="flex-fill">
@@ -463,6 +564,13 @@ export default function PerawatanPreventif({ onChangePage }) {
                     defaultValue="[pre_tanggal_penjadwalan] asc"
                   />
                 </Filter>
+                <Button
+                  iconName="file-export"
+                  classType="success px-4 ms-1"
+                  label="Export to Excel"
+                  title="Cetak Laporan Perawatan Korektif"
+                  onClick={exportToExcel}
+                />
               </div>
             </div>
             <div className="mt-3">
@@ -474,7 +582,7 @@ export default function PerawatanPreventif({ onChangePage }) {
                     data={currentData}
                     onDetail={onChangePage}
                     onEdit={onChangePage}
-                    onPrint={fetchDataPreventifByID}
+                    onPrint={fetchDataKorektifByID}
                   />
                   <Paging
                     pageSize={PAGE_SIZE}
@@ -484,6 +592,91 @@ export default function PerawatanPreventif({ onChangePage }) {
                   />
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+        <br />
+        <div className="card p-5" ref={printRef} style={{ display: "block" }}>
+          <img
+            src={logo}
+            alt="Logo AstraTech"
+            className="p-3 ms-1"
+            style={{ height: "70px" }}
+          />
+          <h2 className="text-center">Laporan Perawatan Mesin Korektif</h2>
+          <hr />
+          <div className="col-lg-6  ">
+            <table className="table">
+              <tbody>
+                <tr>
+                  <th style={{ border: "none" }}>Nomor Laporan</th>
+                  <td style={{ border: "none" }}>: {idKO}</td>
+                </tr>
+                <tr>
+                  <th style={{ border: "none" }}>Tanggal Laporan</th>
+                  <td style={{ border: "none" }}>
+                    :{" "}
+                    {formatDate(
+                      new Date().toISOString().split("T")[0],
+                      "D MMMM YYYY"
+                    )}
+                  </td>
+                </tr>
+                <tr>
+                  <th style={{ border: "none" }}>Teknisi</th>
+                  <td style={{ border: "none" }}>
+                    : {teknisi ? teknisi.Full_Name : "-"}
+                  </td>
+                </tr>
+
+                <tr>
+                  <th style={{ border: "none" }}>Status</th>
+                  <td style={{ border: "none" }}>
+                    :{" "}
+                    {DataKorektifByID
+                      ? DataKorektifByID[0]["Status Pemeliharaan"]
+                      : "-"}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <hr />
+          <br />
+          <div className="card">
+            <div className="card-header bg-success lead fw-medium text-white">
+              Detail Perawatan Korektif
+            </div>
+            <div className="card-body">
+              <div className="mt-3">
+                {isLoading ? (
+                  <Loading />
+                ) : (
+                  <div className="d-flex flex-column">
+                    <Table
+                      data={
+                        DataKorektifByID != null
+                          ? DataKorektifByID
+                          : currentData
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="card m-3">
+              <div className="card-body p-4">
+                <Label
+                  forLabel="Detail_SP"
+                  title="Detail Sparepart yang digunakan: "
+                />
+                {fetchDataDetailSP && fetchDataDetailSP.length > 0 ? (
+                  <Table data={fetchDataDetailSP} />
+                ) : (
+                  <p>Tidak Ada Sparepart.</p>
+                )}
+              </div>
             </div>
           </div>
         </div>

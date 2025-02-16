@@ -14,7 +14,6 @@ import { saveAs } from "file-saver";
 import { ValidationError } from "yup";
 import ExcelJS from "exceljs";
 
-
 const inisialisasiData = [
   {
     Key: null,
@@ -54,15 +53,15 @@ export default function MasterUserIndex({ onChangePage }) {
       Swal.fire("Gagal", "Tidak ada data untuk dieksport!", "error");
       return;
     }
-  
+
     // 1. Buat workbook dan worksheet
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Data User");
-  
+
     // 2. Tambahkan header dengan styling
     const headers = Object.keys(dataExport[0]);
     worksheet.addRow(headers);
-  
+
     worksheet.getRow(1).eachCell((cell, colNumber) => {
       cell.font = { bold: true, color: { argb: "FFFFFF" } };
       cell.fill = {
@@ -77,23 +76,32 @@ export default function MasterUserIndex({ onChangePage }) {
         bottom: { style: "thin" },
         right: { style: "thin" },
       };
-  
-      worksheet.getColumn(colNumber).width = Math.max(headers[colNumber - 1].length + 5, 10);
+
+      worksheet.getColumn(colNumber).width = Math.max(
+        headers[colNumber - 1].length + 5,
+        10
+      );
     });
-  
+
     // 3. Hitung panjang maksimum setiap kolom untuk menentukan ukuran kolom
     const columnWidths = headers.map((_, colIndex) => {
-      return Math.max(
-        headers[colIndex].length,
-        ...dataExport.map((row) => (row[headers[colIndex]] ? row[headers[colIndex]].toString().length : 0))
-      ) + 2;
+      return (
+        Math.max(
+          headers[colIndex].length,
+          ...dataExport.map((row) =>
+            row[headers[colIndex]]
+              ? row[headers[colIndex]].toString().length
+              : 0
+          )
+        ) + 2
+      );
     });
-  
+
     // 4. Tambahkan data dan styling
     dataExport.forEach((item) => {
       const rowData = headers.map((header) => item[header] || ""); // Mengisi sel kosong dengan string kosong
       const row = worksheet.addRow(rowData);
-  
+
       row.eachCell((cell, colNumber) => {
         cell.border = {
           top: { style: "thin" },
@@ -101,25 +109,27 @@ export default function MasterUserIndex({ onChangePage }) {
           bottom: { style: "thin" },
           right: { style: "thin" },
         };
-  
+
         cell.alignment = { horizontal: "center", vertical: "middle" };
-  
+
         // Atur ukuran kolom berdasarkan data yang ada
-        worksheet.getColumn(colNumber).width = Math.max(columnWidths[colNumber - 1], 10);
+        worksheet.getColumn(colNumber).width = Math.max(
+          columnWidths[colNumber - 1],
+          10
+        );
       });
     });
-  
+
     // 5. Konversi workbook ke file Excel (Blob)
     const buffer = await workbook.xlsx.writeBuffer();
     const excelFile = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
-  
+
     // 6. Simpan file
     const now = new Date().toISOString().split("T")[0];
     saveAs(excelFile, `Data-User_${formatDate(now, "D MMMM YYYY")}.xlsx`);
   };
-  
 
   const searchQuery = useRef();
   const searchFilterSort = useRef();
@@ -341,7 +351,7 @@ export default function MasterUserIndex({ onChangePage }) {
               iconName="file-export"
               classType="success"
               title="Export"
-              label="Export to XLSX"
+              label="Export to Excel"
               onClick={exportToExcel}
             />
           </div>

@@ -195,26 +195,25 @@ export default function PerawatanPreventifTeknisiEdit({
   const handleEdit = async (e) => {
     e.preventDefault();
 
+    delete formData.upt;
     const payload = {
       p1: formData.ID_Perawatan_Preventif ?? null, // ID Perawatan Preventif
-      p2: formData.ID_Mesin ?? null,               // ID Mesin
-      p3: formData.Nama_Mesin ?? "",               // Nama Mesin
-      p4: formData.Tanggal_Penjadwalan ?? null,    // Tanggal Penjadwalan
-      p5: formData.Tanggal_Aktual ?? null,         // Tanggal Aktual
-      p6: formData.Tanggal_Selesai ?? null,        // Tanggal Selesai (NULL jika kosong)
-      p7: formData.Tindakan_Perbaikan ?? "",       // Tindakan Perbaikan
-      p8: formData.Catatan_Tambahan ?? "",         // Catatan Tambahan
-      p9: formData.Status_Pemeliharaan ?? "",      // Status Pemeliharaan
-      p10: formData.Created_By ?? "",              // Created By
-      p11: formData.Created_Date ?? null,          // Created Date
-      p12: formData.Updated_By ?? "-",             // Updated By (Default "-")
+      p2: formData.ID_Mesin ?? null, // ID Mesin
+      p3: formData.Nama_Mesin ?? "", // Nama Mesin
+      p4: formData.Tanggal_Penjadwalan ?? null, // Tanggal Penjadwalan
+      p5: formData.Tanggal_Aktual ?? null, // Tanggal Aktual
+      p6: formData.Tanggal_Selesai ?? null, // Tanggal Selesai (NULL jika kosong)
+      p7: formData.Tindakan_Perbaikan ?? "", // Tindakan Perbaikan
+      p8: formData.Catatan_Tambahan ?? "", // Catatan Tambahan
+      p9: formData.Status_Pemeliharaan ?? "", // Status Pemeliharaan
+      p10: formData.Created_By ?? "", // Created By
+      p11: formData.Created_Date ?? null, // Created Date
     };
-    
 
     let newErrors = { ...errors };
+    console.log("Payload: ", payload);
 
     if (formData.Status_Pemeliharaan !== "Selesai") {
-      console.log("Payload: ",payload); 
       delete newErrors.Tanggal_Selesai;
     } else {
       if (!formData.Tanggal_Selesai) {
@@ -237,38 +236,38 @@ export default function PerawatanPreventifTeknisiEdit({
       setErrors
     );
 
+    console.log("NIH ERROR NYA: ", errors);
     newErrors = { ...newErrors, ...validationErrors };
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      window.scrollTo(0, 0);
-      return;
-    }
+    if (Object.values(validationErrors).every((error) => !error)) {
+      setIsLoading(true);
+      setIsError((prevError) => ({ ...prevError, error: false }));
+      setErrors({});
 
-    setIsLoading(true);
-
-    try {
-      const data = await UseFetch(
-        API_LINK + "TransaksiPreventif/UpdatePerawatanPreventif",
-        payload
-      );
-
-      if (!data || data.error) {
-        throw new Error(
-          data?.message || "Terjadi kesalahan: Gagal menyimpan data."
+      try {
+        const data = await UseFetch(
+          API_LINK + "TransaksiPreventif/UpdatePerawatanPreventif",
+          payload
         );
-      }
 
-      Swal.fire("Sukses", "Data berhasil disimpan", "success");
-      onChangePage("index");
-    } catch (error) {
-      window.scrollTo(0, 0);
-      setErrors(newErrors);
-      setIsError({ error: true, message: error.message });
-    } finally {
-      setIsLoading(false);
-    }
+        if (!data || data.error) {
+          throw new Error(
+            data?.message || "Terjadi kesalahan: Gagal menyimpan data."
+          );
+        }
+
+        Swal.fire("Sukses", "Data berhasil disimpan", "success");
+        onChangePage("index");
+      } catch (error) {
+        window.scrollTo(0, 0);
+        setErrors(newErrors);
+        setIsError({ error: true, message: error.message });
+      } finally {
+        setIsLoading(false);
+      }
+    } else window.scrollTo(0, 0);
   };
+  const [uptN, setUPT] = useState();
 
   useEffect(() => {
     const fetchDataDetailSP = async () => {
@@ -309,9 +308,13 @@ export default function PerawatanPreventifTeknisiEdit({
             id: withID,
           }
         );
+        setUPT(data[0].upt);
         delete data[0].gambar_mesin;
         delete data[0].upt;
-        console.log(data);
+        delete data[0].Modified_By;
+        delete data[0].Modified_Date;
+
+        console.log("DATA: ", data);
 
         if (data === "ERROR" || data.length === 0) {
           throw new Error(
@@ -376,9 +379,12 @@ export default function PerawatanPreventifTeknisiEdit({
               <div className="col-lg-3">
                 <Label
                   forLabel="Tindakan_Perbaikan"
-                  title="TindakanPerbaikan"
+                  title="Tindakan Perbaikan"
                   data={formData.Tindakan_Perbaikan}
                 />
+              </div>
+              <div className="col-lg-4">
+                <Label forLabel="UPT" title="UPT" data={uptN} />
               </div>
               <div className="col-lg-4">
                 <Input
@@ -404,7 +410,7 @@ export default function PerawatanPreventifTeknisiEdit({
                   data={formData.Created_By}
                 />
               </div>
-              <div className="col-lg-3">
+              <div className="col-lg-4">
                 <Label
                   forLabel="Created_Date"
                   title="Tanggal Dibuat"
@@ -417,7 +423,11 @@ export default function PerawatanPreventifTeknisiEdit({
                   forInput="Tanggal_Selesai"
                   label="Tanggal Selesai"
                   className="form-control"
-                  value={formData.Tanggal_Selesai ? formatDate(formData.Tanggal_Selesai, "YYYY-MM-DD") : "-"}
+                  value={
+                    formData.Tanggal_Selesai
+                      ? formatDate(formData.Tanggal_Selesai, "YYYY-MM-DD")
+                      : "-"
+                  }
                   onChange={(e) => handleInputChange(e, "Tanggal_Selesai")}
                   errorMessage={errors.Tanggal_Selesai}
                 />
@@ -433,7 +443,7 @@ export default function PerawatanPreventifTeknisiEdit({
                   onChange={(e) => handleInputChange(e, "Status_Pemeliharaan")}
                 />
               </div>
-              <div className="col-lg-3">
+              <div className="col-lg-4">
                 <Input
                   type="textarea"
                   forInput="Catatan_Tambahan"
@@ -472,19 +482,19 @@ export default function PerawatanPreventifTeknisiEdit({
                 )}
               </div>
             </div>
-            <div className="float-end my-4 mx-1">
-              <Button
-                classType="secondary px-4 py-2"
-                label="KEMBALI"
-                onClick={() => onChangePage("index")}
-              />
-              <Button
-                classType="primary ms-2 px-4 py-2"
-                type="submit"
-                label="SIMPAN"
-              />
-            </div>
           </div>
+        </div>
+        <div className="float-end my-4 mx-1">
+          <Button
+            classType="secondary px-4 py-2"
+            label="KEMBALI"
+            onClick={() => onChangePage("index")}
+          />
+          <Button
+            classType="primary ms-2 px-4 py-2"
+            type="submit"
+            label="SIMPAN"
+          />
         </div>
       </form>
     </>

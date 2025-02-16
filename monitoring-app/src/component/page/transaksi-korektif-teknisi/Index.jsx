@@ -47,8 +47,8 @@ export default function KorektifTeknisi({ onChangePage }) {
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[kor_tanggal_pengajuan] desc",
-    status: "0", // Default ke status "Belum Selesai"
+    sort: "[kor_status_pemeliharaan] asc",
+    status: "", // Default ke status "Belum Selesai"
     itemPerPage: 10,
   });
 
