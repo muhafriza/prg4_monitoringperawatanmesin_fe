@@ -668,7 +668,11 @@ export default function RiwayatPreventif({ onChangePage }) {
                   forLabel="Detail_SP"
                   title="Detail Sparepart yang digunakan: "
                 />
-                <Table data={fetchDataDetailSP} />
+                {fetchDataDetailSP && fetchDataDetailSP.length > 0 ? (
+                  <Table data={fetchDataDetailSP} />
+                ) : (
+                  <p>Tidak Ada Sparepart.</p>
+                )}
               </div>
             </div>
           </div>

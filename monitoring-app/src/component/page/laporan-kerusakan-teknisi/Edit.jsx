@@ -7,6 +7,7 @@ import DropDown from "../../part/Dropdown";
 import Label from "../../part/Label";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
+import Swal from "sweetalert2";
 
 export default function PerawatanKorektifTeknisiEdit({ onChangePage, withID }) {
   const [formData, setFormData] = useState({
@@ -123,7 +124,7 @@ export default function PerawatanKorektifTeknisiEdit({ onChangePage, withID }) {
         Qty_Sparepart: payload.Qty_Sparepart,
       });
       if (!data) throw new Error("Gagal menyimpan data.");
-      alert("Data berhasil disimpan!");
+      Swal.fire("Success","Data berhasil disimpan!", "success");
       onChangePage("index");
     } catch (error) {
       setIsError({

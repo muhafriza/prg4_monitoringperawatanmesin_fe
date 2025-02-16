@@ -348,7 +348,7 @@ export default function MasterMesinIndex({ onChangePage }) {
               iconName="file-export"
               classType="success"
               title="Export"
-              label="Export to Excel"
+              label="Export to XLSX"
               onClick={exportToExcel}
             />
           </div>
