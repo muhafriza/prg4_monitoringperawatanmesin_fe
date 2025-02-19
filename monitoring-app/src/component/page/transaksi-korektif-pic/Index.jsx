@@ -61,10 +61,11 @@ export default function JadwalPerawatan({ onChangePage }) {
   const [currentData, setCurrentData] = useState(inisialisasiData);
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
-    query: upt,
+    query: '',
     sort: "[kor_tanggal_pengajuan] asc",
     status: "",
     itemPerPage: 10,
+    p6: upt
   });
 
   const searchQuery = useRef();
@@ -158,7 +159,7 @@ export default function JadwalPerawatan({ onChangePage }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "Korektif/GetDataPerawatanKorektif",
+          API_LINK + "Korektif/GetDataPerawatanKorektifPIC",
           currentFilter
         );
         console.log(upt);

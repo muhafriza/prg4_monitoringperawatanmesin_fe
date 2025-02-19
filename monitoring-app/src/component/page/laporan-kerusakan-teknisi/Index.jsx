@@ -31,11 +31,12 @@ const inisialisasiData = [
 ];
 
 const dataFilterSort = [
-  { Value: "[pre_tanggal_penjadwalan] asc", Text: "Tanggal Penjadwalan [↑]" },
-  { Value: "[pre_tanggal_penjadwalan] desc", Text: "Tanggal Penjadawalan [↓]" },
+  { Value: "[kor_tanggal_penjadwalan] asc", Text: "Tanggal Penjadwalan [↑]" },
+  { Value: "[kor_tanggal_penjadwalan] desc", Text: "Tanggal Penjadawalan [↓]" },
 ];
 
 const dataFilterStatus = [
+  { Value: "", Text: "--" },
   { Value: "Menunggu Perbaikan", Text: "Menunggu Perbaikan" },
   { Value: "Dalam Pengerjaan", Text: "Dalam Pengerjaan" },
   { Value: "Tertunda", Text: "Tertunda" },
@@ -322,13 +323,9 @@ export default function LaporanKerusakan({ onChangePage }) {
               ["Tanggal Perawatan"]: Tanggal_Perawatan,
               ...rest
             } = value;
-            const tanggal_pengajuan =
-              kor_tanggal_pengajuan != null
-                ? new Date(kor_tanggal_pengajuan).toLocaleDateString("id-ID")
-                : "-";
             return {
               ...rest,
-              "Tanggal Pengajuan": formatDate(tanggal_pengajuan, "D MMMM YYYY"),
+              "Tanggal Pengajuan": kor_tanggal_pengajuan != null ? formatDate(kor_tanggal_pengajuan, "D MMMM YYYY") : "-",
               "Dibuat Oleh": Dibuat || "-", // Pembuat data
               Status: Status,
               Aksi:

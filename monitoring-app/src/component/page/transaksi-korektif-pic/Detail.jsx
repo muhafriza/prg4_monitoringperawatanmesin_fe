@@ -86,12 +86,13 @@ export default function DetailJadwal({ onChangePage, withID }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "Korektif/DetailSPPerawatanKorektif",
+          API_LINK + "Korektif/DetailSPPerawatanMesin",
           {
             id: withID,
           }
         );
 
+        console.log(data);
         if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal mengambil data Sparepart.");
         } else {

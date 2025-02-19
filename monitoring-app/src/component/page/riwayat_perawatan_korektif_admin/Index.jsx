@@ -643,7 +643,7 @@ export default function RiwayatPreventif({ onChangePage }) {
           <br />
           <div className="card">
             <div className="card-header bg-success lead fw-medium text-white">
-              Riwayat Perawatan Preventif
+              Riwayat Perawatan Korektif
             </div>
             <div className="card-body">
               <div className="mt-3">

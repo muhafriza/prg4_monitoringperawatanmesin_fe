@@ -439,10 +439,11 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventifToExport",
+          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventifToExportPIC",
           {
             p1: "pre_idPerawatan_mesin", // Sesuaikan dengan parameter yang benar
             p2: "",
+            p3: upt
           }
         );
 

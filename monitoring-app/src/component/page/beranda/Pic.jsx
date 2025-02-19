@@ -123,7 +123,7 @@ export default function BerandaPIC(onChangePage) {
         {isLoading ? (
           <Loading />
         ) : (
-          <div className="card-body lead p-4">
+          <div className="card-body p-4">
             <Table data={mesin} />
             <Paging
               pageSize={PAGE_SIZE}

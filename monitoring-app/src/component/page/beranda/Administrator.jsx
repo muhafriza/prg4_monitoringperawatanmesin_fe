@@ -406,8 +406,8 @@ export default function BerandaAdministrator() {
       <div className="row row-equal-height mx-0 my-2 mb-4">
         {/* Komponen Laporan Kerusakan */}
         <div
-          className="col-lg-2 card-equal-height"
-          style={{ maxHeight: "40vh" }}
+          className="col-lg-2"
+          // style={{ height: "30vh" }}
         >
           <div className="card bg-primary card-equal-height mt-3 border-0 text-white">
             <div className="card-body bg-gradient rounded-2">

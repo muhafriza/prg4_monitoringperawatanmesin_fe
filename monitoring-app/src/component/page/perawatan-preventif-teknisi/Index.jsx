@@ -157,6 +157,8 @@ export default function PerawatanKorektif({ onChangePage }) {
           const formattedData = data.map((value) => {
             const {
               ID_Perawatan,
+              id_mesin,
+              UPT,
               Tanggal_Perawatan,
               Status_Pemeliharaan,
               Dibuat,
@@ -172,7 +174,9 @@ export default function PerawatanKorektif({ onChangePage }) {
             return {
               ...rest,
               "ID Perawatan": ID_Perawatan,
+              "ID Mesin": id_mesin,
               "Nama Mesin": Nama_Mesin,
+              "UPT": UPT,
               "Tindakan Perbaikan":
                 TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
               "Dibuat Oleh": Dibuat == null ? "-" : Dibuat,
