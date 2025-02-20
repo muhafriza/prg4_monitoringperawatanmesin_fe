@@ -47,8 +47,8 @@ export default function MasterSparepartIndex({ onChangePage }) {
     page: 1,
     query: "",
     sort: "[spa_nama_Sparepart] asc",
-    status: "Aktif",
-    itemPerPage: 5,
+    status: "Tersedia",
+    itemPerPage: 10,
   });
 
   const exportToExcel = async () => {
@@ -219,7 +219,7 @@ export default function MasterSparepartIndex({ onChangePage }) {
         }).then((data) => {
           if (data === "ERROR" || data.length === 0) setIsError(true);
           Swal.fire({
-            title: "Deleted!",
+            title: "Success!",
             text:
               "Status data Sparepart berhasil diubah menjadi " + data[0].Status,
             icon: "success",

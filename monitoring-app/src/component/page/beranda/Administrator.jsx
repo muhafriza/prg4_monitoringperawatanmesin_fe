@@ -65,14 +65,14 @@ export default function BerandaAdministrator() {
     page: 1,
     query: datenow,
     sort: "kor_tanggal_pengajuan",
-    status: "",
+    status: 'Dalam Pengerjaan',
     itemPerPage: 1000,
   });
   const [filterDataProsesPRE, setfilterDataProsesPRE] = useState({
     page: 1,
     query: datenow,
     sort: "pre_idPerawatan_preventif",
-    status: "",
+    status: 'Dalam Pengerjaan',
     itemPerPage: 1000,
   });
   const [laporanKerusakan, setLaporanKerusakan] = useState();
@@ -162,7 +162,7 @@ export default function BerandaAdministrator() {
       try {
         console.log("SEKARANG " + datenow);
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventif",
+          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventifDashboard",
           filterDataProsesPRE
         );
         console.log("ini Data Proses");
@@ -196,6 +196,7 @@ export default function BerandaAdministrator() {
               "Jadwal Perawatan": formatDate(Tanggal_Perawatan, "D MMMM YYYY"),
               Status: Status_Pemeliharaan,
               Alignment: [
+                "center",
                 "center",
                 "center",
                 "center",
@@ -241,6 +242,7 @@ export default function BerandaAdministrator() {
               ),
               Status: status,
               Alignment: [
+                "center",
                 "center",
                 "center",
                 "center",
@@ -428,7 +430,7 @@ export default function BerandaAdministrator() {
                 Kerusakan yang terakhir terjadi
               </span>
             </div>
-            <div className="card-body lead fw-small px-3 mb-3">
+            <div className="card-body fw-small px-3 mb-3">
               <Table data={dataKerusakanTerahir} />
               <Paging
                 pageSize={PAGE_SIZE}
@@ -448,7 +450,7 @@ export default function BerandaAdministrator() {
               Pelaksanaan Proses Perbaikan Preventif
             </span>
           </div>
-          <div className="card-body lead fw-small">
+          <div className="card-body fw-small">
             <Table
               data={
                 dataProsesPerbaikanPRE != null
@@ -470,7 +472,7 @@ export default function BerandaAdministrator() {
               Pelaksanaan Proses Perbaikan Korektif
             </span>
           </div>
-          <div className="card-body lead fw-small">
+          <div className="card-body fw-small">
             <Table
               data={
                 dataProsesPerbaikanKOR != null

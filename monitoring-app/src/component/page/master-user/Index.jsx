@@ -182,7 +182,7 @@ export default function MasterUserIndex({ onChangePage }) {
         }).then((data) => {
           if (data === "ERROR" || data.length === 0) setIsError(true);
           Swal.fire({
-            title: "Deleted!",
+            title: "Success!",
             text: "Status data User berhasil diubah menjadi " + data[0].Status,
             icon: "success",
           });
