@@ -302,7 +302,7 @@ export default function LaporanKerusakan({ onChangePage }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "Korektif/GetDataPerawatanKorektif",
+          API_LINK + "Korektif/GetDataPerawatanKorektifTeknisi",
           currentFilter
         );
 
@@ -311,7 +311,7 @@ export default function LaporanKerusakan({ onChangePage }) {
         } else if (data.length === 0) {
           setCurrentData(inisialisasiData);
         } else {
-          console.log(data);
+          console.log("324", data);
           const formattedData = data.map((value) => {
             const {
               ["Tanggal Pengajuan"]: kor_tanggal_pengajuan,
@@ -323,13 +323,34 @@ export default function LaporanKerusakan({ onChangePage }) {
               ["Tanggal Perawatan"]: Tanggal_Perawatan,
               ...rest
             } = value;
+
+            let rowStyle = null;
+
+            const today = new Date();
+            const jadwal = new Date(Tanggal_Perawatan);
+            today.setHours(0, 0, 0, 0);
+            jadwal.setHours(0, 0, 0, 0);
+
+            if (Status !== "Selesai" && Status !== "Dalam Pengerjaan") {
+              const diffInDays = Math.ceil(
+                (jadwal - today) / (1000 * 60 * 60 * 24)
+              );
+              if (diffInDays < 0 || Tanggal_Perawatan === null) {
+                rowStyle = { backgroundColor: "red", border: "3px solid red" };
+              }else if(diffInDays === 1 || diffInDays === 0 || diffInDays === 2){
+                rowStyle = { backgroundColor: "orange", border: "3px solid orange" };
+              }
+            }
             return {
               ...rest,
-              "Tanggal Pengajuan": kor_tanggal_pengajuan != null ? formatDate(kor_tanggal_pengajuan, "D MMMM YYYY") : "-",
+              "Tanggal Pengajuan":
+                kor_tanggal_pengajuan != null
+                  ? formatDate(kor_tanggal_pengajuan, "D MMMM YYYY")
+                  : "-",
               "Dibuat Oleh": Dibuat || "-", // Pembuat data
               Status: Status,
-              Aksi:
-                Status != "Selesai" ? ["Detail", "Edit"] : ["Detail"], // Tombol aksi, bisa disesuaikan dengan tombol yang ada
+              Aksi: Status != "Selesai" ? ["Detail", "Edit"] : ["Detail"], // Tombol aksi, bisa disesuaikan dengan tombol yang ada
+              rowStyle,
               Alignment: [
                 "center",
                 "center",
@@ -411,11 +432,14 @@ export default function LaporanKerusakan({ onChangePage }) {
                 ) : (
                   <div className="d-flex flex-column">
                     <Table
-                      data={currentData}
                       onToggle={handleSetStatus}
                       onDetail={onChangePage}
                       onEdit={onChangePage}
                       onPrint={ExportByID}
+                      data={currentData.map(({ rowStyle, ...rest }) => rest)}
+                      rowStyles={(row, index) =>
+                        currentData[index]?.rowStyle || {}
+                      }
                     />
                     <Paging
                       pageSize={PAGE_SIZE}
@@ -429,7 +453,7 @@ export default function LaporanKerusakan({ onChangePage }) {
             </div>
           </div>
         </div>
-      </div>      
+      </div>
     </>
   );
 }

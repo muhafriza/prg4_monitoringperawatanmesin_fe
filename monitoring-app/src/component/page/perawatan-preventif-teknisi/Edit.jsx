@@ -11,6 +11,7 @@ import Alert from "../../part/Alert";
 import { object, string } from "yup";
 import Swal from "sweetalert2";
 import { DateTime } from "luxon";
+import Table from "../../part/Table";
 
 export default function PerawatanPreventifTeknisiEdit({
   onChangePage,
@@ -52,6 +53,13 @@ export default function PerawatanPreventifTeknisiEdit({
 
   const [statusOptions, setStatusOptions] = useState([
     { Value: "Menunggu Perbaikan", Text: "Menunggu Perbaikan" },
+    { Value: "Dalam Pengerjaan", Text: "Dalam Pengerjaan" },
+    { Value: "Tertunda", Text: "Tertunda" },
+    { Value: "Selesai", Text: "Selesai" },
+    { Value: "Batal", Text: "Batal" },
+  ]);
+
+  const [statusOptions2, setStatusOptions2] = useState([
     { Value: "Dalam Pengerjaan", Text: "Dalam Pengerjaan" },
     { Value: "Tertunda", Text: "Tertunda" },
     { Value: "Selesai", Text: "Selesai" },
@@ -210,6 +218,7 @@ export default function PerawatanPreventifTeknisiEdit({
       p11: formData.Created_Date ?? null, // Created Date
     };
 
+
     let newErrors = { ...errors };
     console.log("Payload: ", payload);
 
@@ -284,7 +293,16 @@ export default function PerawatanPreventifTeknisiEdit({
         if (data === "ERROR" || data.length === 0) {
           throw new Error("Terjadi kesalahan: Gagal mengambil data Sparepart.");
         } else {
-          setFetchDataDetailSP(data); // Menyimpan hasil fetchDetailSP ke state
+          const formattedData = data.map((item) => {
+            const { Nama_Sparepart, Jumlah, ...rest } = item;
+            return {
+              ...rest,
+              "Nama Sparepart": Nama_Sparepart,
+              Jumlah: Jumlah,
+              Alignment: ["center", "center", "center"],
+            };
+          });
+          setFetchDataDetailSP(formattedData); // Menyimpan hasil fetchDetailSP ke state
         }
       } catch (error) {
         window.scrollTo(0, 0);
@@ -434,7 +452,7 @@ export default function PerawatanPreventifTeknisiEdit({
               </div>
               <div className="col-lg-3">
                 <DropDown
-                  arrData={statusOptions}
+                  arrData={formData.Status_Pemeliharaan !== "Menunggu Perbaikan" ? statusOptions2 : statusOptions}
                   type="pilih"
                   label="Status Pemeliharaan"
                   forInput="Status_Pemeliharaan"
@@ -454,29 +472,13 @@ export default function PerawatanPreventifTeknisiEdit({
                   errorMessage={errors.Catatan_Tambahan}
                 />
               </div>
-              <div className="col-lg-3">
+              <div className="row mt-3">
                 <Label
                   forLabel="Detail_SP"
                   title="Detail Sparepart yang digunakan: "
                 ></Label>
                 {fetchDataDetailSP && fetchDataDetailSP.length > 0 ? (
-                  <ul>
-                    {fetchDataDetailSP.map((item, index) => (
-                      <li key={index}>
-                        <strong>Sparepart {index + 1}:</strong>
-                        <ul>
-                          {Object.entries(item).map(([key, value]) => (
-                            <li key={key}>
-                              {key.replace(/_/g, " ")}:{" "}
-                              {typeof value === "object" && value !== null
-                                ? JSON.stringify(value) // Render objek sebagai string
-                                : value}
-                            </li>
-                          ))}
-                        </ul>
-                      </li>
-                    ))}
-                  </ul>
+                  <Table data={fetchDataDetailSP} />
                 ) : (
                   <p>Tidak Ada Sparepart.</p>
                 )}

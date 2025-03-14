@@ -136,10 +136,9 @@ export default function IndexLaporanKerusakan({ onChangePage }) {
           console.log(data);
           const formattedData = data.map((value) => {
             const { ["Tanggal Pengajuan"]: kor_tanggal_pengajuan, ["Status Pemeliharaan"]:Status, Dibuat, TindakanPerbaikan, kor_sparepart_diganti, mes_id_mesin,["Tanggal Perawatan"]: Tanggal_Perawatan, ...rest } = value;
-            const tanggal_pengajuan = kor_tanggal_pengajuan != null ? new Date(kor_tanggal_pengajuan).toLocaleDateString("id-ID") : '-';
             return {
               ...rest,
-              "Tanggal Pengajuan": formatDate(tanggal_pengajuan, "D MMMM YYYY"),
+              "Tanggal Pengajuan": kor_tanggal_pengajuan != "" ? formatDate(kor_tanggal_pengajuan, "D MMMM YYYY") : "-",
               "Dibuat Oleh": Dibuat || "-",  // Pembuat data
               "Status Pemeliharaan": Status,
               Aksi: ["Detail"],  // Tombol aksi, bisa disesuaikan dengan tombol yang ada

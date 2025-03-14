@@ -34,6 +34,12 @@ export default function PerawatanKorektifTeknisiEdit({ onChangePage, withID }) {
     { Value: "Selesai", Text: "Selesai" },
     { Value: "Batal", Text: "Batal" },
   ];
+  const statusOptions2 = [
+    { Value: "Dalam Pengerjaan", Text: "Dalam Pengerjaan" },
+    { Value: "Pending", Text: "Pending" },
+    { Value: "Selesai", Text: "Selesai" },
+    { Value: "Batal", Text: "Batal" },
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -113,19 +119,23 @@ export default function PerawatanKorektifTeknisiEdit({ onChangePage, withID }) {
     try {
       const data = await UseFetch(`${API_LINK}Korektif/UpdateKorektif`, {
         ID_Perawatan_Korektif: withID,
-        Tanggal_Penjadwalan: payload.Tanggal_Penjadwalan,
-        Tanggal_Aktual: payload.Tanggal_Aktual,
-        Tanggal_Pengajuan: payload.Tanggal_Pengajuan,
-        Deskripsi_Kerusakan: payload.Deskripsi_Kerusakan,
-        Tindakan_Perbaikan: payload.Tindakan_Perbaikan,
-        Sparepart_Diganti: payload.Sparepart_Diganti,
-        Status_Pemeliharaan: payload.Status_Pemeliharaan,
+        Tanggal_Penjadwalan: payload.Tanggal_Penjadwalan ?? "",
+        Tanggal_Aktual: payload.Tanggal_Aktual ?? "",
+        Tanggal_Pengajuan: payload.Tanggal_Pengajuan ?? "",
+        Deskripsi_Kerusakan: payload.Deskripsi_Kerusakan ?? "",
+        Tindakan_Perbaikan: payload.Tindakan_Perbaikan ?? "",
+        Sparepart_Diganti: payload.Sparepart_Diganti ?? "",
+        Status_Pemeliharaan: payload.Status_Pemeliharaan ?? "",
         Sparepart_Kode: payload.Sparepart_Kode,
         Qty_Sparepart: payload.Qty_Sparepart,
       });
-      if (!data) throw new Error("Gagal menyimpan data.");
-      Swal.fire("Success","Data berhasil disimpan!", "success");
-      onChangePage("index");
+      console.log(132, data);
+      if (!data) {
+        throw new Error("Gagal menyimpan data.");
+      }else{
+        Swal.fire("Success", "Data berhasil disimpan!", "success");
+        onChangePage("index");
+      }
     } catch (error) {
       setIsError({
         error: true,
@@ -221,7 +231,12 @@ export default function PerawatanKorektifTeknisiEdit({ onChangePage, withID }) {
               </div>
               <div className="col-lg-3">
                 <DropDown
-                  arrData={statusOptions}
+                  arrData={
+                    formData.Status_Pemeliharaan !== "Menunggu Perbaikan" &&
+                    formData.Status_Pemeliharaan !== "Pending"
+                      ? statusOptions2
+                      : statusOptions
+                  }
                   type="select"
                   label="Status Pemeliharaan"
                   forInput="Status_Pemeliharaan"
@@ -294,18 +309,18 @@ export default function PerawatanKorektifTeknisiEdit({ onChangePage, withID }) {
             </div>
           </div>
         </div>
-            <div className="float-end my-4 mx-1">
-              <Button
-                classType="secondary px-4 py-2"
-                label="KEMBALI"
-                onClick={() => onChangePage("index")}
-              />
-              <Button
-                classType="primary ms-2 px-4 py-2"
-                type="submit"
-                label="SIMPAN"
-              />
-            </div>
+        <div className="float-end my-4 mx-1">
+          <Button
+            classType="secondary px-4 py-2"
+            label="KEMBALI"
+            onClick={() => onChangePage("index")}
+          />
+          <Button
+            classType="primary ms-2 px-4 py-2"
+            type="submit"
+            label="SIMPAN"
+          />
+        </div>
       </form>
     </>
   );

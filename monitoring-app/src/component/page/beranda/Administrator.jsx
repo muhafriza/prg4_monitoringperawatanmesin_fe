@@ -48,7 +48,7 @@ export default function BerandaAdministrator() {
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
   const [dataKerusakanTerahir, setDataKerusakanTerahir] =
-    useState(inisialisasiData);
+    useState(inisialisasiDataProses);
   const [dataProsesPerbaikanPRE, setDataProsesPerbaikanPRE] =
     useState(inisialisasiData);
   const [dataProsesPerbaikanKOR, setDataProsesPerbaikanKOR] = useState(
@@ -325,10 +325,9 @@ export default function BerandaAdministrator() {
           API_LINK + "Korektif/KerusakanTerakhirTerjadi",
           filterKerusakanTerakhir
         );
-        console.log("7 HARI TERAKHIR: ", data);
-
+        
         if (data === "ERROR" || data.length === 0) {
-          throw new Error("Terjadi kesalahan: Gagal mengambil data stok.");
+          console.log("TIDAK ADA LAPORAN KERUSAKAN 7 HARI TERAKHIR: ",data );
         } else {
           const formattedData = data.map((value) => ({
             ...value,
@@ -553,7 +552,7 @@ export default function BerandaAdministrator() {
                         },
                         title: {
                           display: true,
-                          text: "Stok Sparepart",
+                          text: "Stok Sparepart yang Menipis",
                         },
                       },
                       scales: {

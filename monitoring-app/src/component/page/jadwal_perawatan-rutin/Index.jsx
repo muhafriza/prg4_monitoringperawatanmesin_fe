@@ -45,7 +45,7 @@ export default function JadwalPerawatan({ onChangePage }) {
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[pre_tanggal_penjadwalan] asc",
+    sort: "[pre_created_date] desc",
     status: "Menunggu Perbaikan",
     itemPerPage: 10,
   });

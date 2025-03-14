@@ -10,6 +10,7 @@ import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
+import Icon from "../../part/Icon";
 
 const inisialisasiData = [
   {
@@ -42,10 +43,11 @@ export default function PerawatanKorektif({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
+  const [preventif, setPreventif] = useState([]);
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[pre_status_pemeliharaan] asc",
+    sort: "[pre_tanggal_penjadwalan] asc",
     status: "",
     itemPerPage: 10,
   });
@@ -63,8 +65,6 @@ export default function PerawatanKorektif({ onChangePage }) {
       };
     });
   }
-
-  
 
   function formatDate(dateString, format) {
     const date = new Date(dateString);
@@ -144,7 +144,7 @@ export default function PerawatanKorektif({ onChangePage }) {
 
       try {
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventif",
+          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventifTeknisi",
           currentFilter
         );
 
@@ -154,6 +154,7 @@ export default function PerawatanKorektif({ onChangePage }) {
           setCurrentData(inisialisasiData);
         } else {
           console.log(data);
+          setPreventif(data);
           const formattedData = data.map((value) => {
             const {
               ID_Perawatan,
@@ -166,23 +167,38 @@ export default function PerawatanKorektif({ onChangePage }) {
               Nama_Mesin,
               ...rest
             } = value;
+            let rowStyle=null;
             const aksi =
-              Status_Pemeliharaan === "Selesai"
+              Status_Pemeliharaan === "Selesai" && Status_Pemeliharaan === "Batal"
                 ? ["Detail"]
                 : ["Detail", "Edit"];
+            const today = new Date();
+            const jadwal = new Date(Tanggal_Perawatan);
+            today.setHours(0, 0, 0, 0);
+            jadwal.setHours(0, 0, 0, 0);
+
+            if (Status_Pemeliharaan !== "Selesai" && Status_Pemeliharaan !== "Dalam Pengerjaan") {
+              const diffInDays = Math.ceil((jadwal - today) / (1000 * 60 * 60 * 24));
+              if(diffInDays < 0){
+                rowStyle = { backgroundColor: "red", border: "3px solid red" };
+              }else if(diffInDays === 1 || diffInDays === 0){
+                rowStyle = { backgroundColor: "orange", border: "3px solid orange" };
+              }
+            }
 
             return {
               ...rest,
               "ID Perawatan": ID_Perawatan,
               "ID Mesin": id_mesin,
               "Nama Mesin": Nama_Mesin,
-              "UPT": UPT,
+              UPT: UPT,
               "Tindakan Perbaikan":
                 TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
               "Dibuat Oleh": Dibuat == null ? "-" : Dibuat,
               "Jadwal Perawatan": formatDate(Tanggal_Perawatan, "D MMMM YYYY"),
               Status: Status_Pemeliharaan,
               Aksi: aksi,
+              rowStyle,
               Alignment: [
                 "center",
                 "CENTER",
@@ -258,24 +274,21 @@ export default function PerawatanKorektif({ onChangePage }) {
               </div>
             </div>
             <div className="mt-3">
-              {isLoading ? (
-                <Loading />
-              ) : (
-                <div className="d-flex flex-column">
-                  <Table
-                    data={currentData}
-                    onToggle={handleSetStatus}
-                    onDetail={onChangePage}
-                    onEdit={onChangePage}
+              <div className="d-flex flex-column">
+                <Table
+                  onToggle={handleSetStatus}
+                  onDetail={onChangePage}
+                  onEdit={onChangePage}
+                  data={currentData.map(({ rowStyle, ...rest }) => rest)}
+                  rowStyles={(row, index) => currentData[index]?.rowStyle || {}}
                   />
-                  <Paging
-                    pageSize={PAGE_SIZE}
-                    pageCurrent={currentFilter.page}
-                    totalData={currentData[0]["Count"]}
-                    navigation={handleSetCurrentPage}
-                  />
-                </div>
-              )}
+                <Paging
+                  pageSize={PAGE_SIZE}
+                  pageCurrent={currentFilter.page}
+                  totalData={currentData[0]["Count"]}
+                  navigation={handleSetCurrentPage}
+                />
+              </div>
             </div>
           </div>
         </div>

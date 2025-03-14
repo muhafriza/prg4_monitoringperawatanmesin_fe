@@ -76,6 +76,7 @@ export default function RiwayatPreventif({ onChangePage }) {
   const searchFilterSort = useRef();
   const searchFilterStatus = useRef();
   const [fetchDataDetailSP, setFetchDataDetailSP] = useState(null);
+  const [fetchDataDetailSPbyID, setFetchDataDetailSPbyID] = useState(null);
 
   const exportToExcel = async () => {
     if (!dataPrevetif || dataPrevetif.length === 0) {
@@ -86,63 +87,53 @@ export default function RiwayatPreventif({ onChangePage }) {
 
     // 1. Buat workbook dan worksheet
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Data Perawatan Preventif");
+    const worksheetPreventif = workbook.addWorksheet(
+      "Data Perawatan Preventif"
+    );
+    const worksheetSparepart = workbook.addWorksheet("Detail Sparepart");
 
-    // 2. Tambahkan header dengan styling, border, dan center alignment
-    const headers = Object.keys(dataPrevetif[0]);
-    worksheet.addRow(headers);
+    // Fungsi untuk menambahkan data ke worksheet
+    const addDataToWorksheet = (worksheet, data) => {
+      const headers = Object.keys(data[0]);
+      worksheet.addRow(headers);
 
-    worksheet.getRow(1).eachCell((cell, colNumber) => {
-      cell.font = { bold: true, color: { argb: "FFFFFF" } };
-      cell.fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "0074cc" },
-      };
-      cell.alignment = { horizontal: "center", vertical: "middle" };
-      cell.border = {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        bottom: { style: "thin" },
-        right: { style: "thin" },
-      };
-
-      // Atur ukuran kolom nomor 1 menjadi 10
-      if (colNumber === 1) {
-        worksheet.getColumn(colNumber).width = 5;
-      }
-
-      // Atur ukuran kolom nomor 2 berdasarkan header
-      if (colNumber === 2) {
-        worksheet.getColumn(colNumber).width =
-          headers[colNumber - 1].length + 5;
-      }
-    });
-
-    // 3. Tambahkan data dengan border di setiap sel dan atur ukuran kolom berdasarkan isi
-    dataPrevetif.forEach((item) => {
-      const row = worksheet.addRow(Object.values(item));
-      row.eachCell((cell, colNumber) => {
+      worksheet.getRow(1).eachCell((cell, colNumber) => {
+        cell.font = { bold: true, color: { argb: "FFFFFF" } };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "0074cc" },
+        };
+        cell.alignment = { horizontal: "center", vertical: "middle" };
         cell.border = {
           top: { style: "thin" },
           left: { style: "thin" },
           bottom: { style: "thin" },
           right: { style: "thin" },
         };
-
-        // Atur alignment center untuk kolom nomor 1
-        if (colNumber === 1) {
-          cell.alignment = { horizontal: "center", vertical: "middle" };
-        }
-
-        // Atur ukuran kolom berdasarkan panjang isi, kecuali kolom nomor 1 dan 2
-        if (colNumber !== 1 && colNumber !== 2) {
-          const column = worksheet.getColumn(colNumber);
-          const cellLength = cell.value ? cell.value.toString().length : 10;
-          column.width = Math.max(column.width || 10, cellLength + 2);
-        }
+        worksheet.getColumn(colNumber).width = Math.max(
+          headers[colNumber - 1].length + 5,
+          10
+        );
       });
-    });
+
+      data.forEach((item) => {
+        const row = worksheet.addRow(Object.values(item));
+        row.eachCell((cell) => {
+          cell.border = {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+          };
+        });
+      });
+    };
+
+    // Tambahkan data
+    addDataToWorksheet(worksheetPreventif, dataPrevetif);
+    addDataToWorksheet(worksheetSparepart, fetchDataDetailSP);
+
 
     // 4. Konversi workbook ke file Excel (Blob)
     const buffer = await workbook.xlsx.writeBuffer();
@@ -175,7 +166,8 @@ export default function RiwayatPreventif({ onChangePage }) {
     });
   };
 
-  const fetchDetailSP = async () => {
+  const fetchDetailSPbyID = async () => {
+    console.log("Detail SP by ID: ", IDpre);
     try {
       const data = await UseFetch(
         API_LINK + "TransaksiPreventif/DetailSPPerawatanMesin",
@@ -184,7 +176,7 @@ export default function RiwayatPreventif({ onChangePage }) {
         }
       );
 
-      console.log("187: ", data[0]);
+      console.log("179: ", data[0]);
       if (data === "ERROR" || data.length === 0) {
         console.log("189: ", isError);
         throw new Error(
@@ -200,9 +192,39 @@ export default function RiwayatPreventif({ onChangePage }) {
             Alignment: ["center", "center", "center"],
           };
         });
-        setFetchDataDetailSP(formattedData);
+        setFetchDataDetailSPbyID(formattedData);
       }
     } catch (error) {
+      window.scrollTo(0, 0);
+      setIsError((prevError) => ({
+        ...prevError,
+        error: true,
+        message: error.message,
+      }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const fetchDetailSP = async () => {
+    try {
+      const data = await UseFetch(
+        API_LINK + "TransaksiPreventif/getdetailSparepartPerawatanPreventifSelesai",
+        {
+          p1: "Selesai",
+        }
+      );
+      console.log(223, data);
+
+      if (data === "ERROR" || data.length === 0) {
+        console.log("189: ", isError);
+        throw new Error(
+          "Terjadi kesalahan: Gagal mengambil data Sparepart. Line 189"
+        );
+      } else {
+        setFetchDataDetailSP(data);
+      }
+    } catch (error) {
+      console.log("P", error)
       window.scrollTo(0, 0);
       setIsError((prevError) => ({
         ...prevError,
@@ -411,8 +433,10 @@ export default function RiwayatPreventif({ onChangePage }) {
     }
   };
   useEffect(() => {
+    fetchDetailSP();
     if (DataPreventifById) {
-      fetchDetailSP();
+      console.log(436, DataPreventifById);
+      fetchDetailSPbyID();
       Swal.fire({
         title: "Info",
         html: "Pilih Format <b>Excel</b> atau <b>PDF</b>",
@@ -501,7 +525,7 @@ export default function RiwayatPreventif({ onChangePage }) {
               ],
             };
           });
-          console.log(currentData.Key);
+          // console.log(526, currentData.Key);
           setCurrentData(formattedData);
         }
       } catch (error) {
@@ -676,8 +700,8 @@ export default function RiwayatPreventif({ onChangePage }) {
                     forLabel="Detail_SP"
                     title="Detail Sparepart yang digunakan: "
                   />
-                  {fetchDataDetailSP && fetchDataDetailSP.length > 0 ? (
-                    <Table data={fetchDataDetailSP} />
+                  {fetchDataDetailSPbyID && fetchDataDetailSPbyID.length > 0 ? (
+                    <Table data={fetchDataDetailSPbyID} />
                   ) : (
                     <p>Tidak Ada Sparepart.</p>
                   )}
