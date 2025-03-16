@@ -107,7 +107,13 @@ export default function DetailRiwayatKorektifPIC({ onChangePage, withID }) {
         if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal mengambil data Sparepart.");
         } else {
-          setFetchDataDetailSP(data); // Menyimpan hasil fetchDetailSP ke state
+          const formattedData = data.map((value) => {
+            const { Key, ...rest } = value;
+            return {
+              ...rest,
+            };
+          });
+          setFetchDataDetailSP(formattedData); // Menyimpan hasil fetchDetailSP ke state
         }
       } catch (error) {
         window.scrollTo(0, 0);
@@ -162,34 +168,6 @@ export default function DetailRiwayatKorektifPIC({ onChangePage, withID }) {
                   )
                 }
               />
-              <div className="col-lg-8">
-                <Label
-                  forLabel="Detail_SP"
-                  title="Detail Sparepart yang digunakan: "
-                ></Label>
-                {fetchDataDetailSP && fetchDataDetailSP.length > 0 ? (
-                  <ul>
-                    {fetchDataDetailSP.map((item, index) => (
-                      <li key={index}>
-                        <strong>Sparepart {index + 1}:</strong>
-                        <ul>
-                          {Object.entries(item).map(([key, value]) => (
-                            <li key={key}>
-                              {key.replace(/_/g, " ")}:{" "}
-                              {typeof value === "object" && value !== null
-                                ? JSON.stringify(value) // Render objek sebagai string
-                                : value}
-                            </li>
-                          ))}
-                        </ul>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>Tidak Ada Sparepart.</p>
-                )}
-                <hr />
-              </div>
             </div>
             <div className="col-lg-8">
               <div className="row">
@@ -279,6 +257,38 @@ export default function DetailRiwayatKorektifPIC({ onChangePage, withID }) {
                 </div>
               </div>
             </div>
+          </div>
+          <div className="row">
+            <Label
+              forLabel="Detail_SP"
+              title="Detail Sparepart yang digunakan: "
+            ></Label>
+            {fetchDataDetailSP && fetchDataDetailSP.length > 0 ? (
+              <table className="table table-hovered table-striped table-bordered">
+                <thead align="center">
+                  <tr>
+                    {Object.keys(fetchDataDetailSP[0]).map((key) => (
+                      <th key={key}>{key.replace(/_/g, " ")}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody align="center">
+                  {fetchDataDetailSP.map((item, index) => (
+                    <tr key={index}>
+                      {Object.values(item).map((value, idx) => (
+                        <td key={idx}>
+                          {typeof value === "object" && value !== null
+                            ? JSON.stringify(value) // Render objek sebagai string
+                            : value}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p>Tidak Ada Sparepart.</p>
+            )}
           </div>
         </div>
       </div>
