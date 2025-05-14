@@ -378,7 +378,7 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         throw new Error("Gagal mengambil data export berdasarkan ID.");
       } else {
         const formattedData = data.map((item) => {
-          const {
+          const { 
             Jadwal,
             ["Tanggal Aktual"]: Tanggal_Aktual,
             ["Tanggal Selesai"]: Tanggal_Selesai,
