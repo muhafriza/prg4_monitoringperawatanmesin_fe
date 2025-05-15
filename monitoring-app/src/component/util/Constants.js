@@ -1,4 +1,4 @@
-export const APPLICATION_NAME = "Sistem Informasi Produksi";
+export const APPLICATION_NAME = "Sistem Informasi Maintenance Nesin";
 export const APPLICATION_ID = "APP60";
 export const ROOT_LINK = "http://localhost:5173";
 export const API_LINK = import.meta.env.VITE_API_LINK;

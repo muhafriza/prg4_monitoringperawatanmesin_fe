@@ -188,7 +188,7 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
       });
   
       const now = new Date().toISOString().split("T")[0];
-      saveAs(excelFile, `Data-Perawatan-Preventif/${id}_${formatDate(now, "D MMMM YYYY")}.xlsx`);
+      saveAs(excelFile, `Data-Perawatan-Preventif/${formatDate(now, "D MMMM YYYY")}.xlsx`);
     };
   
     fetchDataAndExport();
@@ -437,7 +437,7 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         }
       );
 
-      if (data === "ERROR" || data.length === 0) {
+      if (!data) {
         console.log("189: ", isError);
         throw new Error(
           "Terjadi kesalahan: Gagal mengambil data Sparepart. Line 189"
@@ -524,10 +524,10 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
 
       console.log("90: ", data[0]);
 
-      if (data === "ERROR" || data.length === 0) {
+      if (data === "ERROR") {
         console.log("189: ", isError);
         throw new Error(
-          "Terjadi kesalahan: Gagal mengambil data Sparepart. Line 189"
+          "Terjadi kesalahan: Gagal mengambil data Sparepart. Line 1890"
         );
       } else {
         const formattedData = data.map((item, index) => ({
@@ -675,6 +675,7 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
       setIsError(true);
     }
   };
+  console.log("tesssss", isError);
 
   return (
     <>
