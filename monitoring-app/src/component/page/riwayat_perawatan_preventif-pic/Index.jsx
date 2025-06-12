@@ -83,7 +83,6 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
 
   useEffect(() => {
     if (fetchDataDetailSPbyIDExcel !== null) {
-      console.log("263Ts: ", fetchDataDetailSPbyIDExcel);
     }
   }, [fetchDataDetailSPbyIDExcel]);
 
@@ -94,7 +93,6 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         const { Key, Alignment, ...rest } = item;
         return { ...rest };
       });
-      console.log("MASUK ", formattedData);
       setDetailPreventifByIdExcel(formattedData[0]);
     }
   }, [DataPreventifById]);
@@ -102,12 +100,6 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
   useEffect(() => {
     const fetchDataAndExport = async () => {
       fetchDetailSPbyID();
-      // const formattedData = DataPreventifById.map((item) => {
-      //   const { Key, Alignment, ...rest } = item;
-      //   return { ...rest };
-      // });
-      console.log("ByID: ", DataPreventifById);
-      // console.log("ddddddd: ", formattedData);
       if (DataPreventifById != null) {
         const result = await Swal.fire({
           title: "Info",
@@ -174,7 +166,6 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         });
       };
   
-      console.log("263Excel: ", fetchDataDetailSPbyIDExcel);
       addDataToWorksheet(worksheetPreventif, [DetailPreventifByIdExcel]);
   
       if (fetchDataDetailSPbyIDExcel !== null) {
@@ -198,7 +189,6 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
 
   const exportToExcel = async () => {
     if (!dataPrevetif || dataPrevetif.length === 0) {
-      console.log(dataPrevetif);
       Swal.fire("Gagal", "Tidak ada data untuk dieksport!", "error");
       return;
     }
@@ -249,7 +239,6 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
     };
 
     // Tambahkan data
-    console.log("176: ", fetchDataDetailSP);
     addDataToWorksheet(worksheetPreventif, dataPrevetif);
     addDataToWorksheet(worksheetSparepart, fetchDataDetailSP);
 
@@ -342,7 +331,6 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
       });
     };
 
-    console.log("263Excel: ", fetchDataDetailSPbyIDExcel);
     addDataToWorksheet(worksheetPreventif, [DetailPreventifByIdExcel]);
 
     if (fetchDataDetailSPbyIDExcel !== null) {
@@ -438,7 +426,6 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
       );
 
       if (!data) {
-        console.log("189: ", isError);
         throw new Error(
           "Terjadi kesalahan: Gagal mengambil data Sparepart. Line 189"
         );
@@ -446,7 +433,6 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         setFetchDataDetailSP(data);
       }
     } catch (error) {
-      console.log("P", error);
       window.scrollTo(0, 0);
       setIsError((prevError) => ({
         ...prevError,
@@ -469,7 +455,6 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         }
       );
 
-      console.log("Data Export by ID:", data);
       if (!data || data === "ERROR") {
         throw new Error("Gagal mengambil data export berdasarkan ID.");
       } else {
@@ -483,7 +468,6 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
             Teknisi: teknisi,
             ...rest
           } = item;
-          // console.log("Line 299: ",teknisi);
           getFullNameTeknisi(teknisi);
           return {
             ...rest,
@@ -505,7 +489,6 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
             ],
           };
         });
-        console.log("Detail Pre: ", formattedData);
         setDataPreventifById(formattedData);
       }
     } catch (error) {
@@ -522,10 +505,7 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         }
       );
 
-      console.log("90: ", data[0]);
-
       if (data === "ERROR") {
-        console.log("189: ", isError);
         throw new Error(
           "Terjadi kesalahan: Gagal mengambil data Sparepart. Line 1890"
         );
@@ -545,16 +525,11 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
           Jumlah,
         }));
 
-        console.log("format sp:", formatSP);
-
         // Gunakan variabel sementara agar langsung bisa digunakan
         const updatedDataExcel = formatSP[0] || {};
 
         setFetchDataDetailSPbyID(formattedData[0] || {});
         setFetchDataDetailSPbyIDexcel(updatedDataExcel);
-
-        // Langsung gunakan updatedDataExcel tanpa menunggu state update
-        console.log("Data langsung digunakan: ", updatedDataExcel);
       }
     } catch (error) {
       window.scrollTo(0, 0);
@@ -581,8 +556,6 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
             p3: upt,
           }
         );
-
-        console.log("Data Export:", data);
         if (!data || data === "ERROR") {
           throw new Error("Gagal mengambil data export.");
         }
@@ -592,7 +565,6 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
             ...rest,
           };
         });
-        console.log("TES", formattedData);
         setDataPreventif(formattedData);
       } catch (error) {
         console.error("Fetch Data Export Error:", error);
@@ -606,12 +578,10 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         );
 
         if (data === "ERROR") {
-          // console.log("Ini Data",data);
           setIsError(true);
         } else if (data.length === 0) {
           setCurrentData(inisialisasiData);
         } else {
-          console.log(data);
           const formattedData = data.map((value) => {
             const {
               ID_Perawatan,
@@ -645,12 +615,10 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
               ],
             };
           });
-          console.log(currentData.Key);
           setCurrentData(formattedData);
         }
       } catch (error) {
         setIsError(true);
-        console.log("Format Data Error: " + error);
       } finally {
         setIsLoading(false);
       }
@@ -662,21 +630,18 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
   const getFullNameTeknisi = async (modifiedBy) => {
     try {
       const data = await UseFetch(API_LINK + "Korektif/GetKaryawanFullName", {
-        p2: modifiedBy, // Gunakan ID yang dipilih
+        p2: modifiedBy,
       });
-      console.log("Data Teknisi:", data);
       if (!data || data === "ERROR") {
         throw new Error("Gagal mengambil data Teknisi berdasarkan ID.");
       } else {
-        setTeknisi(data[0]); // Set teknisi dengan data pertama dari array
+        setTeknisi(data[0]);
       }
     } catch (error) {
       console.error("Fetch Data Teknisi Error:", error);
       setIsError(true);
     }
   };
-  console.log("tesssss", isError);
-
   return (
     <>
       <div className="d-flex flex-column">

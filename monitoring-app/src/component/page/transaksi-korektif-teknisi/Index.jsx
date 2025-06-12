@@ -126,7 +126,6 @@ export default function KorektifTeknisi({ onChangePage }) {
               "center",
             ],
           }));
-          console.log(formattedData);
           setCurrentData(formattedData);
         }
       } catch {

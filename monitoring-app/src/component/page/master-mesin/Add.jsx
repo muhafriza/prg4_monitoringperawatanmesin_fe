@@ -35,7 +35,7 @@ export default function MasterMesinAdd({ onChangePage }) {
   const userSchema = object({
     mes_kondisi_operasional: string()
       .max(50, "Maksimum 50 karakter")
-      .required("mes_kondisi_operasional harus diisi"),
+      .required("Kondisi Operasional harus diisi"),
     mes_no_panel: string().max(25, "Maksimum 25 karakter"),
     mes_lab: string().max(50, "Maksimum 50 karakter"),
     mes_nama_mesin: string()
@@ -254,7 +254,7 @@ export default function MasterMesinAdd({ onChangePage }) {
                 <Input
                   type="text"
                   forInput="mes_kapasitas"
-                  label="mes_kapasitas"
+                  label="Kapasistas"
                   value={formDataRef.current.mes_kapasitas}
                   onChange={handleInputChange}
                   errorMessage={errors.mes_kapasitas}
@@ -264,7 +264,7 @@ export default function MasterMesinAdd({ onChangePage }) {
                 <Input
                   type="text"
                   forInput="mes_tipe"
-                  label="mes_tipe"
+                  label="Tipe Mesin"
                   value={formDataRef.current.mes_tipe}
                   onChange={handleInputChange}
                   errorMessage={errors.mes_tipe}

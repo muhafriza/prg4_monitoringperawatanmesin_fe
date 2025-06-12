@@ -106,10 +106,6 @@ export default function PerawatanPreventifTeknisiEdit({
       Sparepart_Kode: sparepartString,
       Qty_Sparepart: qtyString,
     };
-    console.log("Payload: ", payload);
-
-    // setIsLoading(true);
-    // setIsError({ error: false, message: "" });
 
     try {
       const data = await UseFetch(`${API_LINK}Korektif/UpdateKorektif`, {

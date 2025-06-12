@@ -152,8 +152,6 @@ export default function JadwalPerawatan({ onChangePage }) {
   }
 
   useEffect(() => {
-    console.log("USER INFO NICH: ", userInfo);
-
     const fetchData = async () => {
       setIsError(false);
 
@@ -162,7 +160,6 @@ export default function JadwalPerawatan({ onChangePage }) {
           API_LINK + "Korektif/GetDataPerawatanKorektifPIC",
           currentFilter
         );
-        console.log(upt);
 
         if (data === "ERROR") {
           setIsError(true);
@@ -205,7 +202,6 @@ export default function JadwalPerawatan({ onChangePage }) {
         }
       } catch (error) {
         setIsError(true);
-        console.log("Format Data Error: " + error);
       } finally {
         setIsLoading(false);
       }

@@ -41,7 +41,7 @@ export default function MasterMesinIndex({ onChangePage }) {
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[mes_nama_mesin] asc",
+    sort: "[mes_id_mesin] desc",
     status: "Aktif",
     itemPerPage: 10,
   });

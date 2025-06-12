@@ -61,13 +61,11 @@ export default function DetailJadwal({ onChangePage, withID }) {
             id: withID,
           }
         );
-        console.log("Response: ", data);
 
         if (data === "ERROR" || data.length === 0) {
           throw new Error("Terjadi kesalahan: Gagal mengambil data Detail.");
         } else {
           setFormData(data[0]);
-          console.log("Ini Form Data: ", formData);
         }
       } catch (error) {
         window.scrollTo(0, 0);
@@ -92,7 +90,6 @@ export default function DetailJadwal({ onChangePage, withID }) {
           }
         );
 
-        console.log(data);
         if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal mengambil data Sparepart.");
         } else {

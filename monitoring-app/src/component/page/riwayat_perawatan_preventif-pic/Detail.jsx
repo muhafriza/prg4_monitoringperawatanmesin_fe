@@ -74,7 +74,6 @@ export default function DetailRiwayatPreventifPIC({ onChangePage, withID }) {
             id: withID,
           }
         );
-        console.log(data);
 
         if (data === "ERROR" || data.length === 0) {
           throw new Error("Terjadi kesalahan: Gagal mengambil data Sparepart.");
