@@ -47,7 +47,7 @@ export default function JadwalPerawatan({ onChangePage }) {
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[pre_tanggal_penjadwalan] asc",
+    sort: "[pre_created_date] desc",
     status: "Menunggu Perbaikan",
     itemPerPage: 10,
   });
@@ -159,14 +159,18 @@ export default function JadwalPerawatan({ onChangePage }) {
               Tanggal_Perawatan,
               Status_Pemeliharaan,
               Dibuat,
+              UPT,
               TindakanPerbaikan,
               Nama_Mesin,
+              id_mesin,
               ...rest
-            } = value; // Menghapus tanggal_masuk
+            } = value;
             return {
               ...rest,
               "ID Perawatan": ID_Perawatan,
+              "ID Mesin": id_mesin,
               "Nama Mesin": Nama_Mesin,
+              UPT: UPT,
               "Tindakan Perbaikan":
                 TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
               "Dibuat Oleh": Dibuat == null ? "-" : Dibuat,

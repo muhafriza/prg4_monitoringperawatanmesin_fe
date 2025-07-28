@@ -37,7 +37,6 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
     mes_nama_mesin: "",
     mes_upt: "",
     mes_daya_mesin: "",
-    mes_jumlah: "",
     mes_kapasitas: "",
     mes_tipe: "",
     mes_gambar: "",
@@ -54,11 +53,8 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
     mes_lab: string().optional(),
     mes_daya_mesin: number()
       .positive("Daya Mesin harus lebih besar dari 0")
-      .required("Daya Mesin harus diisi"),
-    mes_jumlah: number()
-      .integer("Jumlah harus berupa angka bulat")
-      .positive("Jumlah harus lebih besar dari 0")
-      .required("Jumlah Mesin harus diisi"),
+      .required("Daya Mesin harus diisi")
+      .positive("Jumlah harus lebih besar dari 0"),
     mes_kapasitas: string().optional(),
     mes_upt: string(),
     mes_tipe: string().optional(),
@@ -117,6 +113,7 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
         delete MesinData.status;
         delete MesinData.mes_status1;
         delete MesinData.mes_status;
+        delete MesinData.mes_jumlah;
 
         // Initialize formDataRef with the fetched data
         formDataRef.current = { ...formDataRef.current, ...MesinData };
@@ -135,28 +132,11 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
     fetchData();
   }, [withID]);
 
-  const formatDate = (dateString, format) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-
-    switch (format) {
-      case "DD/MM/YYYY":
-        return `${day}/${month}/${year}`;
-      case "YYYY-MM-DD":
-        return `${year}-${month}-${day}`;
-      default:
-        return dateString;
-    }
-  };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    // Validasi hanya angka untuk field "mes_jumlah" and "mes_daya_mesin"
-    if (name === "mes_jumlah" || name === "mes_daya_mesin") {
-      if (!/^\d*\.?\d*$/.test(value)) {
+    if (name === "mes_daya_mesin") {
+      if (!/^[\d.,/]*\.?\d*$/.test(value)) {
         setErrors((prevErrors) => ({
           ...prevErrors,
           [name]: "Hanya angka yang diperbolehkan",
@@ -176,18 +156,12 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
   const handleAdd = async (e) => {
     e.preventDefault();
 
-    // Log the data before validation
-    console.log("Attempting to submit form with data:", formDataRef.current);
-
     // Validate the form inputs
     const validationErrors = await validateAllInputs(
       formDataRef.current,
       userSchema,
       setErrors
     );
-
-    // Log the validation errors
-    console.log("Validation Errors:", validationErrors);
 
     // If there are no validation errors
     if (Object.values(validationErrors).every((error) => !error)) {
@@ -218,9 +192,6 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
           formDataRef.current
         );
 
-        console.log("Payload:", formDataRef.current);
-        console.log("API Response:", data);
-
         if (!data) {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data mesin.");
         } else {
@@ -235,7 +206,6 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
       }
     } else {
       window.scrollTo(0, 0); // Scroll to the top of the page if validation fails
-      console.log("Form validation failed, scrolling to top.");
     }
   };
 
@@ -267,22 +237,30 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
                 />
               </div>
               <div className="col-lg-3">
-                <label htmlFor="mes_upt" className="form-label fw-bold">
-                  UPT <span style={{ color: "red" }}>*</span>
+                <label htmlFor="mes_upt" className="fw-bold">
+                  UPT
+                  <span style={{ color: "red" }}> *</span>
                 </label>
                 <select
                   id="mes_upt"
                   name="mes_upt"
                   className="form-select"
-                  value={formDataRef.current.mes_upt}
                   onChange={handleInputChange}
+                  value={formDataRef.current.mes_upt}
                 >
-                  <option value="">-- Pilih UPT --</option>
-                  {dataUPT.map((upt) => (
-                    <option key={upt.Value} value={upt.Value}>
-                      {upt.Text}
-                    </option>
-                  ))}
+                  <option value="">Pilih UPT</option>
+                  <option value="PEMESIANAN">PEMESIANAN</option>
+                  <option value="MANUFAKTUR">MANUFAKTUR</option>
+                  <option value="DESAIN DAN METROLOGI">
+                    DESAIN DAN METROLOGI
+                  </option>
+                  <option value="OTOMASI">OTOMASI</option>
+                  <option value="PERAWATAN">PERAWATAN</option>
+                  <option value="OTOMOTIF">OTOMOTIF</option>
+                  <option value="ALAT BERAT">ALAT BERAT</option>
+                  <option value="SIPIL">SIPIL</option>
+                  <option value="PRODUKSI">PRODUKSI</option>
+                  <option value="LPT3">LPT3</option>
                 </select>
               </div>
               <div className="col-lg-3">
@@ -307,24 +285,13 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
               </div>
               <div className="col-lg-3">
                 <Input
-                  type="number"
+                  type="text"
                   forInput="mes_daya_mesin"
                   label="Daya Mesin"
                   isRequired
                   value={formDataRef.current.mes_daya_mesin}
                   onChange={handleInputChange}
                   errorMessage={errors.mes_daya_mesin}
-                />
-              </div>
-              <div className="col-lg-3">
-                <Input
-                  type="number"
-                  forInput="mes_jumlah"
-                  label="Jumlah Mesin"
-                  isRequired
-                  value={formDataRef.current.mes_jumlah}
-                  onChange={handleInputChange}
-                  errorMessage={errors.mes_jumlah}
                 />
               </div>
               <div className="col-lg-3">

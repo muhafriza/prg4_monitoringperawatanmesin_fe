@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { API_LINK } from "../../util/Constants";
+import { PAGE_SIZE, API_LINK } from "../../util/Constants";
 import UseFetch from "../../util/UseFetch";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
@@ -10,10 +10,12 @@ import Cookies from "js-cookie";
 import { decryptId } from "../../util/Encryptor";
 import Paging from "../../part/Paging";
 
+import Paging from "../../part/Paging";
 
 import { Chart as ChartJS, defaults } from "chart.js/auto";
 import { Bar, Doughnut, Pie } from "react-chartjs-2";
 import { DateTime } from "luxon";
+import Swal from "sweetalert2";
 
 defaults.plugins.title.display = true;
 defaults.plugins.title.align = "start";
@@ -63,10 +65,50 @@ export default function BerandaAdministrator() {
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
   const [dataKerusakanTerahir, setDataKerusakanTerahir] =
+    useState(inisialisasiDataProses);
+  const [dataProsesPerbaikanPRE, setDataProsesPerbaikanPRE] =
     useState(inisialisasiData);
-  const [dataProsesPerbaikan, setDataProsesPerbaikan] = useState(
+  const [dataProsesPerbaikanKOR, setDataProsesPerbaikanKOR] = useState(
     inisialisasiDataProses
   );
+  const datenow = new Date().toLocaleDateString("sv-SE");
+  const date = new Date().toISOString().split("T")[0];
+  const [filterKerusakanTerakhir, setfilterKerusakanTerakhir] = useState({
+    p1: 1,
+    p2: "kor_tanggal_pengajuan",
+    p3: 2,
+  });
+  const [filterDataProsesKOR, setfilterDataProsesKOR] = useState({
+    page: 1,
+    query: datenow,
+    sort: "kor_tanggal_pengajuan",
+    status: 'Dalam Pengerjaan',
+    itemPerPage: 1000,
+  });
+  const [filterDataProsesPRE, setfilterDataProsesPRE] = useState({
+    page: 1,
+    query: datenow,
+    sort: "pre_idPerawatan_preventif",
+    status: 'Dalam Pengerjaan',
+    itemPerPage: 1000,
+  });
+  const [laporanKerusakan, setLaporanKerusakan] = useState();
+
+  function handleSetCurrentPage(newCurrentPage) {
+    setIsLoading(true);
+    setfilterKerusakanTerakhir((prevFilter) => ({
+      ...prevFilter,
+      page: newCurrentPage,
+    }));
+    setfilterDataProsesKOR((prevFilter) => ({
+      ...prevFilter,
+      page: newCurrentPage,
+    }));
+    setfilterDataProsesPRE((prevFilter) => ({
+      ...prevFilter,
+      page: newCurrentPage,
+    }));
+  }
 
   const userInfo = getUserInfo();
   console.log("Inii user info", userInfo);
@@ -113,30 +155,43 @@ export default function BerandaAdministrator() {
   }
 
   const [sparepartStok, setSparepartStok] = useState([]);
+  const [korektifbyUPT, setKorektifByUPT] = useState([]);
+  const [pieChart, setpieChart] = useState({
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        backgroundColor: [
+          "#36A2EB",
+          "#FF6384",
+          "#FFCE56",
+          "#4BC0C0",
+          "#9966FF",
+        ],
+        borderColor: ["#36A2EB", "#FF6384", "#FFCE56", "#4BC0C0", "#9966FF"],
+        borderWidth: 1,
+      },
+    ],
+  });
+  const getRandomColor = () => {
+    return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       setIsError((prevError) => ({ ...prevError, error: false }));
 
       try {
-        const datenow = new Date().toLocaleDateString("sv-SE");
-        const date = new Date().toISOString().split("T")[0];
-        console.log("SEKARANG "+ datenow);
+        console.log("SEKARANG " + datenow);
         const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventif",
-          {
-            page: 1,
-            query: datenow,
-            sort: "pre_idPerawatan_preventif",
-            status: "",
-            itemPerPage: 1000,
-          }
+          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventifDashboard",
+          filterDataProsesPRE
         );
         console.log("ini Data Proses");
         console.log(data);
 
         if (data.length == 0) {
-          setDataProsesPerbaikan(inisialisasiDataProses);
+          setDataProsesPerbaikanPRE(inisialisasiDataProses);
         } else {
           console.log(data);
           const formattedData = data.map((value) => {
@@ -145,14 +200,18 @@ export default function BerandaAdministrator() {
               Tanggal_Perawatan,
               Status_Pemeliharaan,
               Dibuat,
+              UPT,
               TindakanPerbaikan,
               Nama_Mesin,
+              id_mesin,
               ...rest
             } = value;
             return {
               ...rest,
               "ID Perawatan": ID_Perawatan,
+              "ID Mesin": id_mesin,
               "Nama Mesin": Nama_Mesin,
+              UPT: UPT,
               "Tindakan Perbaikan":
                 TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
               "Dibuat Oleh": Dibuat == null ? "-" : Dibuat,
@@ -161,16 +220,17 @@ export default function BerandaAdministrator() {
               Alignment: [
                 "center",
                 "center",
-                "left",
-                "left",
-                "left",
+                "center",
+                "center",
+                "center",
+                "center",
                 "center",
                 "center",
                 "center",
               ],
             };
           });
-          setDataProsesPerbaikan(formattedData);
+          setDataProsesPerbaikanPRE(formattedData);
         }
       } catch (error) {
         setIsError(true);
@@ -179,46 +239,75 @@ export default function BerandaAdministrator() {
         setIsLoading(false);
       }
 
-      // try {
-      //   const data = await UseFetch(
-      //     API_LINK + "Utilities/GetDataCountingDashboard",
-      //     {}
-      //   );
+      try {
+        const data = await UseFetch(
+          API_LINK + "Korektif/getKorektifNOW",
+          filterDataProsesKOR
+        );
+        console.log("ini Data Proses KOREKTIF: ", data);
 
-      //   if (data === "ERROR" || data.length === 0) {
-      //     throw new Error("Terjadi kesalahan: Gagal mengambil data dashboard.");
-      //   } else {
-      //     formDataRef.current = { ...formDataRef.current, ...data[0] };
-      //     const formattedData = data.map((value) => {
-      //       const { tanggal_masuk, Deskripsi, Status, ...rest } = value; // Menghapus tanggal_masuk
-      //       return {
-      //         ...rest, // Menyalin sisa properti
-      //         "Tanggal Masuk": formatDate(tanggal_masuk, "D MMMM YYYY"),
-      //         Status: Status,
-      //         Aksi: ["Toggle", "Detail", "Edit"],
-      //         Alignment: [
-      //           "center",
-      //           "left",
-      //           "left",
-      //           "right",
-      //           "center",
-      //           "center",
-      //           "center",
-      //         ],
-      //       };
-      //     });
-      //     // setCurrentData(formattedData);
-      //   }
-      // } catch (error) {
-      //   window.scrollTo(0, 0);
-      //   setIsError((prevError) => ({
-      //     ...prevError,
-      //     error: true,
-      //     message: error.message,
-      //   }));
-      // } finally {
-      //   setIsLoading(false);
-      // }
+        if (data.length == 0) {
+          setDataProsesPerbaikanKOR(inisialisasiDataProses);
+        } else {
+          const formattedData = data.map((value) => {
+            const {
+              ["Tanggal Pengajuan"]: tanggal,
+              ["Status Pemeliharaan"]: status,
+              ...rest
+            } = value;
+
+            return {
+              ...rest,
+              "Tanggal Pengajuan": formatDate(
+                tanggal.split("T")[0],
+                "D MMMM YYYY"
+              ),
+              Status: status,
+              Alignment: [
+                "center",
+                "center",
+                "center",
+                "center",
+                "center",
+                "center",
+                "center",
+                "center",
+                "center",
+                "center",
+                "center",
+              ],
+            };
+          });
+          setDataProsesPerbaikanKOR(formattedData);
+        }
+      } catch (error) {
+        setIsError(true);
+        console.log("Format Data Error: " + error);
+      } finally {
+        setIsLoading(false);
+      }
+
+      try {
+        const data = await UseFetch(
+          API_LINK + "Korektif/TotalLaporanKerusakanPending"
+        );
+        console.log("total kerusakan", data[0].total);
+
+        if (!data) {
+          Swal.fire(
+            "Error",
+            "Laporan Kerusakan Pending tidak ditemukan",
+            "error"
+          );
+        } else {
+          setLaporanKerusakan(data[0].total);
+        }
+      } catch (error) {
+        setIsError(true);
+        console.log("Format Data Error: " + error);
+      } finally {
+        setIsLoading(false);
+      }
 
       try {
         const dataSP = await UseFetch(
@@ -241,8 +330,77 @@ export default function BerandaAdministrator() {
               "center",
             ],
           }));
+          setSparepartStok(formattedData);
+        }
+      } catch (error) {
+        window.scrollTo(0, 0);
+        setIsError((prevError) => ({
+          ...prevError,
+          error: true,
+          message: error.message,
+        }));
+      } finally {
+        setIsLoading(false);
+      }
+      try {
+        const data = await UseFetch(
+          API_LINK + "Korektif/KerusakanTerakhirTerjadi",
+          filterKerusakanTerakhir
+        );
+        
+        if (data === "ERROR" || data.length === 0) {
+          console.log("TIDAK ADA LAPORAN KERUSAKAN 7 HARI TERAKHIR: ",data );
+        } else {
+          const formattedData = data.map((value) => ({
+            ...value,
+            Alignment: [
+              "center",
+              "center",
+              "center",
+              "center",
+              "center",
+              "center",
+              "center",
+              "center",
+            ],
+          }));
           setDataKerusakanTerahir(formattedData);
-          setSparepartStok(dataSP);
+          console.log("setDataKerusakanTerahir", dataKerusakanTerahir);
+        }
+      } catch (error) {
+        window.scrollTo(0, 0);
+        setIsError((prevError) => ({
+          ...prevError,
+          error: true,
+          message: error.message,
+        }));
+      } finally {
+        setIsLoading(false);
+      }
+      try {
+        const data = await UseFetch(
+          API_LINK + "Korektif/TotalLaporanKerusakanByUPT"
+        );
+        console.log("BY UPT: ", data);
+
+        if (data === "ERROR" || data.length === 0) {
+          throw new Error("Terjadi kesalahan: Gagal mengambil data stok.");
+        } else {
+          setKorektifByUPT(data);
+          const labels = data.map((item) => item.Nama_UPT);
+          const values = data.map((item) => item.Count_Per_Upt);
+          const colors = labels.map(() => getRandomColor());
+          setpieChart({
+            labels,
+            datasets: [
+              {
+                data: values,
+                backgroundColor: colors,
+                borderColor: colors,
+                borderWidth: 1,
+              },
+            ],
+          });
         }
       } catch (error) {
         window.scrollTo(0, 0);
@@ -268,15 +426,18 @@ export default function BerandaAdministrator() {
           <Alert type="danger" message={isError.message} />
         </div>
       )}
-      <div className="row row-equal-height mx-0 my-2">
+      <div className="row row-equal-height mx-0 my-2 mb-4">
         {/* Komponen Laporan Kerusakan */}
-        <div className="col-lg-2">
+        <div
+          className="col-lg-2"
+          // style={{ height: "30vh" }}
+        >
           <div className="card bg-primary card-equal-height mt-3 border-0 text-white">
             <div className="card-body bg-gradient rounded-2">
               <div className="lead fw-medium">Laporan Kerusakan</div>
             </div>
-            <div className="card-footer d-flex align-items-center justify-content-between h1 border-0">
-              <span></span>
+            <div className="card-footer bg-primary d-flex align-items-center justify-content-between h1 border-0">
+              <span>{laporanKerusakan}</span>
               <i className="bi bi-tools ms-2"></i>
             </div>
           </div>
@@ -284,14 +445,20 @@ export default function BerandaAdministrator() {
 
         {/* Komponen Selamat Datang */}
         <div className="col-lg-10">
-          <div className="card card-equal-height mt-3 border">
+          <div className="card mt-3 border">
             <div className="card-header bg-danger text-center text-white pt-3 pb-3 px-3">
               <span className="lead fw-medium">
                 Kerusakan yang terakhir terjadi
               </span>
             </div>
-            <div className="card-body lead fw-small px-3 mb-3">
+            <div className="card-body fw-small px-3 mb-3">
               <Table data={dataKerusakanTerahir} />
+              <Paging
+                pageSize={PAGE_SIZE}
+                pageCurrent={filterKerusakanTerakhir.p1}
+                totalData={dataKerusakanTerahir[0]["Count"]}
+                navigation={handleSetCurrentPage}
+              />
             </div>
             <Paging
                 pageSize={PAGE_SIZE}
@@ -305,13 +472,50 @@ export default function BerandaAdministrator() {
 
       <div className="my-2">
         <div className="card card-equal-height border">
-          <div className="card-header bg-warning text-center text-white pt-3 pb-3 px-3">
-            <span className="lead fw-medium">Pelaksanaan Proses Perbaikan</span>
+          <div className="card-header bg-primary text-center text-white pt-3 pb-3 px-3">
+            <span className="lead fw-medium">
+              Pelaksanaan Proses Perbaikan Preventif
+            </span>
           </div>
-          <div className="card-body lead fw-small">
-            <Table data={dataProsesPerbaikan != null ? dataProsesPerbaikan : inisialisasiData} />
+          <div className="card-body fw-small">
+            <Table
+              data={
+                dataProsesPerbaikanPRE != null
+                  ? dataProsesPerbaikanPRE
+                  : inisialisasiData
+              }
+            />
+            <Paging
+              pageSize={PAGE_SIZE}
+              pageCurrent={filterDataProsesPRE.p1}
+              totalData={filterDataProsesPRE["Count"]}
+              navigation={handleSetCurrentPage}
+            />
           </div>
         </div>
+        <div className="card card-equal-height border mt-4">
+          <div className="card-header bg-primary text-center text-white pt-3 pb-3 px-3">
+            <span className="lead fw-medium">
+              Pelaksanaan Proses Perbaikan Korektif
+            </span>
+          </div>
+          <div className="card-body fw-small">
+            <Table
+              data={
+                dataProsesPerbaikanKOR != null
+                  ? dataProsesPerbaikanKOR
+                  : inisialisasiData
+              }
+            />
+            <Paging
+              pageSize={PAGE_SIZE}
+              pageCurrent={filterDataProsesKOR.p1}
+              totalData={filterDataProsesKOR["Count"]}
+              navigation={handleSetCurrentPage}
+            />
+          </div>
+        </div>
+
         <div className="row">
           <div className="col-lg-8">
             <div className="card mt-3 border">
@@ -376,7 +580,7 @@ export default function BerandaAdministrator() {
                         },
                         title: {
                           display: true,
-                          text: "Stok Sparepart",
+                          text: "Stok Sparepart yang Menipis",
                         },
                       },
                       scales: {
@@ -412,20 +616,7 @@ export default function BerandaAdministrator() {
               <div className="card-body bg-gradient rounded-2 text-white">
                 <div style={{ width: "100%", height: "300px" }}>
                   <Pie
-                    // ref={(ref) =>
-                    //   (doughnutChartRef.current = ref?.chartInstance)
-                    // }
-                    data={{
-                      labels: ["Oil Tonna", "Coolant", "Tool Holder"],
-                      datasets: [
-                        {
-                          data: [524, 364, 75],
-                          backgroundColor: ["#36A2EB", "#FF6384", "#FFCE56"],
-                          borderColor: ["#36A2EB", "#FF6384", "#FFCE56"],
-                          borderWidth: 1,
-                        },
-                      ],
-                    }}
+                    data={pieChart}
                     options={{
                       responsive: true,
                       maintainAspectRatio: false,
@@ -435,7 +626,8 @@ export default function BerandaAdministrator() {
                           position: "top",
                         },
                         title: {
-                          text: "Laporan Kerusakan bagian UPT",
+                          display: true,
+                          text: "Riwayat Kerusakan bagian UPT",
                         },
                       },
                     }}
@@ -445,81 +637,6 @@ export default function BerandaAdministrator() {
             </div>
           </div>
         </div>
-
-        <div className="col-lg-12"></div>
-
-        {/* <div className="col-lg-3">
-          <div className="card mt-3 border-0">
-            <div className="card-body bg-primary bg-gradient rounded-2 text-white">
-              <div className="lead fw-medium">Belum Dibuat RAK</div>
-              <div className="h1">
-                {formDataRef.current.countBelumDibuatRAK}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-3">
-          <div className="card mt-3 border-0">
-            <div className="card-body bg-primary bg-gradient rounded-2 text-white">
-              <div className="lead fw-medium">Belum Dibuat Penawaran</div>
-              <div className="h1">
-                {formDataRef.current.countBelumDibuatPenawaran}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-3">
-          <div className="card mt-3 border-0">
-            <div className="card-body bg-primary bg-gradient rounded-2 text-white">
-              <div className="lead fw-medium">Dalam Proses Negosiasi</div>
-              <div className="h1">
-                {formDataRef.current.countDalamProsesNegosiasi}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-3">
-          <div className="card mt-3 border-0">
-            <div className="card-body bg-primary bg-gradient rounded-2 text-white">
-              <div className="lead fw-medium">Belum Dibuat SPK</div>
-              <div className="h1">
-                {formDataRef.current.countBelumDibuatSPK}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-3">
-          <div className="card mt-3 border-0">
-            <div className="card-body bg-primary bg-gradient rounded-2 text-white">
-              <div className="lead fw-medium">Dalam Proses Produksi</div>
-              <div className="h1">
-                {formDataRef.current.countDalamProsesProduksi}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-3">
-          <div className="card mt-3 border-0">
-            <div className="card-body bg-dark-subtle bg-gradient rounded-2 text-white">
-              <div className="lead fw-medium">
-                Dalam Proses QC (In Progress)
-              </div>
-              <div className="h1">{formDataRef.current.countDalamProsesQC}</div>
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-3">
-          <div className="card mt-3 border-0">
-            <div className="card-body bg-dark-subtle bg-gradient rounded-2 text-white">
-              <div className="lead fw-medium">
-                Dalam Proses Delivery (In Progress)
-              </div>
-              <div className="h1">
-                {formDataRef.current.countDalamProsesDelivery}
-              </div>
-            </div>
-          </div>
-        </div> */}
       </div>
     </>
   );

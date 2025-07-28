@@ -142,7 +142,7 @@ export default function MasterSparepartAdd({ onChangePage }) {
         if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data Sparepart.");
         } else {
-          Swal.fire("Success", "Data Sparepart berhasil disimpan", "success");
+          Swal.fire("Sukses", "Data Sparepart berhasil disimpan", "success");
           onChangePage("index");
         }
       } catch (error) {

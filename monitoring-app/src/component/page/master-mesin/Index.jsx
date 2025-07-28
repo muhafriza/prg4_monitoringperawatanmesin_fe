@@ -10,11 +10,8 @@ import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
-import Cookies from "js-cookie";
-import { decryptId } from "../../util/Encryptor";
-import * as XLSX from "xlsx";
-import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import ExcelJS from "exceljs";
 
 const inisialisasiData = [
   {
@@ -44,7 +41,7 @@ export default function MasterMesinIndex({ onChangePage }) {
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[mes_nama_mesin] asc",
+    sort: "[mes_id_mesin] desc",
     status: "Aktif",
     itemPerPage: 10,
   });
@@ -76,56 +73,35 @@ export default function MasterMesinIndex({ onChangePage }) {
   }
 
   // Handle changing the machine's status
-  const handleSetStatus = (id) => {
-    console.log("A", currentData);
-    setIsError(false);
-
+  function handleSetStatus(id) {
     Swal.fire({
-      title: "Warning",
-      html: `Yakin ingin mengubah status pengguna ini?`,
+      title: "Perhatian",
+      text: "Yakin Ingin Mengubah Status Mesin ini?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "YA",
-      cancelButtonText: "BATAL",
-    }).then((confirmation) => {
-      if (confirmation.isConfirmed) {
-        setIsLoading(true);
-        // Mengganti async/await dengan promise .then()
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Ya, Ubah Status",
+    }).then((result) => {
+      setIsLoading(true);
+      setIsError(false);
+      if (result.isConfirmed) {
         UseFetch(API_LINK + "Mesin/SetStatusMesin", {
-          mes_id_mesin: id,
-        })
-          .then((response) => {
-            // Validasi respons dari API
-            if (response === "ERROR" || !response || response.length === 0) {
-              setIsError(true);
-              Swal.fire("Error", "Gagal mengubah status pengguna.", "error");
-              setIsLoading(false);
-            } else {
-              Swal.fire(
-                "Success",
-                `Status data Mesin berhasil diubah. ${response[0].Status}`,
-                "success"
-              );
-              setIsLoading(false);
-              handleSetCurrentPage(currentFilter.page); // Refresh data setelah berhasil
-            }
-          })
-          .catch((error) => {
-            setIsError(true);
-            Swal.fire(
-              "Error",
-              "Terjadi kesalahan saat mengubah status pengguna.",
-              "error"
-            );
-            console.error("Error in handleSetStatus:", error);
-            setIsLoading(false);
+          idSparepart: id,
+        }).then((data) => {
+          if (data === "ERROR" || data.length === 0) setIsError(true);
+          Swal.fire({
+            title: "Success!",
+            text: "Status data Mesin berhasil diubah menjadi " + data[0].Status,
+            icon: "success",
           });
+          handleSetCurrentPage(currentFilter.page);
+        });
       } else {
-        setIsLoading(false); // Jika user memilih "BATAL", hentikan loading
+        setIsLoading(false);
       }
     });
-  };
-
+  }
   const exportToExcel = async () => {
     if (!dataExport || dataExport.length === 0) {
       console.log(dataExport);
@@ -139,9 +115,9 @@ export default function MasterMesinIndex({ onChangePage }) {
 
     // 2. Tambahkan header dengan styling
     const headers = Object.keys(dataExport[0]);
-    const headerRow = worksheet.addRow(headers);
+    worksheet.addRow(headers);
 
-    headerRow.eachCell((cell, colNumber) => {
+    worksheet.getRow(1).eachCell((cell, colNumber) => {
       cell.font = { bold: true, color: { argb: "FFFFFF" } };
       cell.fill = {
         type: "pattern",
@@ -156,19 +132,32 @@ export default function MasterMesinIndex({ onChangePage }) {
         right: { style: "thin" },
       };
 
-      // Atur ukuran kolom berdasarkan header
-      worksheet.getColumn(colNumber).width = headers[colNumber - 1].length + 5;
+      worksheet.getColumn(colNumber).width = Math.max(
+        headers[colNumber - 1].length + 5,
+        10
+      );
     });
 
-    // 3. Tambahkan data dengan style yang seragam
-    dataExport.forEach((item) => {
-      const rowData = headers.map((key) =>
-        item[key] === null || item[key] === undefined ? "-" : item[key]
+    // 3. Hitung panjang maksimum setiap kolom untuk menentukan ukuran kolom
+    const columnWidths = headers.map((_, colIndex) => {
+      return (
+        Math.max(
+          headers[colIndex].length,
+          ...dataExport.map((row) =>
+            row[headers[colIndex]]
+              ? row[headers[colIndex]].toString().length
+              : 0
+          )
+        ) + 2
       );
+    });
+
+    // 4. Tambahkan data dan styling
+    dataExport.forEach((item) => {
+      const rowData = headers.map((header) => item[header] || ""); // Mengisi sel kosong dengan string kosong
       const row = worksheet.addRow(rowData);
 
       row.eachCell((cell, colNumber) => {
-        // Terapkan border ke setiap sel
         cell.border = {
           top: { style: "thin" },
           left: { style: "thin" },
@@ -176,23 +165,23 @@ export default function MasterMesinIndex({ onChangePage }) {
           right: { style: "thin" },
         };
 
-        // Atur alignment center untuk semua sel
         cell.alignment = { horizontal: "center", vertical: "middle" };
 
-        // Atur ukuran kolom berdasarkan panjang isi
-        const column = worksheet.getColumn(colNumber);
-        const cellLength = cell.value ? cell.value.toString().length : 10;
-        column.width = Math.max(column.width || 10, cellLength + 2);
+        // Atur ukuran kolom berdasarkan data yang ada
+        worksheet.getColumn(colNumber).width = Math.max(
+          columnWidths[colNumber - 1],
+          10
+        );
       });
     });
 
-    // 4. Konversi workbook ke file Excel (Blob)
+    // 5. Konversi workbook ke file Excel (Blob)
     const buffer = await workbook.xlsx.writeBuffer();
     const excelFile = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
 
-    // 5. Simpan file dengan nama yang mengandung tanggal
+    // 6. Simpan file
     const now = new Date().toISOString().split("T")[0];
     saveAs(excelFile, `Data-Mesin_${now}.xlsx`);
   };

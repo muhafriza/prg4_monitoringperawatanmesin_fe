@@ -226,12 +226,19 @@ export default function MasterKaryawanAdd({ onChangePage }) {
                     className="form-select"
                     onChange={handleInputChange}
                   >
-                    <option value="">-- Pilih UPT --</option>
-                    {dataUPT.map((upt) => (
-                      <option key={upt.Value} value={upt.Value}>
-                        {upt.Text}
-                      </option>
-                    ))}
+                    <option value="">Pilih UPT</option>
+                    <option value="PEMESIANAN">PEMESIANAN</option>
+                    <option value="MANUFAKTUR">MANUFAKTUR</option>
+                    <option value="DESAIN DAN METROLOGI">
+                      DESAIN DAN METROLOGI
+                    </option>
+                    <option value="OTOMASI">OTOMASI</option>
+                    <option value="PERAWATAN">PERAWATAN</option>
+                    <option value="OTOMOTIF">OTOMOTIF</option>
+                    <option value="ALAT BERAT">ALAT BERAT</option>
+                    <option value="SIPIL">SIPIL</option>
+                    <option value="PRODUKSI">PRODUKSI</option>
+                    <option value="LPT3">LPT3</option>
                   </select>
                 </div>
               )}

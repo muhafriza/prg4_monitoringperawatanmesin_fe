@@ -43,11 +43,6 @@ export default function KorektifAdd({ onChangePage }) {
     status: "Aktif",
   });
 
-  // useEffect(() => {
-  //   // Automatically update the formDataRef if necessary
-  //   formDataRef.current.kor_tanggal_pengajuan = new Date().toISOString(); // Updates to current time when component mounts
-  // }, []);
-
   const userSchema = object({
     kor_mes_id_mesin: string().required("ID Mesin is required"),
     kor_deskripsi_kerusakan: string().max(255, "Deskripsi Kerusakan too long"),
@@ -62,7 +57,6 @@ export default function KorektifAdd({ onChangePage }) {
           API_LINK + "Korektif/getNamaMesin",
           FilterMesinUPT
         );
-        // console.log(data);
         if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal mengambil data Mesin.");
         } else {
@@ -95,24 +89,18 @@ export default function KorektifAdd({ onChangePage }) {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    console.log(1);
     const validationErrors = await validateAllInputs(
       formDataRef.current,
       userSchema,
       setErrors
     );
 
-    console.log(2);
     if (Object.values(validationErrors).every((error) => !error)) {
-      console.log(3);
       setIsLoading(true);
       setIsError({ error: false, message: "" });
       setErrors({});
 
       try {
-        // formDataRef.current.kor_status_pemeliharaan =
-        //   formDataRef.current.kor_status_pemeliharaan || 0;
-
         const data = await UseFetch(
           API_LINK + "Korektif/Createkorektif",
           formDataRef.current

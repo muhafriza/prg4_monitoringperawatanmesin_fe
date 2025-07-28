@@ -10,8 +10,17 @@ import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
+<<<<<<< HEAD
+<<<<<<<< HEAD:monitoring-app/src/component/page/transaksi-korektif-pic/Index.jsx
 import Cookies from "js-cookie";
 import { decryptId } from "../../util/Encryptor";
+========
+import Swal from "sweetalert2";
+>>>>>>>> Commit-All:monitoring-app/src/component/page/laporan-kerusakan-admin/Index.jsx
+=======
+import Cookies from "js-cookie";
+import { decryptId } from "../../util/Encryptor";
+>>>>>>> Commit-All
 
 const inisialisasiData = [
   {
@@ -39,6 +48,10 @@ const dataFilterStatus = [
   { Value: "batal", Text: "Batal" },
 ];
 
+<<<<<<< HEAD
+<<<<<<<< HEAD:monitoring-app/src/component/page/transaksi-korektif-pic/Index.jsx
+=======
+>>>>>>> Commit-All
 export default function JadwalPerawatan({ onChangePage }) {
   const getUserInfo = () => {
     const encryptedUser = Cookies.get("activeUser");
@@ -55,15 +68,30 @@ export default function JadwalPerawatan({ onChangePage }) {
   };
   const userInfo = getUserInfo();
   const upt = userInfo.upt;
+<<<<<<< HEAD
+========
+export default function IndexLaporanKerusakan({ onChangePage }) {
+>>>>>>>> Commit-All:monitoring-app/src/component/page/laporan-kerusakan-admin/Index.jsx
+=======
+
+>>>>>>> Commit-All
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
+<<<<<<< HEAD
     query: upt,
+    sort: "[kor_tanggal_pengajuan] asc",
+    status: "Pending",
+    itemPerPage: 10,
+=======
+    query: '',
     sort: "[kor_tanggal_pengajuan] asc",
     status: "",
     itemPerPage: 10,
+    p6: upt
+>>>>>>> Commit-All
   });
 
   const searchQuery = useRef();
@@ -155,7 +183,11 @@ export default function JadwalPerawatan({ onChangePage }) {
 
       try {
         const data = await UseFetch(
+<<<<<<< HEAD
           API_LINK + "Korektif/GetDataPerawatanKorektif",
+=======
+          API_LINK + "Korektif/GetDataPerawatanKorektifPIC",
+>>>>>>> Commit-All
           currentFilter
         );
 
@@ -164,7 +196,13 @@ export default function JadwalPerawatan({ onChangePage }) {
         } else if (data.length === 0) {
           setCurrentData(inisialisasiData);
         } else {
+<<<<<<< HEAD
+          console.log(data);
           const formattedData = data.map((value) => {
+<<<<<<<< HEAD:monitoring-app/src/component/page/transaksi-korektif-pic/Index.jsx
+=======
+          const formattedData = data.map((value) => {
+>>>>>>> Commit-All
             const {
               ["Tanggal Perawatan"]: jadwal,
               ["Tanggal Pengajuan"]: pengajuan,
@@ -191,6 +229,29 @@ export default function JadwalPerawatan({ onChangePage }) {
                 "center",
                 "center",
                 "center",
+<<<<<<< HEAD
+              ],
+========
+            const { ["Tanggal Pengajuan"]: kor_tanggal_pengajuan, ["Status Pemeliharaan"]:Status, Dibuat, TindakanPerbaikan, kor_sparepart_diganti, mes_id_mesin,["Tanggal Perawatan"]: Tanggal_Perawatan, ...rest } = value;
+            return {
+              ...rest,
+              "Tanggal Pengajuan": kor_tanggal_pengajuan != "" ? formatDate(kor_tanggal_pengajuan, "D MMMM YYYY") : "-",
+              "Dibuat Oleh": Dibuat || "-",  // Pembuat data
+              "Status Pemeliharaan": Status,
+              Aksi: ["Detail"],  // Tombol aksi, bisa disesuaikan dengan tombol yang ada
+              Alignment: ["center", "center", "center", "left", "left", "LEFT", "center", "left","center","center"]
+>>>>>>>> Commit-All:monitoring-app/src/component/page/laporan-kerusakan-admin/Index.jsx
+            };
+          });
+          setCurrentData(formattedData);
+          console.log("noih",formattedData);
+        }
+      } catch (error) {
+        setIsError(true);
+        console.log("Format Data Error: " + error);
+=======
+                "center",
+                "center",
               ],
             };
           });
@@ -198,7 +259,7 @@ export default function JadwalPerawatan({ onChangePage }) {
         }
       } catch (error) {
         setIsError(true);
-        console.log("Format Data Error: " + error);
+>>>>>>> Commit-All
       } finally {
         setIsLoading(false);
       }
@@ -217,14 +278,18 @@ export default function JadwalPerawatan({ onChangePage }) {
           />
         </div>
       )}
+<<<<<<< HEAD
       <div className="flex-fill">
         <div className="input-group">
+<<<<<<<< HEAD:monitoring-app/src/component/page/transaksi-korektif-pic/Index.jsx
           <Button
             iconName="add"
             classType="success"
             label="Buat Laporan Kerusakan"
             onClick={() => onChangePage("add")}
           />
+========
+>>>>>>>> Commit-All:monitoring-app/src/component/page/laporan-kerusakan-admin/Index.jsx
           <Input
             ref={searchQuery}
             forInput="pencarianPerawatanKorektif"
@@ -275,6 +340,73 @@ export default function JadwalPerawatan({ onChangePage }) {
             />
           </div>
         )}
+=======
+      <div className="card">
+        <div className="card-header bg-primary lead fw-medium text-white">
+          Perawatan Korektif
+        </div>
+        <div className="card-body p-4">
+          <div className="flex-fill">
+            <div className="input-group">
+              <Button
+                iconName="add"
+                classType="success"
+                label="Buat Laporan Kerusakan"
+                onClick={() => onChangePage("add")}
+              />
+              <Input
+                ref={searchQuery}
+                forInput="pencarianPerawatanKorektif"
+                placeholder="Cari berdasarkan Nama Mesin, Tanggal Pengajuan format ( YYYY-MM-DD ), atau Kerusakan"
+              />
+              <Button
+                iconName="search"
+                classType="primary px-4"
+                title="Cari"
+                onClick={handleSearch}
+              />
+              <Filter>
+                <DropDown
+                  ref={searchFilterSort}
+                  forInput="ddUrut"
+                  label="Urut Berdasarkan"
+                  type="none"
+                  arrData={dataFilterSort}
+                  defaultValue="[kor_tanggal_pengajuan] asc"
+                />
+                <DropDown
+                  ref={searchFilterStatus}
+                  forInput="ddStatus"
+                  label="Status"
+                  type="none"
+                  arrData={dataFilterStatus}
+                  defaultValue="Pending"
+                />
+              </Filter>
+            </div>
+          </div>
+          <div className="mt-3">
+            {isLoading ? (
+              <Loading />
+            ) : (
+              <div className="d-flex flex-column">
+                <Table
+                  data={currentData}
+                  onToggle={handleSetStatus}
+                  onDetail={onChangePage}
+                  onEdit={onChangePage}
+                />
+                <Paging
+                  pageSize={PAGE_SIZE}
+                  pageCurrent={currentFilter.page}
+                  totalData={currentData[0]["Count"]}
+                  navigation={handleSetCurrentPage}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+>>>>>>> Commit-All
       </div>
     </div>
   );

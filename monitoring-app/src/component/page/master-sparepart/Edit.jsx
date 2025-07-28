@@ -209,7 +209,7 @@ export default function MasterSparepartEdit({ onChangePage, withID }) {
         if (!data) {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data produk.");
         } else {
-          Swal.fire("Sukses", "Data produk berhasil disimpan", "success");
+          Swal.fire("Sukses", "Data produk berhasil diubah", "success");
           onChangePage("index");
         }
       } catch (error) {

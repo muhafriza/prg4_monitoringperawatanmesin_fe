@@ -12,14 +12,13 @@ import Alert from "../../part/Alert";
 
 const dataUPT = [
   { Value: "PEMESINAN", Text: "PEMESINAN" },
-  { Value: "PERAWATAN", Text: "PERAWATAN" },
-  { Value: "ALAT BERAT", Text: "ALAT BERAT" },
-  { Value: "OTOMOTIF", Text: "OTOMOTIF" },
   { Value: "MANUFAKTUR", Text: "MANUFAKTUR" },
-  { Value: "OTOMASI", Text: "OTOMASI" },
   { Value: "DESAIN DAN METROLOGI", Text: "DESAIN DAN METROLOGI" },
-  { Value: "OTOMASI", Text: "OTOMASI" },
+  { Value: "PERAWATAN", Text: "PERAWATAN" },
+  { Value: "OTOMOTIF", Text: "OTOMOTIF" },
+  { Value: "ALAT BERAT", Text: "ALAT BERAT" },
   { Value: "SIPIL", Text: "SIPIL" },
+  { Value: "PRODUKSI", Text: "PRODUKSI" },
   { Value: "LPT3", Text: "LPT3" },
 ];
 

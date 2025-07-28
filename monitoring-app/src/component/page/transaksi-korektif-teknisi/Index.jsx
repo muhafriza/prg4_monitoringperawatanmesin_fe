@@ -48,8 +48,13 @@ export default function index({ onChangePage }) {
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
+<<<<<<< HEAD
     sort: "[kor_tanggal_pengajuan] desc",
     status: "Pending", // Default ke status "Belum Selesai"
+=======
+    sort: "[kor_status_pemeliharaan] asc",
+    status: "", // Default ke status "Belum Selesai"
+>>>>>>> Commit-All
     itemPerPage: 10,
   });
 
@@ -105,7 +110,7 @@ export default function index({ onChangePage }) {
       setIsError(false);
       try {
         const data = await UseFetch(
-          API_LINK + "Korektif/GetDataPerawatanKorektif",
+          API_LINK + "Korektif/DetailPerawatanKorektif",
           currentFilter
         );
         if (data === "ERROR") {
@@ -128,7 +133,6 @@ export default function index({ onChangePage }) {
               "center",
             ],
           }));
-          console.log(formattedData);
           setCurrentData(formattedData);
         }
       } catch {

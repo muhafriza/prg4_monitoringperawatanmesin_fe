@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { API_LINK, FILE_LINK } from "../../util/Constants";
 import UseFetch from "../../util/UseFetch";
 import { validateAllInputs } from "../../util/ValidateForm";
@@ -11,6 +11,7 @@ import Alert from "../../part/Alert";
 import { object, string } from "yup";
 import Swal from "sweetalert2";
 import { DateTime } from "luxon";
+import Table from "../../part/Table";
 
 export default function PerawatanPreventifTeknisiEdit({
   onChangePage,
@@ -42,7 +43,7 @@ export default function PerawatanPreventifTeknisiEdit({
     Nama_Mesin: string().required(),
     Tanggal_Penjadwalan: string().required(),
     Tanggal_Aktual: string().required("Isi Tanggal Aktual Terlebih Dahulu"),
-    Tanggal_Selesai: string(),
+    Tanggal_Selesai: string().optional(),
     Tindakan_Perbaikan: string().required(),
     Catatan_Tambahan: string(),
     Status_Pemeliharaan: string().required(),
@@ -52,6 +53,13 @@ export default function PerawatanPreventifTeknisiEdit({
 
   const [statusOptions, setStatusOptions] = useState([
     { Value: "Menunggu Perbaikan", Text: "Menunggu Perbaikan" },
+    { Value: "Dalam Pengerjaan", Text: "Dalam Pengerjaan" },
+    { Value: "Tertunda", Text: "Tertunda" },
+    { Value: "Selesai", Text: "Selesai" },
+    { Value: "Batal", Text: "Batal" },
+  ]);
+
+  const [statusOptions2, setStatusOptions2] = useState([
     { Value: "Dalam Pengerjaan", Text: "Dalam Pengerjaan" },
     { Value: "Tertunda", Text: "Tertunda" },
     { Value: "Selesai", Text: "Selesai" },
@@ -95,7 +103,6 @@ export default function PerawatanPreventifTeknisiEdit({
   const handleInputChange = (e, fieldName) => {
     const { name, value } = e.target;
 
-    // Memperbarui data form
     setFormData((prevFormData) => ({
       ...prevFormData,
       [name]: value,
@@ -118,16 +125,26 @@ export default function PerawatanPreventifTeknisiEdit({
             ...prevErrors,
             Tanggal_Selesai: "",
           }));
-          setIsError(false);
         }
       }
     }
-
     if (name === "Tanggal_Aktual" || name === "Catatan_Tambahan") {
       const { Tanggal_Penjadwalan, Tanggal_Aktual, Catatan_Tambahan } = {
         ...formData,
         [name]: value,
       };
+
+      if (!Tanggal_Aktual) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          Tanggal_Aktual: "Isi Tanggal Aktual Terlebih Dahulu",
+        }));
+      } else {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          Tanggal_Aktual: "",
+        }));
+      }
 
       if (Tanggal_Penjadwalan && Tanggal_Aktual) {
         const actualDate = DateTime.fromISO(Tanggal_Aktual, {
@@ -151,40 +168,85 @@ export default function PerawatanPreventifTeknisiEdit({
         }
       }
     }
+
+    if (name === "Status_Pemeliharaan") {
+      if (value === "Selesai" && !formData.Tanggal_Selesai) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          Tanggal_Selesai: "Tanggal Selesai wajib diisi jika status selesai.",
+        }));
+      } else {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          Tanggal_Selesai: "",
+        }));
+        if (Tanggal_Aktual) {
+          const actualDate = new Date(Tanggal_Aktual);
+          const completionDate = new Date(value);
+          if (completionDate < actualDate) {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              Tanggal_Selesai:
+                "Tanggal Selesai tidak boleh sebelum Tanggal Aktual.",
+            }));
+          } else {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              Tanggal_Selesai: "",
+            }));
+          }
+        }
+      }
+    }
   };
 
   const handleEdit = async (e) => {
     e.preventDefault();
 
-    delete formData.Modified_By;
-    delete formData.Modified_Date;
+    delete formData.upt;
+    const payload = {
+      p1: formData.ID_Perawatan_Preventif ?? null, // ID Perawatan Preventif
+      p2: formData.ID_Mesin ?? null, // ID Mesin
+      p3: formData.Nama_Mesin ?? "", // Nama Mesin
+      p4: formData.Tanggal_Penjadwalan ?? null, // Tanggal Penjadwalan
+      p5: formData.Tanggal_Aktual ?? null, // Tanggal Aktual
+      p6: formData.Tanggal_Selesai ?? null, // Tanggal Selesai (NULL jika kosong)
+      p7: formData.Tindakan_Perbaikan ?? "", // Tindakan Perbaikan
+      p8: formData.Catatan_Tambahan ?? "", // Catatan Tambahan
+      p9: formData.Status_Pemeliharaan ?? "", // Status Pemeliharaan
+      p10: formData.Created_By ?? "", // Created By
+      p11: formData.Created_Date ?? null, // Created Date
+    };
 
-    console.log("Payload:", formData);
 
-    if (formData.Tanggal_Selesai) {
-      const actualDate = DateTime.fromISO(formData.Tanggal_Aktual, {
-        zone: "Asia/Jakarta",
-      });
-      const selesai = DateTime.fromISO(formData.Tanggal_Selesai, {
-        zone: "Asia/Jakarta",
-      });
-      if (selesai < actualDate) {
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          Tanggal_Selesai:
-            "Tanggal Selesai tidak valid / Tidak boleh kurang dari tanggal aktual.",
-        }));
-        window.scrollTo(0, 0);
-        return;
+    let newErrors = { ...errors };
+    console.log("Payload: ", payload);
+
+    if (formData.Status_Pemeliharaan !== "Selesai") {
+      delete newErrors.Tanggal_Selesai;
+    } else {
+      if (!formData.Tanggal_Selesai) {
+        newErrors.Tanggal_Selesai =
+          "Tanggal Selesai wajib diisi jika status selesai.";
+      } else {
+        const tanggalAktual = new Date(formData.Tanggal_Aktual);
+        const tanggalSelesai = new Date(formData.Tanggal_Selesai);
+
+        if (tanggalAktual && tanggalSelesai && tanggalSelesai < tanggalAktual) {
+          newErrors.Tanggal_Selesai =
+            "Tanggal Selesai tidak boleh sebelum Tanggal Aktual.";
+        }
       }
     }
 
-    // Validasi form
     const validationErrors = await validateAllInputs(
       formData,
       userSchema,
       setErrors
     );
+
+    console.log("NIH ERROR NYA: ", errors);
+    newErrors = { ...newErrors, ...validationErrors };
 
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
@@ -194,31 +256,27 @@ export default function PerawatanPreventifTeknisiEdit({
       try {
         const data = await UseFetch(
           API_LINK + "TransaksiPreventif/UpdatePerawatanPreventif",
-          formData
+          payload
         );
 
-        console.log("API Response:", data);
-
-        if (!data) {
-          throw new Error("Terjadi kesalahan: Gagal menyimpan data produk.");
-        } else {
-          Swal.fire("Sukses", "Data berhasil disimpan", "success");
-          onChangePage("index");
+        if (!data || data.error) {
+          throw new Error(
+            data?.message || "Terjadi kesalahan: Gagal menyimpan data."
+          );
         }
+
+        Swal.fire("Sukses", "Data berhasil disimpan", "success");
+        onChangePage("index");
       } catch (error) {
         window.scrollTo(0, 0);
-        setIsError((prevError) => ({
-          ...prevError,
-          error: true,
-          message: error.message,
-        }));
+        setErrors(newErrors);
+        setIsError({ error: true, message: error.message });
       } finally {
         setIsLoading(false);
       }
-    } else {
-      window.scrollTo(0, 0);
-    }
+    } else window.scrollTo(0, 0);
   };
+  const [uptN, setUPT] = useState();
 
   useEffect(() => {
     const fetchDataDetailSP = async () => {
@@ -235,7 +293,16 @@ export default function PerawatanPreventifTeknisiEdit({
         if (data === "ERROR" || data.length === 0) {
           throw new Error("Terjadi kesalahan: Gagal mengambil data Sparepart.");
         } else {
-          setFetchDataDetailSP(data); // Menyimpan hasil fetchDetailSP ke state
+          const formattedData = data.map((item) => {
+            const { Nama_Sparepart, Jumlah, ...rest } = item;
+            return {
+              ...rest,
+              "Nama Sparepart": Nama_Sparepart,
+              Jumlah: Jumlah,
+              Alignment: ["center", "center", "center"],
+            };
+          });
+          setFetchDataDetailSP(formattedData); // Menyimpan hasil fetchDetailSP ke state
         }
       } catch (error) {
         window.scrollTo(0, 0);
@@ -259,9 +326,13 @@ export default function PerawatanPreventifTeknisiEdit({
             id: withID,
           }
         );
+        setUPT(data[0].upt);
         delete data[0].gambar_mesin;
         delete data[0].upt;
-        console.log(data);
+        delete data[0].Modified_By;
+        delete data[0].Modified_Date;
+
+        console.log("DATA: ", data);
 
         if (data === "ERROR" || data.length === 0) {
           throw new Error(
@@ -326,9 +397,12 @@ export default function PerawatanPreventifTeknisiEdit({
               <div className="col-lg-3">
                 <Label
                   forLabel="Tindakan_Perbaikan"
-                  title="TindakanPerbaikan"
+                  title="Tindakan Perbaikan"
                   data={formData.Tindakan_Perbaikan}
                 />
+              </div>
+              <div className="col-lg-4">
+                <Label forLabel="UPT" title="UPT" data={uptN} />
               </div>
               <div className="col-lg-4">
                 <Input
@@ -354,7 +428,7 @@ export default function PerawatanPreventifTeknisiEdit({
                   data={formData.Created_By}
                 />
               </div>
-              <div className="col-lg-3">
+              <div className="col-lg-4">
                 <Label
                   forLabel="Created_Date"
                   title="Tanggal Dibuat"
@@ -367,18 +441,18 @@ export default function PerawatanPreventifTeknisiEdit({
                   forInput="Tanggal_Selesai"
                   label="Tanggal Selesai"
                   className="form-control"
-                  // min={formatDate(
-                  //   new Date(formData.Tanggal_Aktual),
-                  //   "YYYY-MM-DD"
-                  // )} // Set tanggal minimal hari ini
-                  value={formData.Tanggal_Selesai}
+                  value={
+                    formData.Tanggal_Selesai
+                      ? formatDate(formData.Tanggal_Selesai, "YYYY-MM-DD")
+                      : "-"
+                  }
                   onChange={(e) => handleInputChange(e, "Tanggal_Selesai")}
                   errorMessage={errors.Tanggal_Selesai}
                 />
               </div>
               <div className="col-lg-3">
                 <DropDown
-                  arrData={statusOptions}
+                  arrData={formData.Status_Pemeliharaan !== "Menunggu Perbaikan" ? statusOptions2 : statusOptions}
                   type="pilih"
                   label="Status Pemeliharaan"
                   forInput="Status_Pemeliharaan"
@@ -387,7 +461,7 @@ export default function PerawatanPreventifTeknisiEdit({
                   onChange={(e) => handleInputChange(e, "Status_Pemeliharaan")}
                 />
               </div>
-              <div className="col-lg-3">
+              <div className="col-lg-4">
                 <Input
                   type="textarea"
                   forInput="Catatan_Tambahan"
@@ -398,47 +472,31 @@ export default function PerawatanPreventifTeknisiEdit({
                   errorMessage={errors.Catatan_Tambahan}
                 />
               </div>
-              <div className="col-lg-3">
+              <div className="row mt-3">
                 <Label
                   forLabel="Detail_SP"
                   title="Detail Sparepart yang digunakan: "
                 ></Label>
                 {fetchDataDetailSP && fetchDataDetailSP.length > 0 ? (
-                  <ul>
-                    {fetchDataDetailSP.map((item, index) => (
-                      <li key={index}>
-                        <strong>Sparepart {index + 1}:</strong>
-                        <ul>
-                          {Object.entries(item).map(([key, value]) => (
-                            <li key={key}>
-                              {key.replace(/_/g, " ")}:{" "}
-                              {typeof value === "object" && value !== null
-                                ? JSON.stringify(value) // Render objek sebagai string
-                                : value}
-                            </li>
-                          ))}
-                        </ul>
-                      </li>
-                    ))}
-                  </ul>
+                  <Table data={fetchDataDetailSP} />
                 ) : (
                   <p>Tidak Ada Sparepart.</p>
                 )}
               </div>
             </div>
-            <div className="float-end my-4 mx-1">
-              <Button
-                classType="secondary px-4 py-2"
-                label="KEMBALI"
-                onClick={() => onChangePage("index")}
-              />
-              <Button
-                classType="primary ms-2 px-4 py-2"
-                type="submit"
-                label="SIMPAN"
-              />
-            </div>
           </div>
+        </div>
+        <div className="float-end my-4 mx-1">
+          <Button
+            classType="secondary px-4 py-2"
+            label="KEMBALI"
+            onClick={() => onChangePage("index")}
+          />
+          <Button
+            classType="primary ms-2 px-4 py-2"
+            type="submit"
+            label="SIMPAN"
+          />
         </div>
       </form>
     </>

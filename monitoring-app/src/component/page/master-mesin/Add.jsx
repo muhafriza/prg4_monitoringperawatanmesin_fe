@@ -3,6 +3,7 @@ import { object, string, number } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
 import SweetAlert from "../../util/SweetAlert";
+import Swal from "sweetalert2";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Input from "../../part/Input";
@@ -31,11 +32,15 @@ export default function MasterMesinAdd({ onChangePage }) {
 
   const fileGambarRef = useRef(null); // Reference for file upload input
   const userSchema = object({
-    kondisi: string().max(50, "Maksimum 50 karakter").required("Kondisi harus diisi"),
-    no_panel: string().max(25, "Maksimum 25 karakter"),
-    lab: string().max(50, "Maksimum 50 karakter"),
-    nama_mesin: string().max(100, "Maksimum 100 karakter").required("Nama Mesin harus diisi"),
-    daya_mesin: number()
+    mes_kondisi_operasional: string()
+      .max(50, "Maksimum 50 karakter")
+      .required("Kondisi Operasional harus diisi"),
+    mes_no_panel: string().max(25, "Maksimum 25 karakter"),
+    mes_lab: string().max(50, "Maksimum 50 karakter"),
+    mes_nama_mesin: string()
+      .max(100, "Maksimum 100 karakter")
+      .required("Nama Mesin harus diisi"),
+    mes_daya_mesin: number()
       .typeError("Daya Mesin harus berupa angka")
       .positive("Harus angka positif")
       .required("Daya Mesin harus diisi"),
@@ -99,7 +104,7 @@ export default function MasterMesinAdd({ onChangePage }) {
         if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal menyimpan data Mesin.");
         } else {
-          SweetAlert("Sukses", "Data Mesin berhasil disimpan", "success");
+          Swal.fire("Sukses", "Data Mesin berhasil disimpan", "success");
           onChangePage("index");
         }
       } catch (error) {
@@ -131,7 +136,46 @@ export default function MasterMesinAdd({ onChangePage }) {
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="kondisi"
+                  forInput="mes_nama_mesin"
+                  label="Nama Mesin"
+                  isRequired
+                  value={formDataRef.current.mes_nama_mesin}
+                  onChange={handleInputChange}
+                  errorMessage={errors.mes_nama_mesin}
+                />
+              </div>
+              <div className="col-lg-3">
+                <label htmlFor="mes_upt" className="fw-bold">
+                  UPT
+                  <span style={{ color: "red" }}> *</span>
+                </label>
+                <select
+                  id="mes_upt"
+                  name="mes_upt"
+                  className="form-select"
+                  onChange={handleInputChange}
+                  value={formDataRef.current.mes_upt}
+                  errorMessage={errors.mes_upt}
+                >
+                  <option value="">Pilih UPT</option>
+                  <option value="PEMESIANAN">PEMESIANAN</option>
+                  <option value="MANUFAKTUR">MANUFAKTUR</option>
+                  <option value="DESAIN DAN METROLOGI">
+                    DESAIN DAN METROLOGI
+                  </option>
+                  <option value="OTOMASI">OTOMASI</option>
+                  <option value="PERAWATAN">PERAWATAN</option>
+                  <option value="OTOMOTIF">OTOMOTIF</option>
+                  <option value="ALAT BERAT">ALAT BERAT</option>
+                  <option value="SIPIL">SIPIL</option>
+                  <option value="PRODUKSI">PRODUKSI</option>
+                  <option value="LPT3">LPT3</option>
+                </select>
+              </div>
+              <div className="col-lg-3">
+                <Input
+                  type="text"
+                  forInput="mes_kondisi_operasional"
                   label="Kondisi Operasional (%)"
                   isRequired
                   value={formDataRef.current.kondisi}
@@ -184,10 +228,9 @@ export default function MasterMesinAdd({ onChangePage }) {
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="jumlah"
-                  label="Jumlah"
-                  isRequired
-                  value={formDataRef.current.jumlah}
+                  forInput="mes_kapasitas"
+                  label="Kapasistas"
+                  value={formDataRef.current.mes_kapasitas}
                   onChange={handleInputChange}
                   errorMessage={errors.jumlah}
                 />
@@ -195,9 +238,9 @@ export default function MasterMesinAdd({ onChangePage }) {
               <div className="col-lg-3">
                 <Input
                   type="text"
-                  forInput="kapasitas"
-                  label="Kapasitas"
-                  value={formDataRef.current.kapasitas}
+                  forInput="mes_tipe"
+                  label="Tipe Mesin"
+                  value={formDataRef.current.mes_tipe}
                   onChange={handleInputChange}
                   errorMessage={errors.kapasitas}
                 />

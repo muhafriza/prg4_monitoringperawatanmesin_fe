@@ -1,5 +1,6 @@
 import BerandaAdministrator from "./Administrator";
 import BerandaTeknisi from "./Teknisi";
+import BerandaPIC from "./Pic";
 import Cookies from "js-cookie";
 import { decryptId } from "../../util/Encryptor";
 import BerandaPIC from "./Pic";

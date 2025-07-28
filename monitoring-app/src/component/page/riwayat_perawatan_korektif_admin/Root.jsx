@@ -18,15 +18,18 @@ export default function RiwayatPerawatanKorektif() {
         return <MasterSparepartAdd onChangePage={handleSetPageMode} />;
       case "edit":
         return (
-          <MasterSparepartEdit onChangePage={handleSetPageMode} withID={dataID} />
+          <MasterSparepartEdit
+            onChangePage={handleSetPageMode}
+            withID={dataID}
+          />
         );
-        case "detail":
-          return (
-            <DetailRiwayatKorektif
-              onChangePage={handleSetPageMode}
-              withID={dataID}
-            />
-          );
+      case "detail":
+        return (
+          <DetailRiwayatKorektif
+            onChangePage={handleSetPageMode}
+            withID={dataID}
+          />
+        );
     }
   }
 

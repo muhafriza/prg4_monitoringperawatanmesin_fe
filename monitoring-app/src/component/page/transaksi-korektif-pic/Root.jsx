@@ -1,4 +1,5 @@
 import { useState } from "react";
+<<<<<<< HEAD
 import Cookies from "js-cookie";
 import { decryptId } from "../../util/Encryptor";
 import KorektifPicPerawatan from "../transaksi-korektif-pic-perawatan/Root";
@@ -56,6 +57,30 @@ export default function KorektifPic() {
         return <KorektifPicProduksi onChangePage={handleSetPageMode} />;
       case "LPT3":
         return <KorektifPicLPT3 onChangePage={handleSetPageMode} />;
+=======
+import PerawatanKorektif from "./Index";
+import KorektifAdd from "./Add";
+import KorektifDetail from "./Detail";
+
+
+export default function KorektifPicLPT3() {
+  const [pageMode, setPageMode] = useState("index");
+  const [dataID, setDataID] = useState();
+
+  function getPageMode() {
+    switch (pageMode) {
+      case "index":
+        return <PerawatanKorektif onChangePage={handleSetPageMode} />;
+      case "add":
+        return <KorektifAdd onChangePage={handleSetPageMode} />;
+        case "detail":
+          return (
+            <KorektifDetail
+              onChangePage={handleSetPageMode}
+              withID={dataID}
+            />
+          );
+>>>>>>> Commit-All
     }
   }
 

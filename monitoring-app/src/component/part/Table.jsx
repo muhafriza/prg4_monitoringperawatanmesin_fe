@@ -2,6 +2,7 @@ import Icon from "./Icon";
 
 export default function Table({
   data,
+  rowStyles = () => ({}), // Tambahkan default function untuk rowStyles
   onToggle = () => {},
   onCancel = () => {},
   onDelete = () => {},
@@ -21,10 +22,10 @@ export default function Table({
     if (columnName !== "Aksi") return value;
 
     let Status = "";
-    if (status == 1 || status == "Aktif"){
-      Status = "Aktif"
-    }else{
-      Status = "Tidak Aktif"
+    if (status == 1 || status == "Aktif") {
+      Status = "Aktif";
+    } else {
+      Status = "Tidak Aktif";
     }
     const listButton = value.map((action) => {
       switch (action) {
@@ -225,6 +226,7 @@ export default function Table({
                         ? "fw-bold"
                         : undefined
                     }
+                    style={rowStyles ? rowStyles(value, rowIndex) : {}}
                   >
                     {Object.keys(value).map((column, colIndex) => {
                       if (

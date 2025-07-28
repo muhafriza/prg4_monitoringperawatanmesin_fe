@@ -10,6 +10,9 @@ import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
+import Swal from "sweetalert2";
 
 const inisialisasiData = [
   {
@@ -43,9 +46,93 @@ export default function MasterSparepart({ onChangePage }) {
     page: 1,
     query: "",
     sort: "[spa_nama_Sparepart] asc",
-    status: "Aktif",
-    itemPerPage: 5,
+    status: "Tersedia",
+    itemPerPage: 10,
   });
+
+  const exportToExcel = async () => {
+    if (!dataExport || dataExport.length === 0) {
+      console.log(dataExport);
+      Swal.fire("Gagal", "Tidak ada data untuk dieksport!", "error");
+      return;
+    }
+
+    // 1. Buat workbook dan worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Data Sparepart");
+
+    // 2. Tambahkan header dengan styling
+    const headers = Object.keys(dataExport[0]);
+    worksheet.addRow(headers);
+
+    worksheet.getRow(1).eachCell((cell, colNumber) => {
+      cell.font = { bold: true, color: { argb: "FFFFFF" } };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "0074cc" },
+      };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+
+      worksheet.getColumn(colNumber).width = Math.max(
+        headers[colNumber - 1].length + 5,
+        10
+      );
+    });
+
+    // 3. Hitung panjang maksimum setiap kolom untuk menentukan ukuran kolom
+    const columnWidths = headers.map((_, colIndex) => {
+      return (
+        Math.max(
+          headers[colIndex].length,
+          ...dataExport.map((row) =>
+            row[headers[colIndex]]
+              ? row[headers[colIndex]].toString().length
+              : 0
+          )
+        ) + 2
+      );
+    });
+
+    // 4. Tambahkan data dan styling
+    dataExport.forEach((item) => {
+      const rowData = headers.map((header) => item[header] || ""); // Mengisi sel kosong dengan string kosong
+      const row = worksheet.addRow(rowData);
+
+      row.eachCell((cell, colNumber) => {
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+
+        cell.alignment = { horizontal: "center", vertical: "middle" };
+
+        // Atur ukuran kolom berdasarkan data yang ada
+        worksheet.getColumn(colNumber).width = Math.max(
+          columnWidths[colNumber - 1],
+          10
+        );
+      });
+    });
+
+    // 5. Konversi workbook ke file Excel (Blob)
+    const buffer = await workbook.xlsx.writeBuffer();
+    const excelFile = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    // 6. Simpan file
+    const now = new Date().toISOString().split("T")[0];
+    saveAs(excelFile, `Data-Sparepart_${formatDate(now, "D MMMM YYYY")}.xlsx`);
+  };
 
   const searchQuery = useRef();
   const searchFilterSort = useRef();
@@ -113,26 +200,60 @@ export default function MasterSparepart({ onChangePage }) {
   }
 
   function handleSetStatus(id) {
-    setIsLoading(true);
-    setIsError(false);
-    UseFetch(API_LINK + "MasterSparepart/SetStatusSparepart", {
-      idSparepart: id,
-    })
-      .then((data) => {
-        if (data === "ERROR" || data.length === 0) setIsError(true);
-        else {
-          SweetAlert(
-            "Sukses",
-            "Status data Sparepart berhasil diubah menjadi " + data[0].Status,
-            "success"
-          );
+    Swal.fire({
+      title: "Perhatian",
+      text: "Yakin Ingin Mengubah Status Sparepart ini?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Ya, Ubah Status",
+    }).then((result) => {
+      setIsLoading(true);
+      setIsError(false);
+      if (result.isConfirmed) {
+        UseFetch(API_LINK + "MasterSparepart/SetStatusSparepart", {
+          idSparepart: id,
+        }).then((data) => {
+          if (data === "ERROR" || data.length === 0) setIsError(true);
+          Swal.fire({
+            title: "Success!",
+            text:
+              "Status data Sparepart berhasil diubah menjadi " + data[0].Status,
+            icon: "success",
+          });
           handleSetCurrentPage(currentFilter.page);
-        }
-      })
-      .then(() => setIsLoading(false));
+        });
+      } else {
+        setIsLoading(false);
+      }
+    });
   }
 
   useEffect(() => {
+    const fetchDataToExport = async () => {
+      setIsError(false);
+      try {
+        const data = await UseFetch(
+          API_LINK + "MasterSparepart/ExportExcelSparepart",
+          { status: "Aktif" }
+        );
+
+        if (!data) {
+          setIsError(true);
+          console.log("Error saat fetch data export");
+        } else if (data.length === 0) {
+          setDataExport(inisialisasiData);
+        } else {
+          setDataExport(data);
+          console.log("Data Export" + dataExport);
+        }
+      } catch {
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     const fetchData = async () => {
       setIsError(false);
     
@@ -228,6 +349,13 @@ export default function MasterSparepart({ onChangePage }) {
                 defaultValue="Aktif"
               />
             </Filter>
+            <Button
+              iconName="file-export"
+              classType="success"
+              title="Export"
+              label="Export to Excel"
+              onClick={exportToExcel}
+            />
           </div>
         </div>
         <div className="mt-3">
