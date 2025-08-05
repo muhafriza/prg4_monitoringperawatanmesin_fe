@@ -466,6 +466,15 @@ export default function PerawatanPreventif({ onChangePage }) {
               </div>
             </div>
             <div className="mt-3">
+              {/* Legend Status */}
+              <div className="mb-3">
+                <strong>Legend Status:</strong>
+                <ul className="mb-0">
+                  <li><span className="badge bg-success">Selesai</span>: Perawatan sudah selesai dilakukan</li>
+                  <li><span className="badge bg-warning text-dark">Proses</span>: Perawatan sedang berlangsung</li>
+                  <li><span className="badge bg-secondary">Belum Selesai</span>: Perawatan belum selesai</li>
+                </ul>
+              </div>
               {isLoading ? (
                 <Loading />
               ) : (

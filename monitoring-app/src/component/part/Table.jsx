@@ -14,6 +14,8 @@ export default function Table({
   onUpload = () => {},
   onFinal = () => {},
   onPrint = () => {},
+  showStatusLegend = false,
+  statusLegendContent = null,
 }) {
   let colPosition;
   let colCount = 0;
@@ -217,15 +219,23 @@ export default function Table({
                 return (
                   <tr
                     key={value["Key"]}
-                    className={
-                      value["Status"] &&
-                      (value["Status"] === "Draft" ||
-                        value["Status"] === "Revisi" ||
-                        value["Status"] === "Belum Dikonversi" ||
-                        value["Status"] === "Belum Dibuat Penjadwalan")
-                        ? "fw-bold"
-                        : undefined
-                    }
+                    className={(() => {
+                      const statusVal = value["Status"] || value["kor_status_pemeliharaan"];
+                      if (
+                        statusVal === "Selesai" || statusVal === 1 || statusVal === "1"
+                      ) {
+                        return "row-outline-success";
+                      } else if (
+                        statusVal === "Dalam Pengerjaan" || statusVal === "Menunggu Perbaikan"
+                      ) {
+                        return "row-outline-warning";
+                      } else if (
+                        statusVal === "Pending" || statusVal === 0 || statusVal === "0"
+                      ) {
+                        return "row-outline-danger";
+                      }
+                      return undefined;
+                    })()}
                     style={rowStyles ? rowStyles(value, rowIndex) : {}}
                   >
                     {Object.keys(value).map((column, colIndex) => {
@@ -264,6 +274,7 @@ export default function Table({
           </tbody>
         </table>
       </div>
+      {showStatusLegend && statusLegendContent}
     </div>
   );
 }

@@ -199,6 +199,20 @@ export default function KorektifTeknisi({ onChangePage }) {
                 totalData={currentData[0]["Count"]}
                 navigation={handleSetCurrentPage}
               />
+              {/* Legend Status di bawah pagination */}
+              <div className="mt-3">
+                <strong>Legend Status:</strong>
+                <ul className="mb-0">
+                  <li><span className="badge bg-success">Selesai</span>: Perawatan sudah selesai dilakukan</li>
+                  <li><span className="badge bg-warning text-dark">Menunggu Perbaikan / Dalam Pengerjaan</span>: Perawatan sedang berlangsung atau menunggu tindakan</li>
+                  <li><span className="badge bg-danger">Pending</span>: Perawatan belum dimulai atau tertunda</li>
+                </ul>
+                <div className="text-muted mt-2" style={{fontSize: '0.95em'}}>
+                  * Klik ikon <i className="bi bi-pencil"></i> untuk mengedit data. <br/>
+                  * Klik ikon <i className="bi bi-eye"></i> untuk melihat detail data. <br/>
+                  * Status dan outline warna baris akan berubah otomatis sesuai progres perawatan.
+                </div>
+              </div>
             </div>
           )}
         </div>
