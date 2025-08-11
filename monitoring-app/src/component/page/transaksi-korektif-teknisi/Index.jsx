@@ -2,14 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { PAGE_SIZE, API_LINK } from "../../util/Constants";
 import SweetAlert from "../../util/SweetAlert";
 import UseFetch from "../../util/UseFetch";
-import Button from "../../part/Button";
-import Input from "../../part/Input";
-import Table from "../../part/Table";
-import Paging from "../../part/Paging";
-import Filter from "../../part/Filter";
-import DropDown from "../../part/Dropdown";
-import Alert from "../../part/Alert";
-import Loading from "../../part/Loading";
+import { Button, Input, Table, Paging, Filter, Dropdown as DropDown, Alert, Loading, StatusLegend } from "../../part";
 
 const inisialisasiData = [
   {
@@ -230,22 +223,7 @@ export default function KorektifTeknisi({ onChangePage }) {
                 data={currentData.map(({ rowStyle, ...rest }) => rest)}
                 rowStyles={(row, index) => currentData[index]?.rowStyle || {}}
                 showStatusLegend={true}
-                statusLegendContent={
-                  <div className="mt-3">
-                    <strong>Legend Status:</strong>
-                    <ul className="mb-0">
-                      <li><span className="badge bg-success">Selesai</span>: Perawatan sudah selesai dilakukan</li>
-                      <li><span className="badge bg-warning text-dark">Dalam Pengerjaan</span>: Perawatan sedang berlangsung</li>
-                      <li><span className="badge bg-danger">Tertunda</span>: Perawatan ditunda atau belum dimulai</li>
-                      <li><span className="badge bg-secondary">Batal</span>: Perawatan dibatalkan</li>
-                    </ul>
-                    <div className="text-muted mt-2" style={{fontSize: '0.95em'}}>
-                      * Klik ikon <i className="bi bi-pencil"></i> untuk mengedit data. <br/>
-                      * Klik ikon <i className="bi bi-eye"></i> untuk melihat detail data. <br/>
-                      * Status dan outline warna baris akan berubah otomatis sesuai progres perawatan.
-                    </div>
-                  </div>
-                }
+                statusLegendContent={<StatusLegend />}
               />
               <Paging
                 pageSize={PAGE_SIZE}
@@ -253,21 +231,7 @@ export default function KorektifTeknisi({ onChangePage }) {
                 totalData={currentData[0]["Count"]}
                 navigation={handleSetCurrentPage}
               />
-              {/* Legend Status Manual */}
-              <div className="mt-3">
-                <strong>Legend Status:</strong>
-                <ul className="mb-0">
-                  <li><span className="badge bg-success">Selesai</span>: Perawatan sudah selesai dilakukan</li>
-                  <li><span className="badge bg-warning text-dark">Dalam Pengerjaan</span>: Perawatan sedang berlangsung</li>
-                  <li><span className="badge bg-danger">Tertunda</span>: Perawatan ditunda atau belum dimulai</li>
-                  <li><span className="badge bg-secondary">Batal</span>: Perawatan dibatalkan</li>
-                </ul>
-                <div className="text-muted mt-2" style={{fontSize: '0.95em'}}>
-                  * Klik ikon <i className="bi bi-pencil"></i> untuk mengedit data. <br/>
-                  * Klik ikon <i className="bi bi-eye"></i> untuk melihat detail data. <br/>
-                  * Status dan outline warna baris akan berubah otomatis sesuai progres perawatan.
-                </div>
-              </div>
+
             </div>
           )}
         </div>
@@ -280,22 +244,7 @@ export default function KorektifTeknisi({ onChangePage }) {
               data={currentData.map(({ rowStyle, ...rest }) => rest)}
               rowStyles={(row, index) => currentData[index]?.rowStyle || {}}
               showStatusLegend={true}
-              statusLegendContent={
-                <div className="mt-3">
-                  <strong>Legend Status:</strong>
-                  <ul className="mb-0">
-                    <li><span className="badge bg-success">Selesai</span>: Perawatan sudah selesai dilakukan</li>
-                    <li><span className="badge bg-warning text-dark">Dalam Pengerjaan</span>: Perawatan sedang berlangsung</li>
-                    <li><span className="badge bg-danger">Tertunda</span>: Perawatan ditunda atau belum dimulai</li>
-                    <li><span className="badge bg-secondary">Batal</span>: Perawatan dibatalkan</li>
-                  </ul>
-                  <div className="text-muted mt-2" style={{fontSize: '0.95em'}}>
-                    * Klik ikon <i className="bi bi-pencil"></i> untuk mengedit data. <br/>
-                    * Klik ikon <i className="bi bi-eye"></i> untuk melihat detail data. <br/>
-                    * Status dan outline warna baris akan berubah otomatis sesuai progres perawatan.
-                  </div>
-                </div>
-              }
+              statusLegendContent={<StatusLegend />}
               />
             <Paging
               pageSize={PAGE_SIZE}
@@ -303,21 +252,7 @@ export default function KorektifTeknisi({ onChangePage }) {
               totalData={currentData[0]["Count"]}
               navigation={handleSetCurrentPage}
             />
-            {/* Legend Status Manual untuk Tabel Kedua */}
-            <div className="mt-3">
-              <strong>Legend Status:</strong>
-              <ul className="mb-0">
-                <li><span className="badge bg-success">Selesai</span>: Perawatan sudah selesai dilakukan</li>
-                <li><span className="badge bg-warning text-dark">Dalam Pengerjaan</span>: Perawatan sedang berlangsung</li>
-                <li><span className="badge bg-danger">Tertunda</span>: Perawatan ditunda atau belum dimulai</li>
-                <li><span className="badge bg-secondary">Batal</span>: Perawatan dibatalkan</li>
-              </ul>
-              <div className="text-muted mt-2" style={{fontSize: '0.95em'}}>
-                * Klik ikon <i className="bi bi-pencil"></i> untuk mengedit data. <br/>
-                * Klik ikon <i className="bi bi-eye"></i> untuk melihat detail data. <br/>
-                * Status dan outline warna baris akan berubah otomatis sesuai progres perawatan.
-              </div>
-            </div>
+
           </div>
         </div>
       </div>

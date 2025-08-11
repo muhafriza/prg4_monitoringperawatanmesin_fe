@@ -1,14 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { PAGE_SIZE, API_LINK } from "../../util/Constants";
 import UseFetch from "../../util/UseFetch";
-import Button from "../../part/Button";
-import Input from "../../part/Input";
-import Table from "../../part/Table";
-import Paging from "../../part/Paging";
-import Filter from "../../part/Filter";
-import DropDown from "../../part/Dropdown";
-import Alert from "../../part/Alert";
-import Loading from "../../part/Loading";
+import { Button, Input, Table, Paging, Filter, Dropdown as DropDown, Alert, Loading, StatusLegend } from "../../part";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import html2canvas from "html2canvas";
@@ -620,23 +613,7 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
                     onPrint={fetchDataKorektifByID}
                     rowStyles={(row, index) => currentData[index]?.rowStyle || {}}
                     showStatusLegend={true}
-                    statusLegendContent={
-                      <div className="mt-3">
-                        <strong>Legend Status:</strong>
-                        <ul className="mb-0">
-                          <li><span className="badge bg-success">Selesai</span>: Perawatan sudah selesai dilakukan</li>
-                          <li><span className="badge bg-warning text-dark">Dalam Pengerjaan</span>: Perawatan sedang berlangsung</li>
-                          <li><span className="badge bg-danger">Tertunda</span>: Perawatan ditunda atau belum dimulai</li>
-                          <li><span className="badge bg-secondary">Batal</span>: Perawatan dibatalkan</li>
-                        </ul>
-                        <div className="text-muted mt-2" style={{fontSize: '0.95em'}}>
-                          * Klik ikon <i className="bi bi-pencil"></i> untuk mengedit data. <br/>
-                          * Klik ikon <i className="bi bi-eye"></i> untuk melihat detail data. <br/>
-                          * Klik ikon <i className="bi bi-printer"></i> untuk mencetak laporan. <br/>
-                          * Status dan outline warna baris akan berubah otomatis sesuai progres perawatan.
-                        </div>
-                      </div>
-                    }
+                    statusLegendContent={<StatusLegend showPrintIcon={true} />}
                   />
                   <Paging
                     pageSize={PAGE_SIZE}
@@ -712,8 +689,14 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
                       data={
                         DataKorektifByID != null
                           ? DataKorektifByID
-                          : currentData
+                          : currentData.map(({ rowStyle, ...rest }) => rest)
                       }
+                      rowStyles={(row, index) => {
+                        if (DataKorektifByID != null) {
+                          return {};
+                        }
+                        return currentData[index]?.rowStyle || {};
+                      }}
                     />
                   </div>
                 )}
@@ -725,7 +708,10 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
                     title="Detail Sparepart yang digunakan: "
                   />
                   {fetchDataDetailSP && fetchDataDetailSP.length > 0 ? (
-                    <Table data={fetchDataDetailSP} />
+                    <Table 
+                      data={fetchDataDetailSP.map(({ rowStyle, ...rest }) => rest)}
+                      rowStyles={(row, index) => fetchDataDetailSP[index]?.rowStyle || {}}
+                    />
                   ) : (
                     <p>Tidak Ada Sparepart.</p>
                   )}
