@@ -331,6 +331,27 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
       };
     });
   }
+
+  function handleSetStatus(id) {
+    setIsLoading(true);
+    setIsError(false);
+    UseFetch(API_LINK + "Korektif/GetDetailKorektif", {
+      kor_id_perawatan_korektif: id,
+    })
+      .then((data) => {
+        if (data === "ERROR" || data.length === 0) setIsError(true);
+        else {
+          Swal.fire(
+            "Sukses",
+            "Status berhasil diubah menjadi " +
+              (data[0].kor_status_pemeliharaan === 1 ? "Selesai" : "Belum Selesai"),
+            "success"
+          );
+          handleSetCurrentPage(currentFilter.page);
+        }
+      })
+      .finally(() => setIsLoading(false));
+  }
   const [idKO, setIdKO] = useState();
 
   const fetchDataKorektifByID = async (ID) => {
@@ -512,6 +533,16 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
                 "center",
                 "center",
               ],
+              rowStyle: (() => {
+                if (Status_Pemeliharaan === "Selesai") {
+                  return { border: "3px solid #198754" };
+                } else if (Status_Pemeliharaan === "Dalam Pengerjaan" || Status_Pemeliharaan === "Menunggu Perbaikan") {
+                  return { border: "3px solid #ffc107" };
+                } else if (Status_Pemeliharaan === "Tertunda" || Status_Pemeliharaan === "Batal" || Status_Pemeliharaan === "Pending") {
+                  return { border: "3px solid #dc3545" };
+                }
+                return {};
+              })(),
             };
           });
           console.log(currentData.Key);
@@ -582,10 +613,30 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
               ) : (
                 <div className="d-flex flex-column">
                   <Table
-                    data={currentData}
+                    onToggle={handleSetStatus}
+                    data={currentData.map(({ rowStyle, ...rest }) => rest)}
                     onDetail={onChangePage}
                     onEdit={onChangePage}
                     onPrint={fetchDataKorektifByID}
+                    rowStyles={(row, index) => currentData[index]?.rowStyle || {}}
+                    showStatusLegend={true}
+                    statusLegendContent={
+                      <div className="mt-3">
+                        <strong>Legend Status:</strong>
+                        <ul className="mb-0">
+                          <li><span className="badge bg-success">Selesai</span>: Perawatan sudah selesai dilakukan</li>
+                          <li><span className="badge bg-warning text-dark">Dalam Pengerjaan</span>: Perawatan sedang berlangsung</li>
+                          <li><span className="badge bg-danger">Tertunda</span>: Perawatan ditunda atau belum dimulai</li>
+                          <li><span className="badge bg-secondary">Batal</span>: Perawatan dibatalkan</li>
+                        </ul>
+                        <div className="text-muted mt-2" style={{fontSize: '0.95em'}}>
+                          * Klik ikon <i className="bi bi-pencil"></i> untuk mengedit data. <br/>
+                          * Klik ikon <i className="bi bi-eye"></i> untuk melihat detail data. <br/>
+                          * Klik ikon <i className="bi bi-printer"></i> untuk mencetak laporan. <br/>
+                          * Status dan outline warna baris akan berubah otomatis sesuai progres perawatan.
+                        </div>
+                      </div>
+                    }
                   />
                   <Paging
                     pageSize={PAGE_SIZE}

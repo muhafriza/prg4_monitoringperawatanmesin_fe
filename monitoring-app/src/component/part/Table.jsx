@@ -222,15 +222,17 @@ export default function Table({
                     className={(() => {
                       const statusVal = value["Status"] || value["kor_status_pemeliharaan"];
                       if (
-                        statusVal === "Selesai" || statusVal === 1 || statusVal === "1"
+                        statusVal === "Selesai" || statusVal === 1 || statusVal === "1" || statusVal === "selesai"
                       ) {
                         return "row-outline-success";
                       } else if (
-                        statusVal === "Dalam Pengerjaan" || statusVal === "Menunggu Perbaikan"
+                        statusVal === "Dalam Pengerjaan" || statusVal === "Menunggu Perbaikan" || 
+                        statusVal === "dikerjakan" || statusVal === "Proses"
                       ) {
                         return "row-outline-warning";
                       } else if (
-                        statusVal === "Pending" || statusVal === 0 || statusVal === "0"
+                        statusVal === "Tertunda" || statusVal === "Batal" || statusVal === "Pending" || 
+                        statusVal === 0 || statusVal === "0" || statusVal === "batal"
                       ) {
                         return "row-outline-danger";
                       }

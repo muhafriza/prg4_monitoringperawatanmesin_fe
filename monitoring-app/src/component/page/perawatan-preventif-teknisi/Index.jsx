@@ -281,6 +281,23 @@ export default function PerawatanKorektif({ onChangePage }) {
                   onEdit={onChangePage}
                   data={currentData.map(({ rowStyle, ...rest }) => rest)}
                   rowStyles={(row, index) => currentData[index]?.rowStyle || {}}
+                  showStatusLegend={true}
+                  statusLegendContent={
+                    <div className="mt-3">
+                      <strong>Legend Status:</strong>
+                      <ul className="mb-0">
+                        <li><span className="badge bg-success">Selesai</span>: Perawatan sudah selesai dilakukan</li>
+                        <li><span className="badge bg-warning text-dark">Dalam Pengerjaan</span>: Perawatan sedang berlangsung</li>
+                        <li><span className="badge bg-danger">Tertunda</span>: Perawatan ditunda atau belum dimulai</li>
+                        <li><span className="badge bg-secondary">Batal</span>: Perawatan dibatalkan</li>
+                      </ul>
+                      <div className="text-muted mt-2" style={{fontSize: '0.95em'}}>
+                        * Klik ikon <i className="bi bi-pencil"></i> untuk mengedit data. <br/>
+                        * Klik ikon <i className="bi bi-eye"></i> untuk melihat detail data. <br/>
+                        * Status dan outline warna baris akan berubah otomatis sesuai progres perawatan.
+                      </div>
+                    </div>
+                  }
                   />
                 <Paging
                   pageSize={PAGE_SIZE}

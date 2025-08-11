@@ -71,12 +71,163 @@ dialog::backdrop {
 
 .row-outline-danger {
   border: 2px solid #dc3545 !important;
+  outline: 2px solid #dc3545 !important;
 }
 .row-outline-warning {
   border: 2px solid #ffc107 !important;
+  outline: 2px solid #ffc107 !important;
 }
 .row-outline-success {
   border: 2px solid #198754 !important;
+  outline: 2px solid #198754 !important;
+}
+
+/* Tambahan CSS untuk memastikan outline muncul */
+table tbody tr.row-outline-danger {
+  border: 2px solid #dc3545 !important;
+  outline: 2px solid #dc3545 !important;
+  box-shadow: 0 0 0 2px #dc3545 !important;
+}
+table tbody tr.row-outline-warning {
+  border: 2px solid #ffc107 !important;
+  outline: 2px solid #ffc107 !important;
+  box-shadow: 0 0 0 2px #ffc107 !important;
+}
+table tbody tr.row-outline-success {
+  border: 2px solid #198754 !important;
+  outline: 2px solid #198754 !important;
+  box-shadow: 0 0 0 2px #198754 !important;
+}
+
+/* Override untuk memastikan outline muncul di semua kondisi */
+.table tbody tr.row-outline-danger,
+.table-hover tbody tr.row-outline-danger,
+.table-striped tbody tr.row-outline-danger {
+  border: 2px solid #dc3545 !important;
+  outline: 2px solid #dc3545 !important;
+  box-shadow: 0 0 0 2px #dc3545 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.table tbody tr.row-outline-warning,
+.table-hover tbody tr.row-outline-warning,
+.table-striped tbody tr.row-outline-warning {
+  border: 2px solid #ffc107 !important;
+  outline: 2px solid #ffc107 !important;
+  box-shadow: 0 0 0 2px #ffc107 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.table tbody tr.row-outline-success,
+.table-hover tbody tr.row-outline-success,
+.table-striped tbody tr.row-outline-success {
+  border: 2px solid #198754 !important;
+  outline: 2px solid #198754 !important;
+  box-shadow: 0 0 0 2px #198754 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* CSS khusus untuk memastikan outline muncul */
+tr.row-outline-danger {
+  border: 2px solid #dc3545 !important;
+  outline: 2px solid #dc3545 !important;
+  box-shadow: 0 0 0 2px #dc3545 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+tr.row-outline-warning {
+  border: 2px solid #ffc107 !important;
+  outline: 2px solid #ffc107 !important;
+  box-shadow: 0 0 0 2px #ffc107 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+tr.row-outline-success {
+  border: 2px solid #198754 !important;
+  outline: 2px solid #198754 !important;
+  box-shadow: 0 0 0 2px #198754 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* CSS untuk menghilangkan background warna solid dan memastikan outline muncul */
+.table tbody tr {
+  background-color: transparent !important;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.075) !important;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: transparent !important;
+}
+
+/* Memastikan outline garis muncul dengan jelas */
+tr.row-outline-danger {
+  border: 3px solid #dc3545 !important;
+  outline: 3px solid #dc3545 !important;
+  box-shadow: 0 0 0 3px #dc3545 !important;
+  position: relative !important;
+  z-index: 10 !important;
+  background-color: transparent !important;
+}
+
+tr.row-outline-warning {
+  border: 3px solid #ffc107 !important;
+  outline: 3px solid #ffc107 !important;
+  box-shadow: 0 0 0 3px #ffc107 !important;
+  position: relative !important;
+  z-index: 10 !important;
+  background-color: transparent !important;
+}
+
+tr.row-outline-success {
+  border: 3px solid #198754 !important;
+  outline: 3px solid #198754 !important;
+  box-shadow: 0 0 0 3px #198754 !important;
+  position: relative !important;
+  z-index: 10 !important;
+  background-color: transparent !important;
+}
+
+/* Override untuk semua kondisi tabel */
+.table tbody tr.row-outline-danger,
+.table-hover tbody tr.row-outline-danger,
+.table-striped tbody tr.row-outline-danger {
+  border: 3px solid #dc3545 !important;
+  outline: 3px solid #dc3545 !important;
+  box-shadow: 0 0 0 3px #dc3545 !important;
+  position: relative !important;
+  z-index: 10 !important;
+  background-color: transparent !important;
+}
+
+.table tbody tr.row-outline-warning,
+.table-hover tbody tr.row-outline-warning,
+.table-striped tbody tr.row-outline-warning {
+  border: 3px solid #ffc107 !important;
+  outline: 3px solid #ffc107 !important;
+  box-shadow: 0 0 0 3px #ffc107 !important;
+  position: relative !important;
+  z-index: 10 !important;
+  background-color: transparent !important;
+}
+
+.table tbody tr.row-outline-success,
+.table-hover tbody tr.row-outline-success,
+.table-striped tbody tr.row-outline-success {
+  border: 3px solid #198754 !important;
+  outline: 3px solid #198754 !important;
+  box-shadow: 0 0 0 3px #198754 !important;
+  position: relative !important;
+  z-index: 10 !important;
+  background-color: transparent !important;
 }
 
 @media only screen and (max-width: 1280px) {
