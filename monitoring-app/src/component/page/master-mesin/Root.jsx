@@ -3,6 +3,7 @@ import MasterMesinIndex from "./Index";
 import MasterMesinAdd from "./Add";
 import MasterMesinEdit from "./Edit";
 import MasterMesinDetail from "./Detail";
+import MasterMesinHistory from "./History";
 
 export default function MasterMesin() {
   const [pageMode, setPageMode] = useState("index");
@@ -14,17 +15,21 @@ export default function MasterMesin() {
         return <MasterMesinIndex onChangePage={handleSetPageMode} />;
       case "add":
         return <MasterMesinAdd onChangePage={handleSetPageMode} />;
+      case "history":
+        return (
+          <MasterMesinHistory
+            onChangePage={handleSetPageMode}
+            withID={dataID}
+          />
+        );
       case "edit":
         return (
           <MasterMesinEdit onChangePage={handleSetPageMode} withID={dataID} />
         );
-        case "detail":
-          return (
-            <MasterMesinDetail
-              onChangePage={handleSetPageMode}
-              withID={dataID}
-            />
-          );
+      case "detail":
+        return (
+          <MasterMesinDetail onChangePage={handleSetPageMode} withID={dataID} />
+        );
     }
   }
 

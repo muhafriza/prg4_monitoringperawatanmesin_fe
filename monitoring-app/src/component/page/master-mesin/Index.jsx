@@ -268,7 +268,7 @@ export default function MasterMesinIndex({ onChangePage }) {
         } else {
           const formattedData = data.map((value) => ({
             ...value,
-            Aksi: ["Toggle", "Detail", "Edit"],
+            Aksi: ["Toggle", "Detail", "Edit", "History"],
             Alignment: [
               "center",
               "center",
@@ -363,6 +363,7 @@ export default function MasterMesinIndex({ onChangePage }) {
                 onToggle={handleSetStatus}
                 onDetail={onChangePage}
                 onEdit={onChangePage}
+                onHistory={onChangePage}
               />
               <Paging
                 pageSize={PAGE_SIZE}

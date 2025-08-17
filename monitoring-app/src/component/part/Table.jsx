@@ -12,6 +12,7 @@ export default function Table({
   onReject = () => {},
   onSent = () => {},
   onUpload = () => {},
+  onHistory = () => {},
   onFinal = () => {},
   onPrint = () => {},
 }) {
@@ -140,6 +141,17 @@ export default function Table({
               cssClass="btn px-1 py-0 text-primary"
               title="Unggah Berkas"
               onClick={() => onUpload(id)}
+            />
+          );
+        case "History":
+          return (
+            <Icon
+              key={key + action}
+              name="chart-histogram"
+              type="Bold"
+              cssClass="btn px-1 py-0 text-primary"
+              title="Lihat Riwayat"
+              onClick={() => onHistory("history",id)}
             />
           );
         case "Final":
