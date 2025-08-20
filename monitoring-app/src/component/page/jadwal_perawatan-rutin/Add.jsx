@@ -10,18 +10,7 @@ import Button from "../../part/Button";
 import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
-
-const dataUPT = [
-  { Value: "PEMESINAN", Text: "PEMESINAN" },
-  { Value: "MANUFAKTUR", Text: "MANUFAKTUR" },
-  { Value: "DESAIN DAN METROLOGI", Text: "DESAIN DAN METROLOGI" },
-  { Value: "PERAWATAN", Text: "PERAWATAN" },
-  { Value: "OTOMOTIF", Text: "OTOMOTIF" },
-  { Value: "ALAT BERAT", Text: "ALAT BERAT" },
-  { Value: "SIPIL", Text: "SIPIL" },
-  { Value: "PRODUKSI", Text: "PRODUKSI" },
-  { Value: "LPT3", Text: "LPT3" },
-];
+import SearchDropdown from "../../part/SearchDropdown";
 
 export default function Add({ onChangePage }) {
   const [errors, setErrors] = useState({});
@@ -40,6 +29,7 @@ export default function Add({ onChangePage }) {
     sparepart: "",
     qty: "",
   });
+  const [bagian, setBagian] = useState([]);
   const [displayedSchedules, setDisplayedSchedules] = useState([]);
   const [sparepartOptions, setSparepartOptions] = useState([]);
   const [spareparts, setSpareparts] = useState([{ sparepart: "", qty: "" }]);
@@ -58,6 +48,31 @@ export default function Add({ onChangePage }) {
     sparepart: string(),
     qty: string(),
   });
+
+  useEffect(() => {
+    const fetchStruktur = async () => {
+      setIsError(false);
+      setIsLoading(true);
+
+      try {
+        const data = await UseFetch(API_LINK + "Mesin/GetStrukturBagian", {
+          status: "Aktif",
+        });
+
+        if (!data) {
+          setIsError(true);
+          console.log("Error saat fetch data export");
+        } else {
+          setBagian(data);
+        }
+      } catch {
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStruktur();
+  }, []);
 
   const handleUPTChange = (e) => {
     selectedUPT = e.target.value;
@@ -78,9 +93,10 @@ export default function Add({ onChangePage }) {
         }
       );
       console.log(data);
-      if (data === "ERROR" || data.length === 0) {
+      if (data === "ERROR") {
         throw new Error("Terjadi kesalahan: Gagal mengambil data Mesin.");
       } else {
+        console.log("data", data)
         setmesinOptions(data); // Set data yang diterima ke dalam mesinOptions
       }
     } catch (error) {
@@ -303,43 +319,27 @@ export default function Add({ onChangePage }) {
           <div className="card-body p-4">
             <div className="row">
               <div className="col-lg-3">
-                <label htmlFor="mes_upt" className="form-label fw-bold">
-                  UPT <span style={{ color: "red" }}>*</span>
-                </label>
-                <select
-                  id="mes_upt"
-                  name="upt"
-                  className="form-select"
+                <SearchDropdown
+                  label="Bagian"
+                  forInput="upt"
+                  isPlaceHolder={false}
+                  isRequired
+                  value={formDataRef.current.mes_upt}
+                  isDisabled={false}
+                  arrData={bagian}
                   onChange={handleUPTChange}
-                >
-                  <option value="">-- Pilih UPT --</option>
-                  {dataUPT.map((upt) => (
-                    <option key={upt.Value} value={upt.Value}>
-                      {upt.Text}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
               <div className="col-lg-3">
-                <label htmlFor="userDropdown" className="form-label fw-bold">
-                  Pilih Mesin <span style={{ color: "red" }}>*</span>
-                  {errors.mes_id_mesin && (
-                    <div className="text-danger">{errors.mes_id_mesin}</div>
-                  )}
-                </label>
-                <select
-                  id="userDropdown"
-                  name="mes_id_mesin"
-                  className="form-select"
+                <SearchDropdown
+                  label="Mesin"
+                  forInput="mes_id_mesin"
+                  isPlaceHolder={false}
+                  isRequired
+                  isDisabled={false}
+                  arrData={mesinOptions}
                   onChange={handleInputChange}
-                >
-                  <option value="">-- Pilih Mesin --</option>
-                  {mesinOptions.map((option) => (
-                    <option key={option.ID_Mesin} value={option.ID_Mesin}>
-                      {option.ID_Mesin}, {option.Nama_Mesin}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
               <div className="col-lg-3">
                 <Input

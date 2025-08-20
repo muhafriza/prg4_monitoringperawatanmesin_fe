@@ -11,6 +11,7 @@ import Filter from "../../part/Filter";
 import DropDown from "../../part/Dropdown";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
+import Swal from "sweetalert2";
 
 const inisialisasiData = [
   {
@@ -73,12 +74,16 @@ export default function NotifikasiIndex() {
   }
 
   async function handleSetRead() {
-    const result = await SweetAlert(
-      "Tandai Semua Sudah Dibaca",
-      "Apakah Anda yakin ingin menandai status semua notifikasi menjadi sudah dibaca?",
-      "info",
-      "Ya, saya yakin!"
-    );
+    const result = await Swal.fire({
+      title: "Tandai Semua Sudah Dibaca",
+      text: "Apakah Anda yakin ingin menandai status semua notifikasi menjadi sudah dibaca?",
+      icon: "question", // atau "warning"
+      showCancelButton: true,
+      confirmButtonText: "Ya, saya yakin!",
+      cancelButtonText: "Batal",
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+    });
 
     if (result) {
       setIsLoading(true);
@@ -118,7 +123,7 @@ export default function NotifikasiIndex() {
         } else {
           const formattedData = data.map((value) => ({
             ...value,
-            Dari: value["Dari"].toUpperCase(),
+
             Pesan: (
               <div
                 className="link-decoration-none"

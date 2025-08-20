@@ -253,13 +253,7 @@ export default function MasterMesinIndex({ onChangePage }) {
 
       try {
         // Fetch data with the dynamic filters and pagination
-        const data = await UseFetch(API_LINK + "Mesin/GetDataMesin", {
-          page: currentFilter.page,
-          query: currentFilter.query,
-          sort: currentFilter.sort,
-          status: currentFilter.status,
-          itemPerPage: currentFilter.itemPerPage,
-        });
+        const data = await UseFetch(API_LINK + "Mesin/GetDataMesin", currentFilter);
 
         if (data === "ERROR") {
           setIsError(true);

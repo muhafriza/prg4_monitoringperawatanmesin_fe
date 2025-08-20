@@ -7,6 +7,13 @@ import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
+import SearchDropdown from "../../part/SearchDropdown";
+
+const Role = [
+  { Text: "ADMINISTRATOR UPT", Value: "ADMINISTRATOR UPT" },
+  { Text: "PIC", Value: "PIC" },
+  { Text: "TEKNISI", Value: "TEKNISI" },
+];
 
 export default function MasterKaryawanAdd({ onChangePage }) {
   const [errors, setErrors] = useState({});
@@ -18,15 +25,41 @@ export default function MasterKaryawanAdd({ onChangePage }) {
     p2: "Aktif",
   });
 
+  const [bagian, setBagian] = useState([]);
   const formDataRef = useRef({
     usr_id: "",
     rol_id: "",
     app_id: "APP60",
     usr_status: "Aktif",
-    upt: "", // Menambahkan upt ke form data
+    bagian: "", // Menambahkan bagian ke form data
   });
 
   const [userOptions, setUserOptions] = useState([]); // State untuk menyimpan data pengguna
+
+  useEffect(() => {
+    const fetchStruktur = async () => {
+      setIsError(false);
+      setIsLoading(true);
+
+      try {
+        const data = await UseFetch(API_LINK + "Mesin/GetStrukturBagian", {
+          status: "Aktif",
+        });
+
+        if (!data) {
+          setIsError(true);
+          console.log("Error saat fetch data export");
+        } else {
+          setBagian(data);
+        }
+      } catch {
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStruktur();
+  }, []);
 
   // Mengambil data karyawan dari API
   useEffect(() => {
@@ -63,9 +96,10 @@ export default function MasterKaryawanAdd({ onChangePage }) {
     rol_id: string().required("Role/Peran Harus diisi"),
     app_id: string(),
     usr_status: string(),
-    upt: string().when("role_baru", {
+    bagian: string().when("role_baru", {
       is: "PIC",
-      then: (schema) => schema.required("UPT wajib diisi jika role adalah PIC"),
+      then: (schema) =>
+        schema.required("bagian wajib diisi jika role adalah PIC"),
       otherwise: (schema) => schema.optional(),
     }),
   });
@@ -107,10 +141,10 @@ export default function MasterKaryawanAdd({ onChangePage }) {
 
       const rol_final =
         formDataRef.current.rol_id === "PIC"
-          ? `${formDataRef.current.rol_id} ${formDataRef.current.upt}`
+          ? `${formDataRef.current.rol_id} ${formDataRef.current.bagian}`
           : formDataRef.current.rol_id;
 
-      console.log(formDataRef.current.upt);
+      console.log(formDataRef.current.bagian);
       try {
         // Call the stored procedure here, assuming the API endpoint is set up for this
         const data = await UseFetch(API_LINK + "MasterUser/CreateUser", {
@@ -127,7 +161,7 @@ export default function MasterKaryawanAdd({ onChangePage }) {
           Swal.fire("Sukses", "Data User berhasil disimpan", "success");
           onChangePage("index");
         } else {
-          throw new Error("Terjadi kesalahan: Gagal menyimpan data User.");
+          throw new Error("Terjadi kesalahan: Gagal menyimpan data User.", data[0].pesan);
         }
       } catch (error) {
         window.scrollTo(0, 0);
@@ -162,71 +196,40 @@ export default function MasterKaryawanAdd({ onChangePage }) {
           <div className="card-body p-4">
             <div className="row">
               <div className="col-lg-3">
-                <label htmlFor="userDropdown" className="form-label">
-                  Pilih User<span style={{ color: "red" }}> *</span>
-                </label>
-                <select
-                  id="userDropdown"
-                  name="usr_id"
-                  className="form-select"
-                  value={formDataRef.current.usr_id}
-                  onChange={(e) => handleInputChange(e)}
-                  required
-                >
-                  <option value="">-- Pilih User --</option>
-                  {userOptions.map((option) => (
-                    <option key={option.Username} value={option.Username}>
-                      {option.Username}
-                    </option>
-                  ))}
-                </select>
-                {errors.usr_id && (
-                  <div className="text-danger">{errors.usr_id}</div>
-                )}
+                <SearchDropdown
+                  label="Karyawan"
+                  isRequired
+                  forInput="usr_id"
+                  isPlaceHolder={false}
+                  isDisabled={false}
+                  arrData={userOptions}
+                  onChange={handleInputChange}
+                />
               </div>
 
               <div className="col-lg-3">
-                <label htmlFor="role">
-                  Role<span style={{ color: "red" }}> *</span>
-                </label>
-                <select
-                  id="rol_id"
-                  name="rol_id"
-                  className="form-select"
+                <SearchDropdown
+                  label="Role"
+                  isRequired
+                  forInput="rol_id"
+                  isPlaceHolder={false}
+                  isDisabled={false}
+                  arrData={Role}
                   onChange={handleInputChange}
-                >
-                  <option value="ADMINISTRATOR UPT">Administrator UPT</option>
-                  <option value="PIC">PIC UPT</option>
-                  <option value="TEKNISI">TEKNISI</option>
-                </select>
+                />
               </div>
 
               {showAdditionalInput && (
                 <div className="form-group col-lg-4">
-                  <label htmlFor="upt">
-                    Data Tambahan untuk PIC
-                    <span style={{ color: "red" }}> *</span>
-                  </label>
-                  <select
-                    id="upt"
-                    name="upt"
-                    className="form-select"
+                  <SearchDropdown
+                    label="Bagian"
+                    isRequired
+                    forInput="bagian"
+                    isPlaceHolder={false}
+                    isDisabled={false}
+                    arrData={bagian}
                     onChange={handleInputChange}
-                  >
-                    <option value="">Pilih UPT</option>
-                    <option value="PEMESIANAN">PEMESIANAN</option>
-                    <option value="MANUFAKTUR">MANUFAKTUR</option>
-                    <option value="DESAIN DAN METROLOGI">
-                      DESAIN DAN METROLOGI
-                    </option>
-                    <option value="OTOMASI">OTOMASI</option>
-                    <option value="PERAWATAN">PERAWATAN</option>
-                    <option value="OTOMOTIF">OTOMOTIF</option>
-                    <option value="ALAT BERAT">ALAT BERAT</option>
-                    <option value="SIPIL">SIPIL</option>
-                    <option value="PRODUKSI">PRODUKSI</option>
-                    <option value="LPT3">LPT3</option>
-                  </select>
+                  />
                 </div>
               )}
             </div>

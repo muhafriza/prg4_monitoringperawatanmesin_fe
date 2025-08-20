@@ -7,6 +7,13 @@ import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
+import SearchDropdown from "../../part/SearchDropdown";
+
+const Role = [
+  { Text: "ADMINISTRATOR UPT", Value: "ADMINISTRATOR UPT" },
+  { Text: "PIC", Value: "PIC" },
+  { Text: "TEKNISI", Value: "TEKNISI" },
+];
 
 export default function MasterKaryawanEdit({ onChangePage, withID }) {
   const [errors, setErrors] = useState({});
@@ -19,7 +26,7 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
     role_baru: "",
     upt: "",
   });
-
+  const [bagian, setBagian] = useState([]);
   const userSchema = object({
     username: string().optional(),
     Role_Deskripsi: string().required(),
@@ -30,6 +37,31 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
       otherwise: (schema) => schema.optional(),
     }),
   });
+
+  useEffect(() => {
+    const fetchStruktur = async () => {
+      setIsError(false);
+      setIsLoading(true);
+
+      try {
+        const data = await UseFetch(API_LINK + "Mesin/GetStrukturBagian", {
+          status: "Aktif",
+        });
+
+        if (!data) {
+          setIsError(true);
+          console.log("Error saat fetch data export");
+        } else {
+          setBagian(data);
+        }
+      } catch {
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStruktur();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,7 +75,7 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
           rol: role,
         });
 
-        if (!data || data === "ERROR" || data.length === 0) {
+        if (!data) {
           throw new Error("Gagal mengambil data Karyawan.");
         }
 
@@ -51,6 +83,7 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
         const roleData = karyawanData.Role_Deskripsi.split(" ")[0];
         console.log(roleData);
 
+        console.log("roledata", data);
         if (roleData === "PIC") {
           const roleParts = karyawanData.Role_Deskripsi.split(" ");
           setFormData({
@@ -59,6 +92,7 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
             role_baru: roleData,
             upt: roleParts.length > 1 ? roleParts.slice(1).join(" ") : "", // Menggabungkan semua kata setelah "PIC"
           });
+          console.log();
           setShowAdditionalInput(true);
         } else {
           setFormData({
@@ -68,7 +102,6 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
             upt: "",
           });
         }
-
       } catch (error) {
         window.scrollTo(0, 0);
         setIsError({ error: true, message: error.message });
@@ -111,6 +144,7 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
       setErrors
     );
 
+    console.log("tes", validationErrors);
     if (Object.values(validationErrors).some((error) => error)) {
       window.scrollTo(0, 0);
       return;
@@ -131,12 +165,21 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
         upt: roleFinal,
       });
 
-      if (!data) {
-        throw new Error("Terjadi kesalahan: Gagal menyimpan data karyawan.");
+      if (data[0].hasil === "ERROR") {
+        // Tampilkan debug info di console untuk troubleshooting
+        console.error("Error details:", data[0]);
+        Swal.fire(
+          "Error",
+          data[0]?.pesan,
+          "error"
+        );
+      } else if (data[0]?.hasil === "OK") {
+        Swal.fire("Sukses", "Data User berhasil disimpan", "success");
+        onChangePage("index");
+      } else {
+        console.error("Unexpected response:", data);
+        throw new Error("TerjadiS kesalahan: Gagal menyimpan data User.", data);
       }
-
-      Swal.fire("Sukses", "Data karyawan berhasil disimpan", "success");
-      onChangePage("index");
     } catch (error) {
       window.scrollTo(0, 0);
       setIsError({ error: true, message: error.message });
@@ -161,43 +204,31 @@ export default function MasterKaryawanEdit({ onChangePage, withID }) {
           </div>
           <div className="card-body p-4">
             <div className="row">
-              <div className="form-group col-lg-4">
-                <label htmlFor="role_baru">Role</label>
-                <select
-                  id="role_baru"
-                  name="role_baru"
-                  className="form-select"
-                  value={formData.role_baru || ""}
+              <div className="col-lg-3">
+                <SearchDropdown
+                  label="Role"
+                  isRequired
+                  forInput="role_baru"
+                  value={formData.role_baru}
+                  isPlaceHolder={false}
+                  isDisabled={false}
+                  arrData={Role}
                   onChange={handleInputChange}
-                >
-                  <option value="ADMINISTRATOR UPT">Administrator UPT</option>
-                  <option value="PIC">PIC UPT</option>
-                  <option value="TEKNISI">TEKNISI</option>
-                </select>
+                />
               </div>
 
               {showAdditionalInput && (
                 <div className="form-group col-lg-4">
-                  <label htmlFor="upt">Data Tambahan untuk PIC</label>
-                  <select
-                    id="upt"
-                    name="upt"
-                    className="form-select"
-                    value={formData.upt || ""}
+                  <SearchDropdown
+                    label="Bagian"
+                    isRequired
+                    forInput="upt"
+                    value={formData.upt}
+                    isPlaceHolder={false}
+                    isDisabled={false}
+                    arrData={bagian}
                     onChange={handleInputChange}
-                  >
-                    <option value="">Pilih UPT</option>
-                    <option value="PEMESIANAN">PEMESIANAN</option>
-                    <option value="MANUFAKTUR">MANUFAKTUR</option>
-                    <option value="DESAIN DAN METROLOGI">DESAIN DAN METROLOGI</option>
-                    <option value="OTOMASI">OTOMASI</option>
-                    <option value="PERAWATAN">PERAWATAN</option>
-                    <option value="OTOMOTIF">OTOMOTIF</option>
-                    <option value="ALAT BERAT">ALAT BERAT</option>
-                    <option value="SIPIL">SIPIL</option>
-                    <option value="PRODUKSI">PRODUKSI</option>
-                    <option value="LPT3">LPT3</option>
-                  </select>
+                  />
                 </div>
               )}
             </div>

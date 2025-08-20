@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { object, string, number } from "yup";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
@@ -11,19 +11,21 @@ import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 import FileUpload from "../../part/FileUpload";
 import UploadFile from "../../util/UploadFile";
+import SearchDropdown from "../../part/SearchDropdown";
 
 export default function MasterMesinAdd({ onChangePage }) {
   const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+  const [bagian, setBagian] = useState([]);
 
   const formDataRef = useRef({
     mes_kondisi_operasional: "",
     mes_no_panel: "",
     mes_lab: "",
     mes_nama_mesin: "",
-    mes_upt: "",
+    mes_bagian: "",
     mes_daya_mesin: "",
     mes_kapasitas: "",
     mes_tipe: "",
@@ -48,7 +50,7 @@ export default function MasterMesinAdd({ onChangePage }) {
     mes_tipe: string().max(25, "Maksimum 25 karakter"),
     mes_status: string(),
     mes_gambar: string(),
-    mes_upt: string().required("UPT Harus diisi"),
+    mes_bagian: string().required("UPT Harus diisi"),
   });
 
   const handleFileChange = (ref, extAllowed) => {
@@ -84,6 +86,31 @@ export default function MasterMesinAdd({ onChangePage }) {
       }));
     }
   };
+
+  useEffect(() => {
+    const fetchStruktur = async () => {
+      setIsError(false);
+      setIsLoading(true);
+
+      try {
+        const data = await UseFetch(API_LINK + "Mesin/GetStrukturBagian", {
+          status: "Aktif",
+        });
+
+        if (!data) {
+          setIsError(true);
+          console.log("Error saat fetch data export");
+        } else {
+          setBagian(data);
+        }
+      } catch {
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStruktur();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -180,32 +207,15 @@ export default function MasterMesinAdd({ onChangePage }) {
                 />
               </div>
               <div className="col-lg-3">
-                <label htmlFor="mes_upt" className="fw-bold">
-                  UPT
-                  <span style={{ color: "red" }}> *</span>
-                </label>
-                <select
-                  id="mes_upt"
-                  name="mes_upt"
-                  className="form-select"
+                <SearchDropdown
+                  label="Bagian"
+                  forInput="mes_bagian"
+                  isPlaceHolder={false}
+                  isDisabled={false}
+                  isRequired
+                  arrData={bagian}
                   onChange={handleInputChange}
-                  value={formDataRef.current.mes_upt}
-                  errorMessage={errors.mes_upt}
-                >
-                  <option value="">Pilih UPT</option>
-                  <option value="PEMESIANAN">PEMESIANAN</option>
-                  <option value="MANUFAKTUR">MANUFAKTUR</option>
-                  <option value="DESAIN DAN METROLOGI">
-                    DESAIN DAN METROLOGI
-                  </option>
-                  <option value="OTOMASI">OTOMASI</option>
-                  <option value="PERAWATAN">PERAWATAN</option>
-                  <option value="OTOMOTIF">OTOMOTIF</option>
-                  <option value="ALAT BERAT">ALAT BERAT</option>
-                  <option value="SIPIL">SIPIL</option>
-                  <option value="PRODUKSI">PRODUKSI</option>
-                  <option value="LPT3">LPT3</option>
-                </select>
+                />
               </div>
               <div className="col-lg-3">
                 <Input

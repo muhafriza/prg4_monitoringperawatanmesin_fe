@@ -10,6 +10,9 @@ import Button from "../../part/Button";
 import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
+import SearchDropdown from "../../part/SearchDropdown";
+import Cookies from "js-cookie"
+import { decryptId } from "../../util/Encryptor";
 
 export default function MasterMesinEdit({ onChangePage, withID }) {
   const [errors, setErrors] = useState({});
@@ -17,6 +20,7 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
   const [isLoading, setIsLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState(null);
 
+  const [bagian, setBagian] = useState([]);
   const formDataRef = useRef({
     mes_id_mesin: "",
     mes_kondisi_operasional: "",
@@ -48,6 +52,21 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
     mes_tipe: string().optional(),
     mes_gambar: string(),
   });
+
+  const getUserInfo = () => {
+      const encryptedUser = Cookies.get("activeUser");
+      if (encryptedUser) {
+        try {
+          const userInfo = JSON.parse(decryptId(encryptedUser));
+          return userInfo;
+        } catch (error) {
+          console.error("Failed to decrypt user info:", error);
+          return null;
+        }
+      }
+      return null;
+    };
+      const userInfo = getUserInfo();
 
   const handleFileChange = (ref, extAllowed) => {
     const file = ref.current.files[0];
@@ -120,6 +139,31 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
     fetchData();
   }, [withID]);
 
+  useEffect(() => {
+    const fetchStruktur = async () => {
+      setIsError(false);
+      setIsLoading(true);
+
+      try {
+        const data = await UseFetch(API_LINK + "Mesin/GetStrukturBagian", {
+          status: "Aktif",
+        });
+
+        if (!data) {
+          setIsError(true);
+          console.log("Error saat fetch data export");
+        } else {
+          setBagian(data);
+        }
+      } catch {
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStruktur();
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
@@ -144,18 +188,33 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
   const handleAdd = async (e) => {
     e.preventDefault();
 
+    const dataToSend = {
+      mes_id_mesin: formDataRef.current.mes_id_mesin, // @p1
+      mes_kondisi_operasional: formDataRef.current.mes_kondisi_operasional, // @p2
+      mes_no_panel: formDataRef.current.mes_no_panel, // @p3
+      mes_lab: formDataRef.current.mes_lab, // @p4
+      mes_nama_mesin: formDataRef.current.mes_nama_mesin, // @p5
+      mes_upt: formDataRef.current.mes_upt, // @p6
+      mes_daya_mesin: formDataRef.current.mes_daya_mesin, // @p7
+      mes_kapasitas: formDataRef.current.mes_kapasitas, // @p8
+      mes_tipe: formDataRef.current.mes_tipe, // @p9 - BUKAN file!
+      mes_gambar: formDataRef.current.mes_gambar, // @p10 - File gambar
+    };
+
     // Validate the form inputs
     const validationErrors = await validateAllInputs(
-      formDataRef.current,
+      dataToSend,
       userSchema,
       setErrors
     );
 
-    // If there are no validation errors
+    console.log("userInfo", validationErrors)
+
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
       setIsError({ error: false, message: "" });
       setErrors({});
+
       const uploadPromises = [];
 
       if (fileGambarRef.current.files.length > 0) {
@@ -167,33 +226,63 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
             })
             .catch((error) => {
               console.error("Error upload file:", error);
+              throw error; // Re-throw to be caught in main try-catch
             })
         );
       }
-      console.log("Data gambar dikirim:", formDataRef.current.mes_gambar);
 
       try {
+        // Wait for file uploads to complete
         await Promise.all(uploadPromises);
+
+        console.log("Data yang akan dikirim:", formDataRef.current);
 
         const data = await UseFetch(
           API_LINK + "Mesin/EditMesin",
           formDataRef.current
         );
 
-        if (!data) {
-          throw new Error("Terjadi kesalahan: Gagal menyimpan data mesin.");
+        console.log("Response dari API:", data);
+
+        // Check response properly
+        if (!data || data.length === 0) {
+          throw new Error("Tidak ada response dari server");
+        }
+
+        // Check if the response has hasil field
+        if (data[0]?.hasil === "ERROR") {
+          Swal.fire("Error", data[0]?.pesan || "Terjadi kesalahan", "error");
+        } else if (data[0]?.hasil === "OK") {
+          Swal.fire(
+            "Sukses",
+            data[0]?.pesan || "Data mesin berhasil disimpan",
+            "success"
+          );
+          onChangePage("index");
         } else {
+          // For backward compatibility if SP doesn't return hasil field
           Swal.fire("Sukses", "Data mesin berhasil disimpan", "success");
           onChangePage("index");
         }
       } catch (error) {
-        console.error("Error saving data:", error.message);
-        setIsError({ error: true, message: error.message });
+        console.error("Error saving data:", error);
+        window.scrollTo(0, 0);
+        setIsError({
+          error: true,
+          message: error.message || "Terjadi kesalahan saat menyimpan data",
+        });
+
+        // Show error in SweetAlert too
+        Swal.fire(
+          "Error",
+          error.message || "Terjadi kesalahan saat menyimpan data",
+          "error"
+        );
       } finally {
         setIsLoading(false);
       }
     } else {
-      window.scrollTo(0, 0); // Scroll to the top of the page if validation fails
+      window.scrollTo(0, 0);
     }
   };
 
@@ -225,31 +314,16 @@ export default function MasterMesinEdit({ onChangePage, withID }) {
                 />
               </div>
               <div className="col-lg-3">
-                <label htmlFor="mes_upt" className="fw-bold">
-                  UPT
-                  <span style={{ color: "red" }}> *</span>
-                </label>
-                <select
-                  id="mes_upt"
-                  name="mes_upt"
-                  className="form-select"
-                  onChange={handleInputChange}
+                <SearchDropdown
+                  label="Bagian"
+                  forInput="mes_upt"
+                  isPlaceHolder={false}
+                  isRequire
                   value={formDataRef.current.mes_upt}
-                >
-                  <option value="">Pilih UPT</option>
-                  <option value="PEMESIANAN">PEMESIANAN</option>
-                  <option value="MANUFAKTUR">MANUFAKTUR</option>
-                  <option value="DESAIN DAN METROLOGI">
-                    DESAIN DAN METROLOGI
-                  </option>
-                  <option value="OTOMASI">OTOMASI</option>
-                  <option value="PERAWATAN">PERAWATAN</option>
-                  <option value="OTOMOTIF">OTOMOTIF</option>
-                  <option value="ALAT BERAT">ALAT BERAT</option>
-                  <option value="SIPIL">SIPIL</option>
-                  <option value="PRODUKSI">PRODUKSI</option>
-                  <option value="LPT3">LPT3</option>
-                </select>
+                  isDisabled={false}
+                  arrData={bagian}
+                  onChange={handleInputChange}
+                />
               </div>
               <div className="col-lg-3">
                 <Input
