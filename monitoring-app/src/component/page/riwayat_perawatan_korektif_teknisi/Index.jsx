@@ -533,6 +533,10 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
                   return { border: "3px solid #ffc107" };
                 } else if (Status_Pemeliharaan === "Tertunda" || Status_Pemeliharaan === "Batal" || Status_Pemeliharaan === "Pending") {
                   return { border: "3px solid #dc3545" };
+                } else if (Status_Pemeliharaan === "Diverifikasi") {
+                  return { border: "3px solid #0d6efd" };
+                } else if (Status_Pemeliharaan === "Menunggu Persetujuan") {
+                  return { border: "3px solid #6f42c1" };
                 }
                 return {};
               })(),

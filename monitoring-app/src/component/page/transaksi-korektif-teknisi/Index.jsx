@@ -90,16 +90,24 @@ export default function KorektifTeknisi({ onChangePage }) {
   }
 
   useEffect(() => {
+    console.log("useEffect triggered with currentFilter:", currentFilter);
     const fetchData = async () => {
       setIsError(false);
+      console.log("Fetching data with filter:", currentFilter);
       try {
         const data = await UseFetch(
-          API_LINK + "Korektif/DetailPerawatanKorektif",
+          API_LINK + "Korektif/GetDataPerawatanKorektifTeknisi",
           currentFilter
         );
+        console.log("Raw API response:", data);
+        console.log("API response type:", typeof data);
+        console.log("API response length:", data?.length);
+        
         if (data === "ERROR") {
+          console.log("API returned ERROR");
           setIsError(true);
-        } else if (data.length === 0) {
+        } else if (!data || data.length === 0) {
+          console.log("API returned empty data");
           setCurrentData(inisialisasiData);
         } else {
           console.log("Data from backend:", data);
@@ -153,10 +161,12 @@ export default function KorektifTeknisi({ onChangePage }) {
               })(),
             };
           });
+          
           console.log("Formatted data:", formattedData);
           setCurrentData(formattedData);
         }
-      } catch {
+      } catch (error) {
+        console.error("Fetch error:", error);
         setIsError(true);
       } finally {
         setIsLoading(false);
@@ -222,8 +232,6 @@ export default function KorektifTeknisi({ onChangePage }) {
                 onEdit={onChangePage}
                 data={currentData.map(({ rowStyle, ...rest }) => rest)}
                 rowStyles={(row, index) => currentData[index]?.rowStyle || {}}
-                showStatusLegend={true}
-                statusLegendContent={<StatusLegend />}
               />
               <Paging
                 pageSize={PAGE_SIZE}
@@ -231,29 +239,8 @@ export default function KorektifTeknisi({ onChangePage }) {
                 totalData={currentData[0]["Count"]}
                 navigation={handleSetCurrentPage}
               />
-
             </div>
           )}
-        </div>
-        <div className="mt-3">
-          <div className="d-flex flex-column">
-            <Table
-              onToggle={handleSetStatus}
-              onDetail={onChangePage}
-              onEdit={onChangePage}
-              data={currentData.map(({ rowStyle, ...rest }) => rest)}
-              rowStyles={(row, index) => currentData[index]?.rowStyle || {}}
-              showStatusLegend={true}
-              statusLegendContent={<StatusLegend />}
-              />
-            <Paging
-              pageSize={PAGE_SIZE}
-              pageCurrent={currentFilter.page}
-              totalData={currentData[0]["Count"]}
-              navigation={handleSetCurrentPage}
-            />
-
-          </div>
         </div>
       </div>
     </>

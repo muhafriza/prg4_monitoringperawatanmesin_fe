@@ -129,7 +129,7 @@ const routeList = [
 
   {
     path: "/perawatan_korektif_teknisi",
-    element: <LaporanKerusakan />,
+    element: <KorektifTeknisi />,
   },
   {
     path: "/perawatan_preventif-teknisi",
@@ -144,10 +144,6 @@ const routeList = [
     element: <KorektifPic />,
   },
 
-  {
-    path: "/perawatan_korektif_teknisi",
-    element: <KorektifTeknisi />,
-  },
   {
     path: "/laporan_kerusakan_admin",
     element: <LaporanKerusakanAdmin />,
