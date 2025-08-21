@@ -116,6 +116,8 @@ export default function NotifikasiIndex() {
           currentFilter
         );
 
+       
+
         if (data === "ERROR") {
           setIsError(true);
         } else if (data.length === 0) {
@@ -123,7 +125,7 @@ export default function NotifikasiIndex() {
         } else {
           const formattedData = data.map((value) => ({
             ...value,
-
+            
             Pesan: (
               <div
                 className="link-decoration-none"

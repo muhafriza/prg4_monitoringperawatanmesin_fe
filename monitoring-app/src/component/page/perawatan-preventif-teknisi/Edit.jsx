@@ -313,7 +313,7 @@ export default function PerawatanPreventifTeknisiEdit({
         if (data === "ERROR" || !Array.isArray(data) || data.length === 0) {
           setFetchDataDetailSP([]);
         } else {
-          const formattedData = data.map((item) => {
+         const formattedData = data.map((item) => {
             const { Nama_Sparepart, Jumlah, ...rest } = item;
             return {
               ...rest,
