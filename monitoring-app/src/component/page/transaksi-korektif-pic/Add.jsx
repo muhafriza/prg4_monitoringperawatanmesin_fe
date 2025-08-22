@@ -10,6 +10,7 @@ import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 import Cookies from "js-cookie";
 import { decryptId } from "../../util/Encryptor";
+import SearchDropdown from "../../part/SearchDropdown";
 
 export default function KorektifAdd({ onChangePage }) {
   const [errors, setErrors] = useState({});
@@ -60,7 +61,13 @@ export default function KorektifAdd({ onChangePage }) {
         if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal mengambil data Mesin.");
         } else {
-          setMesinOptions(data); // Set data yang diterima ke dalam mesinOptions
+          const formattedData = data.map((value) => {
+            return{
+              Text: value["Nama_Mesin"],
+              Value: value["ID_Mesin"]
+            }
+          })
+          setMesinOptions(formattedData); // Set data yang diterima ke dalam mesinOptions
         }
       } catch (error) {
         window.scrollTo(0, 0);
@@ -130,6 +137,7 @@ export default function KorektifAdd({ onChangePage }) {
   };
 
   if (isLoading) return <Loading />;
+  console.log("ds", mesinOptions)
 
   return (
     <>
@@ -146,26 +154,18 @@ export default function KorektifAdd({ onChangePage }) {
           <div className="card-body p-4">
             <div className="row">
               <div className="col-lg-4">
-                <label htmlFor="kor_mes_id_mesin" className="form-label">
-                  ID Mesin
-                </label>
-                <select
-                  id="kor_mes_id_mesin"
-                  className="form-control"
-                  value={selectedMesin}
+                <SearchDropdown
+                  label="Mesin"
+                  forInput="kor_mes_id_mesin"
+                  isPlaceHolder={false}
+                  isRequired
+                  isDisabled={false}
+                  arrData={mesinOptions}
                   onChange={(e) => {
                     setSelectedMesin(e.target.value);
                     formDataRef.current.kor_mes_id_mesin = e.target.value;
                   }}
-                  name="kor_mes_id_mesin"
-                >
-                  <option value="">Pilih ID Mesin</option>
-                  {mesinOptions.map((mesin) => (
-                    <option key={mesin.ID_Mesin} value={mesin.ID_Mesin}>
-                      {mesin.Nama_Mesin} ({mesin.ID_Mesin})
-                    </option>
-                  ))}
-                </select>
+                />
                 {errors.kor_mes_id_mesin && (
                   <div className="text-danger">{errors.kor_mes_id_mesin}</div>
                 )}

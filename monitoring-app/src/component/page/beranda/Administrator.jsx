@@ -47,8 +47,9 @@ const inisialisasiDataProses = [
 export default function BerandaAdministrator() {
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
-  const [dataKerusakanTerahir, setDataKerusakanTerahir] =
-    useState(inisialisasiDataProses);
+  const [dataKerusakanTerahir, setDataKerusakanTerahir] = useState(
+    inisialisasiDataProses
+  );
   const [dataProsesPerbaikanPRE, setDataProsesPerbaikanPRE] =
     useState(inisialisasiData);
   const [dataProsesPerbaikanKOR, setDataProsesPerbaikanKOR] = useState(
@@ -65,31 +66,40 @@ export default function BerandaAdministrator() {
     page: 1,
     query: datenow,
     sort: "kor_tanggal_pengajuan",
-    status: 'Dalam Pengerjaan',
-    itemPerPage: 1000,
+    status: "Dalam Pengerjaan",
+    itemPerPage: 10,
   });
   const [filterDataProsesPRE, setfilterDataProsesPRE] = useState({
     page: 1,
     query: datenow,
     sort: "pre_idPerawatan_preventif",
-    status: 'Dalam Pengerjaan',
-    itemPerPage: 1000,
+    status: "Dalam Pengerjaan",
+    itemPerPage: 10,
   });
   const [laporanKerusakan, setLaporanKerusakan] = useState();
 
-  function handleSetCurrentPage(newCurrentPage) {
-    setIsLoading(true);
-    setfilterKerusakanTerakhir((prevFilter) => ({
+  // Pisahkan handler untuk masing-masing tabel
+  function handleSetCurrentPagePRE(newCurrentPage) {
+    // setIsLoading(true);
+    setfilterDataProsesPRE((prevFilter) => ({
       ...prevFilter,
       page: newCurrentPage,
     }));
+  }
+
+  function handleSetCurrentPageKOR(newCurrentPage) {
+    // setIsLoading(true);
     setfilterDataProsesKOR((prevFilter) => ({
       ...prevFilter,
       page: newCurrentPage,
     }));
-    setfilterDataProsesPRE((prevFilter) => ({
+  }
+
+  function handleSetCurrentPageKerusakan(newCurrentPage) {
+    // setIsLoading(true);
+    setfilterKerusakanTerakhir((prevFilter) => ({
       ...prevFilter,
-      page: newCurrentPage,
+      p1: newCurrentPage,
     }));
   }
 
@@ -156,218 +166,303 @@ export default function BerandaAdministrator() {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      setIsError((prevError) => ({ ...prevError, error: false }));
+    FetchCurrentPreventif();
+  }, [filterDataProsesPRE]);
 
-      try {
-        console.log("SEKARANG " + datenow);
-        const data = await UseFetch(
-          API_LINK + "TransaksiPreventif/GetDataPerawatanPreventifDashboard",
-          filterDataProsesPRE
+  useEffect(() => {
+    FetchCurrentKorektif();
+  }, [filterDataProsesKOR]);
+
+  useEffect(() => {
+    FetchKerusakanTerakhirTerjadi();
+  }, [filterKerusakanTerakhir]);
+
+  // Initial load - hanya sekali
+  useEffect(() => {
+    FetchStokSparepart();
+    FetchTotalKerusakan();
+    FetchLaporanKerusakan();
+  }, []); // Empty dependency array
+
+  const FetchTotalKerusakan = async () => {
+    setIsLoading(true);
+    try {
+      const data = await UseFetch(
+        API_LINK + "Korektif/TotalLaporanKerusakanPending"
+      );
+      console.log("total kerusakan", data[0].total);
+
+      if (!data) {
+        Swal.fire(
+          "Error",
+          "Laporan Kerusakan Pending tidak ditemukan",
+          "error"
         );
-        console.log("ini Data Proses");
-        console.log(data);
-
-        if (data.length == 0) {
-          setDataProsesPerbaikanPRE(inisialisasiDataProses);
-        } else {
-          console.log(data);
-          const formattedData = data.map((value) => {
-            const {
-              ID_Perawatan,
-              Tanggal_Perawatan,
-              Status_Pemeliharaan,
-              Dibuat,
-              UPT,
-              TindakanPerbaikan,
-              Nama_Mesin,
-              id_mesin,
-              ...rest
-            } = value;
-            return {
-              ...rest,
-              "ID Perawatan": ID_Perawatan,
-              "ID Mesin": id_mesin,
-              "Nama Mesin": Nama_Mesin,
-              UPT: UPT,
-              "Tindakan Perbaikan":
-                TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
-              "Dibuat Oleh": Dibuat == null ? "-" : Dibuat,
-              "Jadwal Perawatan": formatDate(Tanggal_Perawatan, "D MMMM YYYY"),
-              Status: Status_Pemeliharaan,
-              Alignment: [
-                "center",
-                "center",
-                "center",
-                "center",
-                "center",
-                "center",
-                "center",
-                "center",
-                "center",
-              ],
-            };
-          });
-          setDataProsesPerbaikanPRE(formattedData);
-        }
-      } catch (error) {
-        setIsError(true);
-        console.log("Format Data Error: " + error);
-      } finally {
-        setIsLoading(false);
+      } else {
+        setLaporanKerusakan(data[0].total);
       }
+    } catch (error) {
+      setIsError(true);
+      console.log("Format Data Error: " + error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      try {
-        const data = await UseFetch(
-          API_LINK + "Korektif/getKorektifNOW",
-          filterDataProsesKOR
-        );
-        console.log("ini Data Proses KOREKTIF: ", data);
+  const FetchStokSparepart = async () => {
+    setIsLoading(true);
 
-        if (data.length == 0) {
-          setDataProsesPerbaikanKOR(inisialisasiDataProses);
-        } else {
-          const formattedData = data.map((value) => {
-            const {
-              ["Tanggal Pengajuan"]: tanggal,
-              ["Status Pemeliharaan"]: status,
-              ...rest
-            } = value;
+    try {
+      const dataSP = await UseFetch(
+        API_LINK + "TransaksiPreventif/getStokSparepart",
+        { status: "Aktif" }
+      );
 
-            return {
-              ...rest,
-              "Tanggal Pengajuan": formatDate(
-                tanggal.split("T")[0],
-                "D MMMM YYYY"
-              ),
-              Status: status,
-              Alignment: [
-                "center",
-                "center",
-                "center",
-                "center",
-                "center",
-                "center",
-                "center",
-                "center",
-                "center",
-                "center",
-                "center",
-              ],
-            };
-          });
-          setDataProsesPerbaikanKOR(formattedData);
-        }
-      } catch (error) {
-        setIsError(true);
-        console.log("Format Data Error: " + error);
-      } finally {
-        setIsLoading(false);
+      if (dataSP === "ERROR" || dataSP.length === 0) {
+        throw new Error("Terjadi kesalahan: Gagal mengambil data stok.");
+      } else {
+        const formattedData = dataSP.map((value) => ({
+          ...value,
+          Alignment: [
+            "center",
+            "center",
+            "center",
+            "center",
+            "center",
+            "center",
+          ],
+        }));
+        setSparepartStok(formattedData);
       }
+    } catch (error) {
+      window.scrollTo(0, 0);
+      setIsError((prevError) => ({
+        ...prevError,
+        error: true,
+        message: error.message,
+      }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      try {
-        const data = await UseFetch(
-          API_LINK + "Korektif/TotalLaporanKerusakanPending"
-        );
-        console.log("total kerusakan", data[0].total);
+  const FetchCurrentKorektif = async () => {
+    setIsLoading(true);
 
-        if (!data) {
-          Swal.fire(
-            "Error",
-            "Laporan Kerusakan Pending tidak ditemukan",
-            "error"
-          );
-        } else {
-          setLaporanKerusakan(data[0].total);
-        }
-      } catch (error) {
-        setIsError(true);
-        console.log("Format Data Error: " + error);
-      } finally {
-        setIsLoading(false);
-      }
+    try {
+      const data = await UseFetch(
+        API_LINK + "Korektif/getKorektifNOW",
+        filterDataProsesKOR
+      );
+      if (data.length == 0) {
+        setDataProsesPerbaikanKOR(inisialisasiDataProses);
+      } else {
+        console.log("data33", data);
+        const formattedData = data.map((value) => {
+          const {
+            ["Tanggal Pengajuan"]: tanggal,
+            ["ID Mesin"]: idmesin,
+            ["Dibuat Oleh"]: dibuatOleh,
+            ["Status Pemeliharaan"]: status,
+            ["UPT"]: upt,
+            ["Kerusakan"]: kerusakan,
+            ...rest
+          } = value;
 
-      try {
-        const dataSP = await UseFetch(
-          API_LINK + "TransaksiPreventif/getStokSparepart",
-          { status: "Aktif" }
-        );
-        console.log(dataSP);
-
-        if (dataSP === "ERROR" || dataSP.length === 0) {
-          throw new Error("Terjadi kesalahan: Gagal mengambil data stok.");
-        } else {
-          const formattedData = dataSP.map((value) => ({
-            ...value,
+          return {
+            ...rest,
+            Bagian: upt,
+            Kerusakan: kerusakan,
+            "Tanggal Pengajuan": formatDate(
+              tanggal.split("T")[0],
+              "D MMMM YYYY"
+            ),
+            Status: status,
             Alignment: [
               "center",
-              "center",
-              "center",
-              "center",
-              "center",
+              "left",
+              "left",
+              "left",
+              "left",
+              "left",
               "center",
             ],
-          }));
-          setSparepartStok(formattedData);
-        }
-      } catch (error) {
-        window.scrollTo(0, 0);
-        setIsError((prevError) => ({
-          ...prevError,
-          error: true,
-          message: error.message,
-        }));
-      } finally {
-        setIsLoading(false);
+          };
+        });
+        setDataProsesPerbaikanKOR(formattedData);
       }
-      try {
-        const data = await UseFetch(
-          API_LINK + "Korektif/KerusakanTerakhirTerjadi",
-          filterKerusakanTerakhir
-        );
-        
-        if (data === "ERROR" || data.length === 0) {
-          console.log("TIDAK ADA LAPORAN KERUSAKAN 7 HARI TERAKHIR: ",data );
-        } else {
-          const formattedData = data.map((value) => ({
-            ...value,
+    } catch (error) {
+      setIsError(true);
+      console.log("Format Data Error: " + error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const FetchKerusakanTerakhirTerjadi = async () => {
+    setIsLoading(true);
+
+    try {
+      const data = await UseFetch(
+        API_LINK + "Korektif/KerusakanTerakhirTerjadi",
+        filterKerusakanTerakhir
+      );
+        console.log("setDataKerusakanTerahir", data);
+      if (data === "ERROR" || data.length === 0) {
+        console.log("TIDAK ADA LAPORAN KERUSAKAN 7 HARI TERAKHIR: ", data);
+      } else {
+        const formattedData = data.map((value) => {
+          const {
+            ["ID Mesin"]: idmesin,
+            UPT,
+            Status,
+            ["Tanggal Pengajuan"]: tgl_pengajuan,
+            Kerusakan,
+            ...rest
+          } = value;
+          return {
+            ...rest,
+            Bagian: UPT,
+            Kerusakan: Kerusakan,
+            "Tanggal Pengajuan": formatDate(tgl_pengajuan, "D MMMM YYYY"),
+            Status: Status,
             Alignment: [
               "center",
-              "center",
-              "center",
-              "center",
-              "center",
-              "center",
-              "center",
+              "left",
+              "left",
+              "left",
+              "left",
+              "left",
               "center",
             ],
-          }));
-          setDataKerusakanTerahir(formattedData);
-          console.log("setDataKerusakanTerahir", dataKerusakanTerahir);
-        }
-      } catch (error) {
-        window.scrollTo(0, 0);
-        setIsError((prevError) => ({
-          ...prevError,
-          error: true,
-          message: error.message,
-        }));
-      } finally {
-        setIsLoading(false);
+          }
+        });
+        setDataKerusakanTerahir(formattedData);
       }
-      try {
-        const data = await UseFetch(
-          API_LINK + "Korektif/TotalLaporanKerusakanByUPT"
-        );
-        console.log("BY UPT: ", data);
+    } catch (error) {
+      window.scrollTo(0, 0);
+      setIsError((prevError) => ({
+        ...prevError,
+        error: true,
+        message: error.message,
+      }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-        if (data === "ERROR" || data.length === 0) {
-          throw new Error("Terjadi kesalahan: Gagal mengambil data stok.");
+  // 1. Fix di FetchCurrentPreventif - pastikan selalu return array
+  const FetchCurrentPreventif = async () => {
+    setIsLoading(true);
+
+    try {
+      const data = await UseFetch(
+        API_LINK + "TransaksiPreventif/GetDataPerawatanPreventifDashboard",
+        filterDataProsesPRE
+      );
+
+      // Pastikan data selalu array, meskipun kosong
+      if (!Array.isArray(data) || data.length === 0) {
+        setDataProsesPerbaikanPRE(inisialisasiDataProses);
+      } else {
+        const formattedData = data.map((value) => {
+          const {
+            ID_Perawatan,
+            Tanggal_Perawatan,
+            Status_Pemeliharaan,
+            Dibuat,
+            UPT,
+            TindakanPerbaikan,
+            Nama_Mesin,
+            id_mesin,
+            ...rest
+          } = value;
+          return {
+            ...rest,
+            "ID Perawatan": ID_Perawatan,
+            "Nama Mesin": Nama_Mesin,
+            Bagian: UPT,
+            "Tindakan Perbaikan":
+              TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
+            "Jadwal Perawatan": formatDate(Tanggal_Perawatan, "D MMMM YYYY"),
+            Status: Status_Pemeliharaan,
+            Alignment: [
+              "center",
+              "left",
+              "left",
+              "left",
+              "left",
+              "left",
+              "center",
+            ],
+          };
+        });
+        setDataProsesPerbaikanPRE(formattedData);
+      }
+    } catch (error) {
+      setIsError(true);
+      console.log("Format Data Error: " + error);
+      // Set data kosong jika error
+      setDataProsesPerbaikanPRE(inisialisasiDataProses);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const FetchLaporanKerusakan = async () => {
+    setIsLoading(true);
+
+    try {
+      const data = await UseFetch(
+        API_LINK + "Korektif/TotalLaporanKerusakanByUPT"
+      );
+      console.log("BY UPT: ", data);
+
+      if (data === "ERROR") {
+        throw new Error(
+          "Terjadi kesalahan: Gagal mengambil data Laporan Kerusakan"
+        );
+      } else {
+        setKorektifByUPT(data);
+
+        // Cek jika data kosong atau tidak ada
+        if (!data || data.length === 0) {
+          setpieChart({
+            labels: ["Belum ada laporan kerusakan"],
+            datasets: [
+              {
+                data: [1],
+                backgroundColor: ["#E5E7EB"], // Abu-abu terang
+                borderColor: ["#9CA3AF"],
+                borderWidth: 1,
+              },
+            ],
+          });
+          return; // Return di sini sudah benar karena di dalam fungsi
+        }
+
+        // Filter data yang memiliki nilai > 0
+        const validData = data.filter((item) => item.Count_Per_Upt > 0);
+
+        // Jika semua data bernilai 0 atau tidak valid
+        if (validData.length === 0) {
+          setpieChart({
+            labels: ["Belum ada laporan kerusakan"],
+            datasets: [
+              {
+                data: [1],
+                backgroundColor: ["#10B981"], // Hijau untuk indikasi positif
+                borderColor: ["#059669"],
+                borderWidth: 1,
+              },
+            ],
+          });
         } else {
-          setKorektifByUPT(data);
-          const labels = data.map((item) => item.Nama_UPT);
-          const values = data.map((item) => item.Count_Per_Upt);
+          // Proses data normal
+          const labels = validData.map((item) => item.Nama_UPT);
+          const values = validData.map((item) => item.Count_Per_Upt);
           const colors = labels.map(() => getRandomColor());
+
           setpieChart({
             labels,
             datasets: [
@@ -380,20 +475,31 @@ export default function BerandaAdministrator() {
             ],
           });
         }
-      } catch (error) {
-        window.scrollTo(0, 0);
-        setIsError((prevError) => ({
-          ...prevError,
-          error: true,
-          message: error.message,
-        }));
-      } finally {
-        setIsLoading(false);
       }
-    };
-    console.log("PA", dataKerusakanTerahir);
-    fetchData();
-  }, []);
+    } catch (error) {
+      window.scrollTo(0, 0);
+      setIsError((prevError) => ({
+        ...prevError,
+        error: true,
+        message: error.message,
+      }));
+
+      // Set chart dengan pesan error
+      setpieChart({
+        labels: ["Error loading data"],
+        datasets: [
+          {
+            data: [1],
+            backgroundColor: ["#EF4444"], // Merah untuk error
+            borderColor: ["#DC2626"],
+            borderWidth: 1,
+          },
+        ],
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (isLoading) return <Loading />;
 
@@ -426,16 +532,16 @@ export default function BerandaAdministrator() {
           <div className="card mt-3 border">
             <div className="card-header bg-danger text-center text-white pt-3 pb-3 px-3">
               <span className="lead fw-medium">
-                Kerusakan yang terakhir terjadi
+                Riwayat Kerusakan Mesin – 7 Hari Terakhir
               </span>
             </div>
             <div className="card-body fw-small px-3 mb-3">
               <Table data={dataKerusakanTerahir} />
               <Paging
-                pageSize={PAGE_SIZE}
+                pageSize={2}
                 pageCurrent={filterKerusakanTerakhir.p1}
                 totalData={dataKerusakanTerahir[0]["Count"]}
-                navigation={handleSetCurrentPage}
+                navigation={handleSetCurrentPageKerusakan}
               />
             </div>
           </div>
@@ -443,48 +549,58 @@ export default function BerandaAdministrator() {
       </div>
 
       <div className="my-2">
-        <div className="card card-equal-height border">
-          <div className="card-header bg-primary text-center text-white pt-3 pb-3 px-3">
-            <span className="lead fw-medium">
-              Pelaksanaan Proses Perbaikan Preventif
-            </span>
+        <div className="row">
+          {/* Card Preventif */}
+          <div className="col-lg-6 col-md-12 mb-4">
+            <div className="card card-equal-height border h-100">
+              <div className="card-header bg-primary text-center text-white pt-3 pb-3 px-3">
+                <span className="lead fw-medium">
+                  Agenda Perawatan Preventif Hari Ini
+                </span>
+              </div>
+              <div className="card-body fw-small">
+                <Table
+                  data={
+                    Array.isArray(dataProsesPerbaikanPRE) &&
+                    dataProsesPerbaikanPRE.length > 0
+                      ? dataProsesPerbaikanPRE
+                      : inisialisasiData
+                  }
+                />
+                <Paging
+                  pageSize={PAGE_SIZE}
+                  pageCurrent={filterDataProsesPRE.page}
+                  totalData={dataProsesPerbaikanPRE[0]["Count"]}
+                  navigation={handleSetCurrentPagePRE}
+                />
+              </div>
+            </div>
           </div>
-          <div className="card-body fw-small">
-            <Table
-              data={
-                dataProsesPerbaikanPRE != null
-                  ? dataProsesPerbaikanPRE
-                  : inisialisasiData
-              }
-            />
-            <Paging
-              pageSize={PAGE_SIZE}
-              pageCurrent={filterDataProsesPRE.p1}
-              totalData={filterDataProsesPRE["Count"]}
-              navigation={handleSetCurrentPage}
-            />
-          </div>
-        </div>
-        <div className="card card-equal-height border mt-4">
-          <div className="card-header bg-primary text-center text-white pt-3 pb-3 px-3">
-            <span className="lead fw-medium">
-              Pelaksanaan Proses Perbaikan Korektif
-            </span>
-          </div>
-          <div className="card-body fw-small">
-            <Table
-              data={
-                dataProsesPerbaikanKOR != null
-                  ? dataProsesPerbaikanKOR
-                  : inisialisasiData
-              }
-            />
-            <Paging
-              pageSize={PAGE_SIZE}
-              pageCurrent={filterDataProsesKOR.p1}
-              totalData={filterDataProsesKOR["Count"]}
-              navigation={handleSetCurrentPage}
-            />
+
+          {/* Card Korektif */}
+          <div className="col-lg-6 col-md-12 mb-4">
+            <div className="card card-equal-height border h-100">
+              <div className="card-header bg-primary text-center text-white pt-3 pb-3 px-3">
+                <span className="lead fw-medium">
+                  Agenda Perawatan Korektif Hari Ini
+                </span>
+              </div>
+              <div className="card-body fw-small">
+                <Table
+                  data={
+                    dataProsesPerbaikanKOR != null
+                      ? dataProsesPerbaikanKOR
+                      : inisialisasiData
+                  }
+                />
+                <Paging
+                  pageSize={PAGE_SIZE}
+                  pageCurrent={filterDataProsesKOR.page}
+                  totalData={dataProsesPerbaikanKOR[0]["Count"]}
+                  navigation={handleSetCurrentPageKOR}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
