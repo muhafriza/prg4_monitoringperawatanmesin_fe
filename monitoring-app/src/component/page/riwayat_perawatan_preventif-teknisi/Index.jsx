@@ -19,6 +19,7 @@ import ExcelJS from "exceljs";
 import Cookies from "js-cookie";
 import { decryptId } from "../../util/Encryptor";
 import Label from "../../part/Label";
+import SearchDropdown from "../../part/SearchDropdown";
 
 const inisialisasiData = [
   {
@@ -58,6 +59,7 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [jenisExport, setJenisExport] = useState("excel");
   const [periode, setPeriode] = useState("all");
+  const [Dataperiode, setDataPeriode] = useState();
 
   const getUserInfo = () => {
     const encryptedUser = Cookies.get("activeUser");
@@ -759,6 +761,27 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
     fetchData();
   }, [currentFilter]);
 
+    useEffect(() => {
+    const fetchData = async () => {
+      setIsError(false);
+      try {
+        const data = await UseFetch(API_LINK + "MasterPeriod/GetListPeriod");
+
+        if (data === "ERROR") {
+          setIsError(true);
+        } else {
+          setDataPeriode(data);
+        }
+      } catch (error) {
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <>
       <div className="d-flex flex-column">
@@ -858,18 +881,16 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
                     </select>
                   </div>
                   <div className="mb-3">
-                    <Label forLabel="periode" title="Filter Periode" />
-                    <select
-                      className="form-select"
-                      value={periode}
+                    <SearchDropdown
+                      label="Filter Periode"
+                      forInput="periode"
+                      isPlaceHolder={false}
+                      isDisabled={false}
+                      isRequired
+                      readOnly={true}
+                      arrData={Dataperiode}
                       onChange={(e) => setPeriode(e.target.value)}
-                    >
-                      {dataPeriode.map((item, index) => (
-                        <option key={index} value={item.Value}>
-                          {item.Text}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                 </div>
                 <div className="modal-footer">

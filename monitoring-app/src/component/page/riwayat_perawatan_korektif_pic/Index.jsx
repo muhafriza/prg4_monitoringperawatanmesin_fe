@@ -19,6 +19,7 @@ import ExcelJS from "exceljs";
 import Cookies from "js-cookie";
 import { decryptId } from "../../util/Encryptor";
 import Label from "../../part/Label";
+import SearchDropdown from "../../part/SearchDropdown";
 
 const inisialisasiData = [
   {
@@ -57,6 +58,7 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [jenisExport, setJenisExport] = useState("excel");
   const [periode, setPeriode] = useState("all");
+  const [Dataperiode, setDataPeriode] = useState();
 
   const getUserInfo = () => {
     const encryptedUser = Cookies.get("activeUser");
@@ -86,7 +88,7 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
     status: "Selesai",
     itemPerPage: 10,
     p6: upt,
-    p7: userInfo.username
+    p7: userInfo.username,
   });
 
   const searchQuery = useRef();
@@ -102,11 +104,21 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
       if (isNaN(date.getTime())) return "-";
 
       const months = [
-        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
+        "Desember",
       ];
 
-      const day = date.getDate().toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, "0");
       const month = months[date.getMonth()];
       const year = date.getFullYear();
 
@@ -125,7 +137,7 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
 
     return {
       start: startDate,
-      end: endDate
+      end: endDate,
     };
   };
 
@@ -140,16 +152,11 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
     "Tanggal Selesai",
     "Tindakan Perbaikan",
     "Status Pemeliharaan",
-    "Teknisi"
+    "Teknisi",
   ];
 
   // Headers untuk sparepart
-  const sparepartHeaders = [
-    "No",
-    "ID Perawatan",
-    "Nama Sparepart",
-    "Jumlah"
-  ];
+  const sparepartHeaders = ["No", "ID Perawatan", "Nama Sparepart", "Jumlah"];
 
   const exportToExcel = async (periodFilter = null) => {
     try {
@@ -161,7 +168,7 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
           p2: upt,
           p3: "",
           p4: periodFilter,
-          p5: periode
+          p5: periode,
         }
       );
 
@@ -172,7 +179,9 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
 
       // Buat workbook dan worksheet
       const workbook = new ExcelJS.Workbook();
-      const worksheetKorektif = workbook.addWorksheet("Data Perawatan Korektif");
+      const worksheetKorektif = workbook.addWorksheet(
+        "Data Perawatan Korektif"
+      );
       const worksheetSparepart = workbook.addWorksheet("Detail Sparepart");
 
       // Add headers untuk Korektif
@@ -190,7 +199,7 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         cell.alignment = {
           horizontal: "center",
           vertical: "middle",
-          wrapText: true
+          wrapText: true,
         };
         cell.border = {
           top: { style: "thin", color: { argb: "000000" } },
@@ -218,7 +227,7 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
           formatDateCustom(item["Tanggal Selesai"]),
           item["Tindakan Perbaikan"] || "-",
           item["Status Pemeliharaan"] || "-",
-          item["Teknisi"] || "-"
+          item["Teknisi"] || "-",
         ];
 
         const row = worksheetKorektif.addRow(rowData);
@@ -228,7 +237,7 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
           cell.alignment = {
             horizontal: colNumber === 1 ? "center" : "left",
             vertical: "middle",
-            wrapText: true
+            wrapText: true,
           };
           cell.border = {
             top: { style: "thin", color: { argb: "CCCCCC" } },
@@ -269,7 +278,7 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
           cell.alignment = {
             horizontal: "center",
             vertical: "middle",
-            wrapText: true
+            wrapText: true,
           };
           cell.border = {
             top: { style: "thin", color: { argb: "000000" } },
@@ -291,7 +300,7 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
             index + 1,
             item["ID Perawatan Korektif"] || item["id_perawatan"] || "-",
             item["Nama Sparepart"] || item["nama_sparepart"] || "-",
-            item["Jumlah"] || item["jumlah"] || "-"
+            item["Jumlah"] || item["jumlah"] || "-",
           ];
 
           const rowSparepart = worksheetSparepart.addRow(rowDataSparepart);
@@ -299,9 +308,10 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
           // Style data rows sparepart
           rowSparepart.eachCell((cell, colNumber) => {
             cell.alignment = {
-              horizontal: colNumber === 1 || colNumber === 4 ? "center" : "left",
+              horizontal:
+                colNumber === 1 || colNumber === 4 ? "center" : "left",
               vertical: "middle",
-              wrapText: true
+              wrapText: true,
             };
             cell.border = {
               top: { style: "thin", color: { argb: "CCCCCC" } },
@@ -329,7 +339,10 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         worksheetSparepart.addRow(["Tidak ada data sparepart tersedia"]);
         const emptyRow = worksheetSparepart.getRow(1);
         emptyRow.getCell(1).font = { italic: true, color: { argb: "666666" } };
-        emptyRow.getCell(1).alignment = { horizontal: "center", vertical: "middle" };
+        emptyRow.getCell(1).alignment = {
+          horizontal: "center",
+          vertical: "middle",
+        };
         worksheetSparepart.getColumn(1).width = 40;
       }
 
@@ -340,7 +353,9 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
       });
 
       // Save file
-      const now = formatDateCustom(new Date().toISOString().split("T")[0]).replace(/ /g, '-');
+      const now = formatDateCustom(
+        new Date().toISOString().split("T")[0]
+      ).replace(/ /g, "-");
       saveAs(excelFile, `Data-Perawatan-Korektif${now}.xlsx`);
 
       Swal.fire("Berhasil", "Data berhasil diexport ke Excel!", "success");
@@ -361,7 +376,7 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
           p2: upt,
           p3: "",
           p4: periodFilter,
-          p5: periode
+          p5: periode,
         }
       );
 
@@ -378,27 +393,44 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
       const headerHeight = 10;
 
       const commonHeaders = [
-        "No", "ID Perawatan Korektif", "ID Mesin", "Nama Mesin",
-        "Bagian", "Tanggal Aktual", "Tanggal Selesai",
-        "Tindakan Perbaikan", "Status Pemeliharaan", "Teknisi"
+        "No",
+        "ID Perawatan Korektif",
+        "ID Mesin",
+        "Nama Mesin",
+        "Bagian",
+        "Tanggal Aktual",
+        "Tanggal Selesai",
+        "Tindakan Perbaikan",
+        "Status Pemeliharaan",
+        "Teknisi",
       ];
       const colWidths = [12, 28, 15, 30, 35, 25, 25, 50, 20, 25];
 
-      const sparepartHeaders = ["No", "ID Perawatan Korektif", "Nama Sparepart", "Jumlah"];
+      const sparepartHeaders = [
+        "No",
+        "ID Perawatan Korektif",
+        "Nama Sparepart",
+        "Jumlah",
+      ];
       const sparepartColWidths = [15, 35, 70, 25];
 
       // === HEADER - konsisten ===
-      const addHeader = (yPosition, title = "LAPORAN DATA PERAWATAN KOREKTIF") => {
+      const addHeader = (
+        yPosition,
+        title = "LAPORAN DATA PERAWATAN KOREKTIF"
+      ) => {
         try {
           if (logo) pdf.addImage(logo, "PNG", margin, yPosition, 60, 15);
-        } catch { }
+        } catch {}
 
         const titleY = yPosition + 20;
         pdf.setFontSize(14).setFont("helvetica", "bold").setTextColor(0, 0, 0);
         pdf.text(title, pageWidth / 2, titleY, { align: "center" });
 
         pdf.setFontSize(10).setFont("helvetica", "normal");
-        pdf.text("POLITEKNIK ASTRA", pageWidth / 2, titleY + 7, { align: "center" });
+        pdf.text("POLITEKNIK ASTRA", pageWidth / 2, titleY + 7, {
+          align: "center",
+        });
 
         // tampilkan periode
         pdf.setFontSize(9);
@@ -406,8 +438,8 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
           periode === "all"
             ? "Semua Data"
             : periodFilter
-              ? `Periode: ${periodFilter.start} - ${periodFilter.end} | Tahun ${periode}`
-              : `Tahun ${periode}`;
+            ? `Periode: ${periodFilter.start} - ${periodFilter.end} | Tahun ${periode}`
+            : `Tahun ${periode}`;
         pdf.text(periodeText, pageWidth / 2, titleY + 14, { align: "center" });
 
         pdf.setFontSize(8);
@@ -424,25 +456,56 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
       // === FOOTER - konsisten ===
       const addFooter = () => {
         const footerStartY = pageHeight - 35;
-        pdf.setFontSize(7).setFont("helvetica", "normal").setTextColor(128, 128, 128);
+        pdf
+          .setFontSize(7)
+          .setFont("helvetica", "normal")
+          .setTextColor(128, 128, 128);
         pdf.setFont("helvetica", "bold").setFontSize(8);
         pdf.text("POLITEKNIK ASTRA", margin, footerStartY);
 
         pdf.setFont("helvetica", "normal").setFontSize(7);
-        pdf.text("Kampus Sunter : Kompleks PT. Astra International Tbk.", margin, footerStartY + 5);
-        pdf.text("Gedung B, Jl. Gaya Motor Raya No.8, Sunter II", margin, footerStartY + 9);
+        pdf.text(
+          "Kampus Sunter : Kompleks PT. Astra International Tbk.",
+          margin,
+          footerStartY + 5
+        );
+        pdf.text(
+          "Gedung B, Jl. Gaya Motor Raya No.8, Sunter II",
+          margin,
+          footerStartY + 9
+        );
         pdf.text("Jakarta 14330, Indonesia", margin, footerStartY + 13);
-        pdf.text("Kampus Cikarang : Jl. Gaharu Blok F-3 Delta Silicon 2", margin, footerStartY + 20);
-        pdf.text("Lippo Cikarang, Kel. Cibatu, Kec. Cikarang Selatan", margin, footerStartY + 24);
-        pdf.text("Bekasi, Jawa Barat 17530, Indonesia", margin, footerStartY + 28);
+        pdf.text(
+          "Kampus Cikarang : Jl. Gaharu Blok F-3 Delta Silicon 2",
+          margin,
+          footerStartY + 20
+        );
+        pdf.text(
+          "Lippo Cikarang, Kel. Cibatu, Kec. Cikarang Selatan",
+          margin,
+          footerStartY + 24
+        );
+        pdf.text(
+          "Bekasi, Jawa Barat 17530, Indonesia",
+          margin,
+          footerStartY + 28
+        );
 
         pdf.setFont("helvetica", "bold").setFontSize(8);
         pdf.text("CONTACT", pageWidth - 55, footerStartY);
 
         pdf.setFont("helvetica", "normal").setFontSize(7);
         pdf.text("Tlp : +62 21 50227222", pageWidth - 55, footerStartY + 5);
-        pdf.text("Email : sekretariat@polytechnic.astra.ac.id", pageWidth - 55, footerStartY + 9);
-        pdf.text("www.polytechnic.astra.ac.id", pageWidth - 55, footerStartY + 28);
+        pdf.text(
+          "Email : sekretariat@polytechnic.astra.ac.id",
+          pageWidth - 55,
+          footerStartY + 9
+        );
+        pdf.text(
+          "www.polytechnic.astra.ac.id",
+          pageWidth - 55,
+          footerStartY + 28
+        );
 
         pdf.setTextColor(0, 0, 0);
       };
@@ -477,11 +540,16 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
           const lines = pdf.splitTextToSize(header, width - 2);
           const lineHeight = 2.5;
           const totalTextHeight = lines.length * lineHeight;
-          const textStartY = startY + (headerHeight - totalTextHeight) / 2 + lineHeight;
+          const textStartY =
+            startY + (headerHeight - totalTextHeight) / 2 + lineHeight;
 
           lines.forEach((line, i) => {
             const textWidth = pdf.getTextWidth(line);
-            pdf.text(line, xPos + (width - textWidth) / 2, textStartY + i * lineHeight);
+            pdf.text(
+              line,
+              xPos + (width - textWidth) / 2,
+              textStartY + i * lineHeight
+            );
           });
 
           xPos += width;
@@ -497,7 +565,10 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         dataArray.forEach((item, index) => {
           yPos = checkNewPage(yPos, headersArray, widthsArray);
 
-          pdf.setFont("helvetica", "normal").setFontSize(7).setTextColor(0, 0, 0);
+          pdf
+            .setFont("helvetica", "normal")
+            .setFontSize(7)
+            .setTextColor(0, 0, 0);
           let xPos = margin;
 
           headersArray.forEach((header, colIndex) => {
@@ -521,8 +592,10 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
             const lines = pdf.splitTextToSize(cellValue, width - 2);
             const lineHeight = 2;
             const maxLines = 2;
-            const totalTextHeight = Math.min(lines.length, maxLines) * lineHeight;
-            const textStartY = yPos + (rowHeight - totalTextHeight) / 2 + lineHeight;
+            const totalTextHeight =
+              Math.min(lines.length, maxLines) * lineHeight;
+            const textStartY =
+              yPos + (rowHeight - totalTextHeight) / 2 + lineHeight;
 
             lines.slice(0, maxLines).forEach((line, i) => {
               const textX =
@@ -552,7 +625,12 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         pdf.addPage();
         yPos = addHeader(10, "LAPORAN DETAIL SPAREPART");
         yPos = drawTableHeader(yPos, sparepartHeaders, sparepartColWidths);
-        yPos = drawTable(yPos, fetchDataDetailSP, sparepartHeaders, sparepartColWidths);
+        yPos = drawTable(
+          yPos,
+          fetchDataDetailSP,
+          sparepartHeaders,
+          sparepartColWidths
+        );
       }
 
       addFooter();
@@ -606,15 +684,30 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
     const year = date.getFullYear();
 
     const months = [
-      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-      "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember",
     ];
 
     switch (format) {
       case "DD/MM/YYYY":
-        return `${String(day).padStart(2, "0")}/${String(month + 1).padStart(2, "0")}/${year}`;
+        return `${String(day).padStart(2, "0")}/${String(month + 1).padStart(
+          2,
+          "0"
+        )}/${year}`;
       case "YYYY-MM-DD":
-        return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        return `${year}-${String(month + 1).padStart(2, "0")}-${String(
+          day
+        ).padStart(2, "0")}`;
       case "D MMMM YYYY":
         return `${day} ${months[month]} ${year}`;
       default:
@@ -638,10 +731,11 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
   const fetchDetailSP = async () => {
     try {
       const data = await UseFetch(
-        API_LINK + "TransaksiPreventif/getdetailSparepartPerawatanKorektifSelesaiPIC",
+        API_LINK +
+          "TransaksiPreventif/getdetailSparepartPerawatanKorektifSelesaiPIC",
         {
           p1: "Selesai",
-          p2: upt
+          p2: upt,
         }
       );
 
@@ -747,6 +841,27 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
     fetchData();
   }, [currentFilter]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsError(false);
+      try {
+        const data = await UseFetch(API_LINK + "MasterPeriod/GetListPeriod");
+
+        if (data === "ERROR") {
+          setIsError(true);
+        } else {
+          setDataPeriode(data);
+        }
+      } catch (error) {
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <>
       <div className="d-flex flex-column">
@@ -819,11 +934,17 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
 
         {/* Modal Export */}
         {isModalOpen && (
-          <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div
+            className="modal show d-block"
+            tabIndex="-1"
+            style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          >
             <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title">Export Data Perawatan Preventif</h5>
+                  <h5 className="modal-title">
+                    Export Data Perawatan Preventif
+                  </h5>
                   <button
                     type="button"
                     className="btn-close"
@@ -846,18 +967,16 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
                     </select>
                   </div>
                   <div className="mb-3">
-                    <Label forLabel="periode" title="Filter Periode" />
-                    <select
-                      className="form-select"
-                      value={periode}
+                    <SearchDropdown
+                      label="Filter Periode"
+                      forInput="periode"
+                      isPlaceHolder={false}
+                      isDisabled={false}
+                      isRequired
+                      readOnly={true}
+                      arrData={Dataperiode}
                       onChange={(e) => setPeriode(e.target.value)}
-                    >
-                      {dataPeriode.map((item, index) => (
-                        <option key={index} value={item.Value}>
-                          {item.Text}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                 </div>
                 <div className="modal-footer">

@@ -168,7 +168,7 @@ export default function BerandaPIC(onChangePage) {
     responsive: true,
     plugins: {
       legend: { display: false, position: "top" },
-      title: { display: true, text: "Grafik Jumlah Kerusakan Mesin" },
+      title: { display: true, text: "Mesin Yang Sering Bermasalah" },
     },
   };
 
