@@ -231,8 +231,9 @@ export default function Table({
                     key={value["Key"]}
                     className={
                       value["Status"] &&
-                      (value["Status"] === "Draft" ||
+                      (value["Status"] === "Pending" ||
                         value["Status"] === "Revisi" ||
+                        value["Status"] === "Menunggu Perbaikan" ||
                         value["Status"] === "Belum Dikonversi" ||
                         value["Status"] === "Belum Dibuat Penjadwalan")
                         ? "fw-bold"

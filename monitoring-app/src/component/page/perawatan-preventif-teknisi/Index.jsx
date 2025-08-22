@@ -52,6 +52,8 @@ export default function PerawatanKorektif({ onChangePage }) {
     itemPerPage: 10,
   });
 
+  console.log("ross", currentData);
+
   const searchQuery = useRef();
   const searchFilterSort = useRef();
   const searchFilterStatus = useRef();
@@ -138,6 +140,62 @@ export default function PerawatanKorektif({ onChangePage }) {
       .then(() => setIsLoading(false));
   }
 
+  // Fungsi untuk menampilkan legend
+  function renderLegend() {
+    return (
+      <div className="mt-3 p-3 bg-light rounded">
+        <h6 className="mb-2 fw-bold">Keterangan Warna:</h6>
+        <div className="row">
+          <div className="col-md-4 mb-2">
+            <div className="d-flex align-items-center">
+              <div 
+                className="me-2" 
+                style={{
+                  width: "20px", 
+                  height: "20px", 
+                  backgroundColor: "red",
+                  border: "2px solid red",
+                  borderRadius: "3px"
+                }}
+              ></div>
+              <small><strong>Merah:</strong> Jadwal perawatan sudah terlewat (terlambat)</small>
+            </div>
+          </div>
+          <div className="col-md-4 mb-2">
+            <div className="d-flex align-items-center">
+              <div 
+                className="me-2" 
+                style={{
+                  width: "20px", 
+                  height: "20px", 
+                  backgroundColor: "orange",
+                  border: "2px solid orange",
+                  borderRadius: "3px"
+                }}
+              ></div>
+              <small><strong>Orange:</strong> Jadwal perawatan hari ini atau besok</small>
+            </div>
+          </div>
+          <div className="col-md-4 mb-2">
+            <div className="d-flex align-items-center">
+              <div 
+                className="me-2" 
+                style={{
+                  width: "20px", 
+                  height: "20px", 
+                  backgroundColor: "white",
+                  border: "2px solid #dee2e6",
+                  borderRadius: "3px"
+                }}
+              ></div>
+              <small><strong>Putih:</strong> Status normal atau sudah selesai/dalam pengerjaan</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       setIsError(false);
@@ -191,7 +249,7 @@ export default function PerawatanKorektif({ onChangePage }) {
               "ID Perawatan": ID_Perawatan,
               "ID Mesin": id_mesin,
               "Nama Mesin": Nama_Mesin,
-              UPT: UPT,
+              Bagian: UPT,
               "Tindakan Perbaikan":
                 TindakanPerbaikan == null ? "-" : TindakanPerbaikan,
               "Dibuat Oleh": Dibuat == null ? "-" : Dibuat,
@@ -205,7 +263,9 @@ export default function PerawatanKorektif({ onChangePage }) {
                 "left",
                 "left",
                 "left",
-                "center",
+                "left",
+                "left",
+                "left",
                 "center",
                 "center",
               ],
@@ -288,6 +348,8 @@ export default function PerawatanKorektif({ onChangePage }) {
                   totalData={currentData[0]["Count"]}
                   navigation={handleSetCurrentPage}
                 />
+                {/* Legend ditampilkan di bawah tabel */}
+                {renderLegend()}
               </div>
             </div>
           </div>
