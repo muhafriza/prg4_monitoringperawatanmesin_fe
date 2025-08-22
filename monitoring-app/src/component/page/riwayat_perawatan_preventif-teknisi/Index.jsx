@@ -47,7 +47,6 @@ const dataJenisExport = [
 
 // Data untuk dropdown periode
 const dataPeriode = [
-  { Value: "all", Text: "Semua Data" },
   { Value: "2024", Text: "2024" },
   { Value: "2025", Text: "2025" },
   { Value: "2026", Text: "2026" },
@@ -163,7 +162,7 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
           p2: "",
           p3: userInfo.username,
           p4: periodFilter,
-          p5: ""
+          p5: periode
         }
       );
 
@@ -361,9 +360,9 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
         {
           p1: "pre_tanggal_penjadwalan",
           p2: "",
-          p3: periodFilter?.start || "",
-          p4: periodFilter?.end || "",
-          p5: ""
+          p3: userInfo.username,
+          p4: periodFilter,
+          p5: periode
         }
       );
 
@@ -379,14 +378,22 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
       const rowHeight = 7;
       const headerHeight = 10;
 
-      const commonHeaders = ["No", "ID Perawatan", "ID Mesin", "Nama Mesin", "Bagian", "Tanggal Aktual", "Tanggal Selesai", "Tindakan Perbaikan", "Status Pemeliharaan", "Teknisi"];
+      const commonHeaders = [
+        "No",
+        "ID Perawatan",
+        "ID Mesin",
+        "Nama Mesin",
+        "Bagian",
+        "Tanggal Aktual",
+        "Tanggal Selesai",
+        "Tindakan Perbaikan",
+        "Status Pemeliharaan",
+        "Teknisi"
+      ];
       const colWidths = [12, 28, 15, 40, 20, 25, 25, 50, 20, 25];
 
       const sparepartHeaders = ["No", "ID Perawatan", "Nama Sparepart", "Jumlah"];
-      // Perbaiki lebar kolom sparepart agar tidak menumpuk
-      const sparepartColWidths = [15, 35, 70, 25]; // Total: 145, lebih kecil dari pageWidth-margin
-
-      const periode = periodFilter ? `${periodFilter.start} - ${periodFilter.end}` : "";
+      const sparepartColWidths = [15, 35, 70, 25];
 
       // === HEADER - KONSISTEN UNTUK SEMUA HALAMAN ===
       const addHeader = (yPosition, title = "LAPORAN DATA PERAWATAN PREVENTIF") => {
@@ -403,11 +410,21 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
 
         if (periodFilter) {
           pdf.setFontSize(9);
-          pdf.text(`Periode: Tahun ${periode}`, pageWidth / 2, titleY + 14, { align: "center" });
+          pdf.text(
+            `Periode: ${periodFilter.start} - ${periodFilter.end} | Tahun ${periode}`,
+            pageWidth / 2,
+            titleY + 14,
+            { align: "center" }
+          );
         }
 
         pdf.setFontSize(8);
-        pdf.text(`Tanggal Export: ${formatDateCustom(new Date().toISOString())}`, pageWidth / 2, titleY + 21, { align: "center" });
+        pdf.text(
+          `Tanggal Export: ${formatDateCustom(new Date().toISOString())}`,
+          pageWidth / 2,
+          titleY + 21,
+          { align: "center" }
+        );
 
         return titleY + 25;
       };
@@ -444,7 +461,12 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
         if (currentY + rowHeight > pageHeight - 45) {
           addFooter();
           pdf.addPage();
-          let newY = addHeader(10, headersArray === sparepartHeaders ? "LAPORAN DETAIL SPAREPART" : "LAPORAN DATA PERAWATAN PREVENTIF");
+          let newY = addHeader(
+            10,
+            headersArray === sparepartHeaders
+              ? "LAPORAN DETAIL SPAREPART"
+              : "LAPORAN DATA PERAWATAN PREVENTIF"
+          );
           return drawTableHeader(newY, headersArray, widthsArray);
         }
         return currentY;
@@ -452,19 +474,16 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
 
       // === DRAW TABLE HEADER - KONSISTEN UNTUK SEMUA TABEL ===
       const drawTableHeader = (startY, headersArray, widthsArray) => {
-        // Set font yang konsisten untuk header
         pdf.setFont("helvetica", "bold").setFontSize(8).setTextColor(0, 0, 0);
         let xPos = margin;
 
         headersArray.forEach((header, colIndex) => {
           const width = widthsArray[colIndex];
 
-          // Gambar border
           pdf.setDrawColor(0, 0, 0);
           pdf.setLineWidth(0.1);
           pdf.rect(xPos, startY, width, headerHeight);
 
-          // Split text jika terlalu panjang
           const lines = pdf.splitTextToSize(header, width - 2);
           const lineHeight = 2.5;
           const totalTextHeight = lines.length * lineHeight;
@@ -488,7 +507,6 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
         dataArray.forEach((item, index) => {
           yPos = checkNewPage(yPos, headersArray, widthsArray);
 
-          // Set font yang konsisten untuk body
           pdf.setFont("helvetica", "normal").setFontSize(7).setTextColor(0, 0, 0);
           let xPos = margin;
 
@@ -506,12 +524,10 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
               }
             }
 
-            // Gambar border
             pdf.setDrawColor(0, 0, 0);
             pdf.setLineWidth(0.1);
             pdf.rect(xPos, yPos, width, rowHeight);
 
-            // Split text dan batasi ke maksimal 2 baris
             const lines = pdf.splitTextToSize(cellValue, width - 2);
             const lineHeight = 2;
             const maxLines = 2;
@@ -519,9 +535,10 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
             const textStartY = yPos + (rowHeight - totalTextHeight) / 2 + lineHeight;
 
             lines.slice(0, maxLines).forEach((line, i) => {
-              const textX = (header === "No") ?
-                xPos + (width - pdf.getTextWidth(line)) / 2 : // Center untuk nomor
-                xPos + 1; // Left align untuk yang lain
+              const textX =
+                header === "No"
+                  ? xPos + (width - pdf.getTextWidth(line)) / 2
+                  : xPos + 1;
               pdf.text(line, textX, textStartY + i * lineHeight);
             });
 

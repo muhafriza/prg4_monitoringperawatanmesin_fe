@@ -47,7 +47,6 @@ const dataJenisExport = [
 
 // Data untuk dropdown periode
 const dataPeriode = [
-  { Value: "all", Text: "Semua Data" },
   { Value: "2024", Text: "2024" },
   { Value: "2025", Text: "2025" },
   { Value: "2026", Text: "2026" },
@@ -163,7 +162,7 @@ export default function RiwayatPreventif({ onChangePage }) {
           p2: "",
           p3: periodFilter?.start || "",
           p4: periodFilter?.end || "",
-          p5: ""
+          p5: periode
         }
       );
 
@@ -203,7 +202,7 @@ export default function RiwayatPreventif({ onChangePage }) {
       });
 
       // Set column widths untuk preventif
-      const columnWidthsPreventif = [8, 22, 15, 25, 10, 18, 18, 22, 18, 15];
+      const columnWidthsPreventif = [8, 22, 15, 25, 15, 18, 18, 22, 18, 15];
       columnWidthsPreventif.forEach((width, index) => {
         worksheetPreventif.getColumn(index + 1).width = width;
       });
@@ -363,7 +362,7 @@ export default function RiwayatPreventif({ onChangePage }) {
           p2: "",
           p3: periodFilter?.start || "",
           p4: periodFilter?.end || "",
-          p5: ""
+          p5: periode, // ✅ samakan dengan exportToExcel
         }
       );
 
@@ -383,10 +382,7 @@ export default function RiwayatPreventif({ onChangePage }) {
       const colWidths = [12, 28, 15, 40, 20, 25, 25, 50, 20, 25];
 
       const sparepartHeaders = ["No", "ID Perawatan", "Nama Sparepart", "Jumlah"];
-      // Perbaiki lebar kolom sparepart agar tidak menumpuk
-      const sparepartColWidths = [15, 35, 70, 25]; // Total: 145, lebih kecil dari pageWidth-margin
-
-      const periode = periodFilter ? `${periodFilter.start} - ${periodFilter.end}` : "";
+      const sparepartColWidths = [15, 35, 70, 25];
 
       // === HEADER - KONSISTEN UNTUK SEMUA HALAMAN ===
       const addHeader = (yPosition, title = "LAPORAN DATA PERAWATAN PREVENTIF") => {
@@ -403,7 +399,12 @@ export default function RiwayatPreventif({ onChangePage }) {
 
         if (periodFilter) {
           pdf.setFontSize(9);
-          pdf.text(`Periode: Tahun ${periode}`, pageWidth / 2, titleY + 14, { align: "center" });
+          pdf.text(
+            `Periode: ${periodFilter.start} - ${periodFilter.end} | Tahun ${periode}`,
+            pageWidth / 2,
+            titleY + 14,
+            { align: "center" }
+          );
         }
 
         pdf.setFontSize(8);

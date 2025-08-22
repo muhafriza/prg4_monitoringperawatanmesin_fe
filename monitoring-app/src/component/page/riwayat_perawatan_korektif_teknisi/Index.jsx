@@ -47,7 +47,6 @@ const dataJenisExport = [
 
 // Data untuk dropdown periode
 const dataPeriode = [
-  { Value: "all", Text: "Semua Data" },
   { Value: "2024", Text: "2024" },
   { Value: "2025", Text: "2025" },
   { Value: "2026", Text: "2026" },
@@ -160,7 +159,7 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
           p2: userInfo.username,
           p3: periodFilter,
           p4: "",
-          p5: ""
+          p5: periode
         }
       );
 
@@ -358,9 +357,9 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
         {
           p1: "kor_tanggal_penjadwalan",
           p2: userInfo.username,
-          p3: periodFilter,
-          p4: "",
-          p5: ""
+          p3: periodFilter?.start || "",
+          p4: periodFilter?.end || "",
+          p5: periode, // ✅ ambil dari state dropdown periode (tahun / all)
         }
       );
 
@@ -376,16 +375,17 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
       const rowHeight = 7;
       const headerHeight = 10;
 
-      const commonHeaders = ["No", "ID Perawatan Korektif", "ID Mesin", "Nama Mesin", "Bagian", "Tanggal Aktual", "Tanggal Selesai", "Tindakan Perbaikan", "Status Pemeliharaan", "Teknisi"];
+      const commonHeaders = [
+        "No", "ID Perawatan Korektif", "ID Mesin", "Nama Mesin",
+        "Bagian", "Tanggal Aktual", "Tanggal Selesai",
+        "Tindakan Perbaikan", "Status Pemeliharaan", "Teknisi"
+      ];
       const colWidths = [12, 28, 15, 30, 35, 25, 25, 50, 20, 25];
 
       const sparepartHeaders = ["No", "ID Perawatan Korektif", "Nama Sparepart", "Jumlah"];
-      // Perbaiki lebar kolom sparepart agar tidak menumpuk
-      const sparepartColWidths = [15, 35, 70, 25]; // Total: 145, lebih kecil dari pageWidth-margin
+      const sparepartColWidths = [15, 35, 70, 25];
 
-      const periode = periodFilter ? `${periodFilter.start} - ${periodFilter.end}` : "";
-
-      // === HEADER - KONSISTEN UNTUK SEMUA HALAMAN ===
+      // === HEADER - konsisten ===
       const addHeader = (yPosition, title = "LAPORAN DATA PERAWATAN KOREKTIF") => {
         try {
           if (logo) pdf.addImage(logo, "PNG", margin, yPosition, 60, 15);
@@ -395,21 +395,31 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
         pdf.setFontSize(14).setFont("helvetica", "bold").setTextColor(0, 0, 0);
         pdf.text(title, pageWidth / 2, titleY, { align: "center" });
 
-        pdf.setFontSize(10).setFont("helvetica", "normal").setTextColor(0, 0, 0);
+        pdf.setFontSize(10).setFont("helvetica", "normal");
         pdf.text("POLITEKNIK ASTRA", pageWidth / 2, titleY + 7, { align: "center" });
 
-        if (periodFilter) {
-          pdf.setFontSize(9);
-          pdf.text(`Periode: Tahun ${periode}`, pageWidth / 2, titleY + 14, { align: "center" });
-        }
+        // tampilkan periode
+        pdf.setFontSize(9);
+        let periodeText =
+          periode === "all"
+            ? "Semua Data"
+            : periodFilter
+              ? `Periode: ${periodFilter.start} - ${periodFilter.end} | Tahun ${periode}`
+              : `Tahun ${periode}`;
+        pdf.text(periodeText, pageWidth / 2, titleY + 14, { align: "center" });
 
         pdf.setFontSize(8);
-        pdf.text(`Tanggal Export: ${formatDateCustom(new Date().toISOString())}`, pageWidth / 2, titleY + 21, { align: "center" });
+        pdf.text(
+          `Tanggal Export: ${formatDateCustom(new Date().toISOString())}`,
+          pageWidth / 2,
+          titleY + 21,
+          { align: "center" }
+        );
 
         return titleY + 25;
       };
 
-      // === FOOTER - KONSISTEN UNTUK SEMUA HALAMAN ===
+      // === FOOTER - konsisten ===
       const addFooter = () => {
         const footerStartY = pageHeight - 35;
         pdf.setFontSize(7).setFont("helvetica", "normal").setTextColor(128, 128, 128);
@@ -432,7 +442,6 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
         pdf.text("Email : sekretariat@polytechnic.astra.ac.id", pageWidth - 55, footerStartY + 9);
         pdf.text("www.polytechnic.astra.ac.id", pageWidth - 55, footerStartY + 28);
 
-        // Reset warna teks ke hitam
         pdf.setTextColor(0, 0, 0);
       };
 
@@ -441,27 +450,28 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
         if (currentY + rowHeight > pageHeight - 45) {
           addFooter();
           pdf.addPage();
-          let newY = addHeader(10, headersArray === sparepartHeaders ? "LAPORAN DETAIL SPAREPART" : "LAPORAN DATA PERAWATAN Korektif");
+          let newY = addHeader(
+            10,
+            headersArray === sparepartHeaders
+              ? "LAPORAN DETAIL SPAREPART"
+              : "LAPORAN DATA PERAWATAN KOREKTIF"
+          );
           return drawTableHeader(newY, headersArray, widthsArray);
         }
         return currentY;
       };
 
-      // === DRAW TABLE HEADER - KONSISTEN UNTUK SEMUA TABEL ===
+      // === TABLE HEADER ===
       const drawTableHeader = (startY, headersArray, widthsArray) => {
-        // Set font yang konsisten untuk header
         pdf.setFont("helvetica", "bold").setFontSize(8).setTextColor(0, 0, 0);
         let xPos = margin;
 
         headersArray.forEach((header, colIndex) => {
           const width = widthsArray[colIndex];
-
-          // Gambar border
           pdf.setDrawColor(0, 0, 0);
           pdf.setLineWidth(0.1);
           pdf.rect(xPos, startY, width, headerHeight);
 
-          // Split text jika terlalu panjang
           const lines = pdf.splitTextToSize(header, width - 2);
           const lineHeight = 2.5;
           const totalTextHeight = lines.length * lineHeight;
@@ -478,14 +488,13 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
         return startY + headerHeight;
       };
 
-      // === DRAW TABLE BODY - KONSISTEN UNTUK SEMUA TABEL ===
+      // === TABLE BODY ===
       const drawTable = (startY, dataArray, headersArray, widthsArray) => {
         let yPos = startY;
 
         dataArray.forEach((item, index) => {
           yPos = checkNewPage(yPos, headersArray, widthsArray);
 
-          // Set font yang konsisten untuk body
           pdf.setFont("helvetica", "normal").setFontSize(7).setTextColor(0, 0, 0);
           let xPos = margin;
 
@@ -503,12 +512,10 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
               }
             }
 
-            // Gambar border
             pdf.setDrawColor(0, 0, 0);
             pdf.setLineWidth(0.1);
             pdf.rect(xPos, yPos, width, rowHeight);
 
-            // Split text dan batasi ke maksimal 2 baris
             const lines = pdf.splitTextToSize(cellValue, width - 2);
             const lineHeight = 2;
             const maxLines = 2;
@@ -516,9 +523,10 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
             const textStartY = yPos + (rowHeight - totalTextHeight) / 2 + lineHeight;
 
             lines.slice(0, maxLines).forEach((line, i) => {
-              const textX = (header === "No") ?
-                xPos + (width - pdf.getTextWidth(line)) / 2 : // Center untuk nomor
-                xPos + 1; // Left align untuk yang lain
+              const textX =
+                header === "No"
+                  ? xPos + (width - pdf.getTextWidth(line)) / 2
+                  : xPos + 1;
               pdf.text(line, textX, textStartY + i * lineHeight);
             });
 
@@ -545,12 +553,10 @@ export default function RiwayatPreventifTEKNISI({ onChangePage }) {
         yPos = drawTable(yPos, fetchDataDetailSP, sparepartHeaders, sparepartColWidths);
       }
 
-      // === FOOTER AKHIR & SAVE ===
       addFooter();
       const now = formatDateCustom(new Date().toISOString()).replace(/ /g, "-");
-      pdf.save(`Data-Perawatan-Korektif${now}.pdf`);
+      pdf.save(`Data-Perawatan-Korektif_${now}.pdf`);
       Swal.fire("Berhasil", "Data berhasil diexport ke PDF!", "success");
-
     } catch (error) {
       console.error("Export PDF Error:", error);
       Swal.fire("Gagal", "Terjadi kesalahan saat export data!", "error");

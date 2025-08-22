@@ -47,7 +47,6 @@ const dataJenisExport = [
 
 // Data untuk dropdown periode
 const dataPeriode = [
-  { Value: "all", Text: "Semua Data" },
   { Value: "2024", Text: "2024" },
   { Value: "2025", Text: "2025" },
   { Value: "2026", Text: "2026" },
@@ -157,15 +156,14 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
   // Modifikasi fungsi exportToExcel
   const exportToExcel = async (periodFilter = null) => {
     try {
-      // Fetch data berdasarkan periode dengan parameter yang sesuai SP
       const data = await UseFetch(
         API_LINK + "TransaksiPreventif/GetDataPerawatanPreventifToExportPIC",
         {
           p1: "pre_tanggal_penjadwalan",
           p2: upt,
-          p3: periodFilter,
-          p4: userInfo.username,
-          p5: ""
+          p3: "",
+          p4: periodFilter,
+          p5: periode
         }
       );
 
@@ -174,28 +172,18 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         return;
       }
 
-      // Buat workbook dan worksheet
+      // ===== Buat workbook dan worksheet =====
       const workbook = new ExcelJS.Workbook();
       const worksheetPreventif = workbook.addWorksheet("Data Perawatan Preventif");
       const worksheetSparepart = workbook.addWorksheet("Detail Sparepart");
 
-      // Add headers untuk preventif
+      // ===== Header Preventif =====
       worksheetPreventif.addRow(commonHeaders);
-
-      // Style headers preventif
       const headerRowPreventif = worksheetPreventif.getRow(1);
-      headerRowPreventif.eachCell((cell, colNumber) => {
+      headerRowPreventif.eachCell((cell) => {
         cell.font = { bold: true, color: { argb: "FFFFFF" }, size: 10 };
-        cell.fill = {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "0074CC" }, // Blue background
-        };
-        cell.alignment = {
-          horizontal: "center",
-          vertical: "middle",
-          wrapText: true
-        };
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "0074CC" } };
+        cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
         cell.border = {
           top: { style: "thin", color: { argb: "000000" } },
           left: { style: "thin", color: { argb: "000000" } },
@@ -204,16 +192,14 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         };
       });
 
-      // Set column widths untuk preventif
-      const columnWidthsPreventif = [8, 22, 15, 25, 15, 18, 18, 22, 18, 15];
-      columnWidthsPreventif.forEach((width, index) => {
-        worksheetPreventif.getColumn(index + 1).width = width;
-      });
+      // Set column widths preventif
+      const columnWidthsPreventif = [8, 22, 15, 25, 20, 18, 18, 22, 18, 15];
+      columnWidthsPreventif.forEach((w, i) => worksheetPreventif.getColumn(i + 1).width = w);
 
-      // Add data rows untuk preventif
+      // Tambahkan data preventif
       data.forEach((item, index) => {
         const rowData = [
-          index + 1, // No
+          index + 1,
           item["ID Perawatan"] || "-",
           item["ID Mesin"] || "-",
           item["Nama Mesin"] || "-",
@@ -224,57 +210,30 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
           item["Status Pemeliharaan"] || "-",
           item["Teknisi"] || "-"
         ];
-
         const row = worksheetPreventif.addRow(rowData);
 
-        // Style data rows
         row.eachCell((cell, colNumber) => {
-          cell.alignment = {
-            horizontal: colNumber === 1 ? "center" : "left",
-            vertical: "middle",
-            wrapText: true
-          };
+          cell.alignment = { horizontal: colNumber === 1 ? "center" : "left", vertical: "middle", wrapText: true };
           cell.border = {
             top: { style: "thin", color: { argb: "CCCCCC" } },
             left: { style: "thin", color: { argb: "CCCCCC" } },
             bottom: { style: "thin", color: { argb: "CCCCCC" } },
             right: { style: "thin", color: { argb: "CCCCCC" } },
           };
-
-          // Alternating row colors
-          if (index % 2 === 0) {
-            cell.fill = {
-              type: "pattern",
-              pattern: "solid",
-              fgColor: { argb: "F8F9FA" },
-            };
-          }
+          if (index % 2 === 0) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8F9FA" } };
         });
-
         row.height = 18;
       });
-
       headerRowPreventif.height = 22;
 
-      // ===== WORKSHEET SPAREPART =====
+      // ===== Worksheet Sparepart =====
       if (fetchDataDetailSP && fetchDataDetailSP.length > 0) {
-        // Add headers sparepart
         worksheetSparepart.addRow(sparepartHeaders);
-
-        // Style headers sparepart
         const headerRowSparepart = worksheetSparepart.getRow(1);
-        headerRowSparepart.eachCell((cell, colNumber) => {
+        headerRowSparepart.eachCell((cell) => {
           cell.font = { bold: true, color: { argb: "FFFFFF" }, size: 10 };
-          cell.fill = {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "28A745" }, // Green background
-          };
-          cell.alignment = {
-            horizontal: "center",
-            vertical: "middle",
-            wrapText: true
-          };
+          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "28A745" } };
+          cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
           cell.border = {
             top: { style: "thin", color: { argb: "000000" } },
             left: { style: "thin", color: { argb: "000000" } },
@@ -283,53 +242,32 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
           };
         });
 
-        // Set column widths untuk sparepart
         const columnWidthsSparepart = [8, 22, 30, 12];
-        columnWidthsSparepart.forEach((width, index) => {
-          worksheetSparepart.getColumn(index + 1).width = width;
-        });
+        columnWidthsSparepart.forEach((w, i) => worksheetSparepart.getColumn(i + 1).width = w);
 
-        // Add data sparepart
         fetchDataDetailSP.forEach((item, index) => {
-          const rowDataSparepart = [
+          const rowDataSP = [
             index + 1,
             item["ID Perawatan"] || item["id_perawatan"] || "-",
             item["Nama Sparepart"] || item["nama_sparepart"] || "-",
             item["Jumlah"] || item["jumlah"] || "-"
           ];
+          const rowSP = worksheetSparepart.addRow(rowDataSP);
 
-          const rowSparepart = worksheetSparepart.addRow(rowDataSparepart);
-
-          // Style data rows sparepart
-          rowSparepart.eachCell((cell, colNumber) => {
-            cell.alignment = {
-              horizontal: colNumber === 1 || colNumber === 4 ? "center" : "left",
-              vertical: "middle",
-              wrapText: true
-            };
+          rowSP.eachCell((cell, colNumber) => {
+            cell.alignment = { horizontal: colNumber === 1 || colNumber === 4 ? "center" : "left", vertical: "middle", wrapText: true };
             cell.border = {
               top: { style: "thin", color: { argb: "CCCCCC" } },
               left: { style: "thin", color: { argb: "CCCCCC" } },
               bottom: { style: "thin", color: { argb: "CCCCCC" } },
               right: { style: "thin", color: { argb: "CCCCCC" } },
             };
-
-            // Alternating row colors
-            if (index % 2 === 0) {
-              cell.fill = {
-                type: "pattern",
-                pattern: "solid",
-                fgColor: { argb: "F8F9FA" },
-              };
-            }
+            if (index % 2 === 0) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8F9FA" } };
           });
-
-          rowSparepart.height = 18;
+          rowSP.height = 18;
         });
-
         headerRowSparepart.height = 22;
       } else {
-        // Jika tidak ada data sparepart
         worksheetSparepart.addRow(["Tidak ada data sparepart tersedia"]);
         const emptyRow = worksheetSparepart.getRow(1);
         emptyRow.getCell(1).font = { italic: true, color: { argb: "666666" } };
@@ -337,17 +275,14 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         worksheetSparepart.getColumn(1).width = 40;
       }
 
-      // Konversi workbook ke buffer
+      // Konversi workbook ke buffer dan simpan
       const buffer = await workbook.xlsx.writeBuffer();
-      const excelFile = new Blob([buffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-
-      // Save file
+      const excelFile = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
       const now = formatDateCustom(new Date().toISOString().split("T")[0]).replace(/ /g, '-');
       saveAs(excelFile, `Data-Perawatan-Preventif_${now}.xlsx`);
 
       Swal.fire("Berhasil", "Data berhasil diexport ke Excel!", "success");
+
     } catch (error) {
       console.error("Export Excel Error:", error);
       Swal.fire("Gagal", "Terjadi kesalahan saat export data!", "error");
@@ -363,9 +298,9 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         {
           p1: "pre_tanggal_penjadwalan",
           p2: upt,
-          p3: periodFilter,
-          p4: userInfo.username,
-          p5: ""
+          p3: "",
+          p4: periodFilter,
+          p5: periode
         }
       );
 
@@ -381,14 +316,22 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
       const rowHeight = 7;
       const headerHeight = 10;
 
-      const commonHeaders = ["No", "ID Perawatan", "ID Mesin", "Nama Mesin", "Bagian", "Tanggal Aktual", "Tanggal Selesai", "Tindakan Perbaikan", "Status Pemeliharaan", "Teknisi"];
+      const commonHeaders = [
+        "No",
+        "ID Perawatan",
+        "ID Mesin",
+        "Nama Mesin",
+        "Bagian",
+        "Tanggal Aktual",
+        "Tanggal Selesai",
+        "Tindakan Perbaikan",
+        "Status Pemeliharaan",
+        "Teknisi"
+      ];
       const colWidths = [12, 28, 15, 40, 20, 25, 25, 50, 20, 25];
 
       const sparepartHeaders = ["No", "ID Perawatan", "Nama Sparepart", "Jumlah"];
-      // Perbaiki lebar kolom sparepart agar tidak menumpuk
-      const sparepartColWidths = [15, 35, 70, 25]; // Total: 145, lebih kecil dari pageWidth-margin
-
-      const periode = periodFilter ? `${periodFilter.start} - ${periodFilter.end}` : "";
+      const sparepartColWidths = [15, 35, 70, 25];
 
       // === HEADER - KONSISTEN UNTUK SEMUA HALAMAN ===
       const addHeader = (yPosition, title = "LAPORAN DATA PERAWATAN PREVENTIF") => {
@@ -405,11 +348,21 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
 
         if (periodFilter) {
           pdf.setFontSize(9);
-          pdf.text(`Periode: Tahun ${periode}`, pageWidth / 2, titleY + 14, { align: "center" });
+          pdf.text(
+            `Periode: ${periodFilter.start} - ${periodFilter.end} | Tahun ${periode}`,
+            pageWidth / 2,
+            titleY + 14,
+            { align: "center" }
+          );
         }
 
         pdf.setFontSize(8);
-        pdf.text(`Tanggal Export: ${formatDateCustom(new Date().toISOString())}`, pageWidth / 2, titleY + 21, { align: "center" });
+        pdf.text(
+          `Tanggal Export: ${formatDateCustom(new Date().toISOString())}`,
+          pageWidth / 2,
+          titleY + 21,
+          { align: "center" }
+        );
 
         return titleY + 25;
       };
@@ -446,7 +399,12 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         if (currentY + rowHeight > pageHeight - 45) {
           addFooter();
           pdf.addPage();
-          let newY = addHeader(10, headersArray === sparepartHeaders ? "LAPORAN DETAIL SPAREPART" : "LAPORAN DATA PERAWATAN PREVENTIF");
+          let newY = addHeader(
+            10,
+            headersArray === sparepartHeaders
+              ? "LAPORAN DETAIL SPAREPART"
+              : "LAPORAN DATA PERAWATAN PREVENTIF"
+          );
           return drawTableHeader(newY, headersArray, widthsArray);
         }
         return currentY;
@@ -454,19 +412,16 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
 
       // === DRAW TABLE HEADER - KONSISTEN UNTUK SEMUA TABEL ===
       const drawTableHeader = (startY, headersArray, widthsArray) => {
-        // Set font yang konsisten untuk header
         pdf.setFont("helvetica", "bold").setFontSize(8).setTextColor(0, 0, 0);
         let xPos = margin;
 
         headersArray.forEach((header, colIndex) => {
           const width = widthsArray[colIndex];
 
-          // Gambar border
           pdf.setDrawColor(0, 0, 0);
           pdf.setLineWidth(0.1);
           pdf.rect(xPos, startY, width, headerHeight);
 
-          // Split text jika terlalu panjang
           const lines = pdf.splitTextToSize(header, width - 2);
           const lineHeight = 2.5;
           const totalTextHeight = lines.length * lineHeight;
@@ -490,7 +445,6 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         dataArray.forEach((item, index) => {
           yPos = checkNewPage(yPos, headersArray, widthsArray);
 
-          // Set font yang konsisten untuk body
           pdf.setFont("helvetica", "normal").setFontSize(7).setTextColor(0, 0, 0);
           let xPos = margin;
 
@@ -508,12 +462,10 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
               }
             }
 
-            // Gambar border
             pdf.setDrawColor(0, 0, 0);
             pdf.setLineWidth(0.1);
             pdf.rect(xPos, yPos, width, rowHeight);
 
-            // Split text dan batasi ke maksimal 2 baris
             const lines = pdf.splitTextToSize(cellValue, width - 2);
             const lineHeight = 2;
             const maxLines = 2;
@@ -521,9 +473,10 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
             const textStartY = yPos + (rowHeight - totalTextHeight) / 2 + lineHeight;
 
             lines.slice(0, maxLines).forEach((line, i) => {
-              const textX = (header === "No") ?
-                xPos + (width - pdf.getTextWidth(line)) / 2 : // Center untuk nomor
-                xPos + 1; // Left align untuk yang lain
+              const textX =
+                header === "No"
+                  ? xPos + (width - pdf.getTextWidth(line)) / 2
+                  : xPos + 1;
               pdf.text(line, textX, textStartY + i * lineHeight);
             });
 
@@ -638,8 +591,7 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
         API_LINK + "TransaksiPreventif/getdetailSparepartPerawatanPreventifSelesaiPIC",
         {
           p1: "Selesai",
-          p2: upt,
-          p3: userInfo.username
+          p2: upt
         }
       );
 
