@@ -12,6 +12,8 @@ import { object, string } from "yup";
 import Swal from "sweetalert2";
 import { DateTime } from "luxon";
 import Table from "../../part/Table";
+import Cookies from "js-cookie";
+import { decryptId } from "../../util/Encryptor";
 
 export default function PerawatanPreventifTeknisiEdit({
   onChangePage,
@@ -43,26 +45,46 @@ export default function PerawatanPreventifTeknisiEdit({
     Nama_Mesin: string().required(),
     Tanggal_Penjadwalan: string().required(),
     Tanggal_Aktual: string().required("Isi Tanggal Aktual Terlebih Dahulu"),
-    Tanggal_Selesai: string().when('Status_Pemeliharaan', {
-      is: 'Selesai',
-      then: (schema) => schema.required('Tanggal Selesai wajib diisi jika status selesai'),
-      otherwise: (schema) => schema.optional()
+    Tanggal_Selesai: string().when("Status_Pemeliharaan", {
+      is: "Selesai",
+      then: (schema) =>
+        schema.required("Tanggal Selesai wajib diisi jika status selesai"),
+      otherwise: (schema) => schema.optional(),
     }),
     Tindakan_Perbaikan: string().required(),
-    Catatan_Tambahan: string().when(['Tanggal_Penjadwalan', 'Tanggal_Aktual'], {
+    Catatan_Tambahan: string().when(["Tanggal_Penjadwalan", "Tanggal_Aktual"], {
       is: (tanggal_penjadwalan, tanggal_aktual) => {
         if (!tanggal_penjadwalan || !tanggal_aktual) return false;
         const actualDate = DateTime.fromISO(tanggal_aktual);
         const scheduledDate = DateTime.fromISO(tanggal_penjadwalan);
         return actualDate > scheduledDate;
       },
-      then: (schema) => schema.required('Catatan Tambahan wajib diisi jika Tanggal Aktual lebih dari Tanggal Penjadwalan'),
-      otherwise: (schema) => schema.optional()
+      then: (schema) =>
+        schema.required(
+          "Catatan Tambahan wajib diisi jika Tanggal Aktual lebih dari Tanggal Penjadwalan"
+        ),
+      otherwise: (schema) => schema.optional(),
     }),
     Status_Pemeliharaan: string().required(),
     Created_By: string().required(),
     Created_Date: string().required(),
   });
+
+  const getUserInfo = () => {
+    const encryptedUser = Cookies.get("activeUser");
+    if (encryptedUser) {
+      try {
+        const userInfo = JSON.parse(decryptId(encryptedUser));
+        return userInfo;
+      } catch (error) {
+        console.error("Failed to decrypt user info:", error);
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const userInfo = getUserInfo();
 
   const statusOptions = [
     { Value: "Menunggu Perbaikan", Text: "Menunggu Perbaikan" },
@@ -81,7 +103,7 @@ export default function PerawatanPreventifTeknisiEdit({
 
   function formatDate(dateString, format) {
     if (!dateString) return "";
-    
+
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "";
 
@@ -90,8 +112,18 @@ export default function PerawatanPreventifTeknisiEdit({
     const year = date.getFullYear();
 
     const months = [
-      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-      "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember",
     ];
 
     switch (format) {
@@ -111,33 +143,45 @@ export default function PerawatanPreventifTeknisiEdit({
     let newErrors = {};
 
     // Validasi Tanggal Selesai
-    if (name === "Tanggal_Selesai" || name === "Tanggal_Aktual" || name === "Status_Pemeliharaan") {
-      const { Tanggal_Aktual, Tanggal_Selesai, Status_Pemeliharaan } = updatedFormData;
-      
+    if (
+      name === "Tanggal_Selesai" ||
+      name === "Tanggal_Aktual" ||
+      name === "Status_Pemeliharaan"
+    ) {
+      const { Tanggal_Aktual, Tanggal_Selesai, Status_Pemeliharaan } =
+        updatedFormData;
+
       if (Status_Pemeliharaan === "Selesai" && !Tanggal_Selesai) {
-        newErrors.Tanggal_Selesai = "Tanggal Selesai wajib diisi jika status selesai.";
+        newErrors.Tanggal_Selesai =
+          "Tanggal Selesai wajib diisi jika status selesai.";
       } else if (Tanggal_Aktual && Tanggal_Selesai) {
         const actualDate = new Date(Tanggal_Aktual);
         const completionDate = new Date(Tanggal_Selesai);
-        
+
         if (completionDate < actualDate) {
-          newErrors.Tanggal_Selesai = "Tanggal Selesai tidak boleh sebelum Tanggal Aktual.";
+          newErrors.Tanggal_Selesai =
+            "Tanggal Selesai tidak boleh sebelum Tanggal Aktual.";
         }
       }
     }
 
     // Validasi Tanggal Aktual dan Catatan Tambahan
     if (name === "Tanggal_Aktual" || name === "Catatan_Tambahan") {
-      const { Tanggal_Penjadwalan, Tanggal_Aktual, Catatan_Tambahan } = updatedFormData;
+      const { Tanggal_Penjadwalan, Tanggal_Aktual, Catatan_Tambahan } =
+        updatedFormData;
 
       if (!Tanggal_Aktual) {
         newErrors.Tanggal_Aktual = "Isi Tanggal Aktual Terlebih Dahulu";
       } else if (Tanggal_Penjadwalan && Tanggal_Aktual) {
-        const actualDate = DateTime.fromISO(Tanggal_Aktual, { zone: "Asia/Jakarta" });
-        const scheduledDate = DateTime.fromISO(Tanggal_Penjadwalan, { zone: "Asia/Jakarta" });
+        const actualDate = DateTime.fromISO(Tanggal_Aktual, {
+          zone: "Asia/Jakarta",
+        });
+        const scheduledDate = DateTime.fromISO(Tanggal_Penjadwalan, {
+          zone: "Asia/Jakarta",
+        });
 
         if (actualDate > scheduledDate && !Catatan_Tambahan) {
-          newErrors.Catatan_Tambahan = 
+          newErrors.Catatan_Tambahan =
             "Catatan Tambahan wajib diisi jika Tanggal Aktual lebih dari Tanggal Penjadwalan.";
         }
       }
@@ -148,16 +192,16 @@ export default function PerawatanPreventifTeknisiEdit({
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     setFormData((prevFormData) => {
       const updatedFormData = { ...prevFormData, [name]: value };
-      
+
       // Validasi input yang berubah
       const validationErrors = validateDateInputs(name, value, updatedFormData);
-      
+
       setErrors((prevErrors) => {
         const newErrors = { ...prevErrors };
-        
+
         // Clear previous errors untuk field yang sedang divalidasi
         if (name === "Tanggal_Selesai" || name === "Status_Pemeliharaan") {
           delete newErrors.Tanggal_Selesai;
@@ -168,14 +212,15 @@ export default function PerawatanPreventifTeknisiEdit({
         if (name === "Catatan_Tambahan" || name === "Tanggal_Aktual") {
           delete newErrors.Catatan_Tambahan;
         }
-        
+
         // Add new validation errors
         return { ...newErrors, ...validationErrors };
       });
-      
+
       return updatedFormData;
     });
   };
+
 
   const handleEdit = async (e) => {
     e.preventDefault();
@@ -184,16 +229,21 @@ export default function PerawatanPreventifTeknisiEdit({
     try {
       // Validasi manual untuk kasus khusus
       let customErrors = {};
-      
+
       if (formData.Status_Pemeliharaan === "Selesai") {
         if (!formData.Tanggal_Selesai) {
-          customErrors.Tanggal_Selesai = "Tanggal Selesai wajib diisi jika status selesai.";
+          customErrors.Tanggal_Selesai =
+            "Tanggal Selesai wajib diisi jika status selesai.";
         } else {
           const tanggalAktual = new Date(formData.Tanggal_Aktual);
           const tanggalSelesai = new Date(formData.Tanggal_Selesai);
 
-          if (tanggalAktual && tanggalSelesai && tanggalSelesai < tanggalAktual) {
-            customErrors.Tanggal_Selesai = 
+          if (
+            tanggalAktual &&
+            tanggalSelesai &&
+            tanggalSelesai < tanggalAktual
+          ) {
+            customErrors.Tanggal_Selesai =
               "Tanggal Selesai tidak boleh sebelum Tanggal Aktual.";
           }
         }
@@ -216,29 +266,29 @@ export default function PerawatanPreventifTeknisiEdit({
       }
 
       // Prepare payload - pastikan semua field yang dibutuhkan ada
-      const currentUser = JSON.parse(localStorage.getItem("activeUser")) || {};
-      const modifiedBy = currentUser.username || currentUser.nama || currentUser.id || currentUser.user_id || "SISTEM";
-      
+
       // Helper function untuk format tanggal ke format yang SQL Server terima
       const formatDateForSQL = (dateString) => {
         if (!dateString) return "";
-        
+
         // Jika sudah dalam format YYYY-MM-DD, langsung return
         if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
           return dateString;
         }
-        
+
         // Jika dalam format ISO atau lainnya, konversi ke YYYY-MM-DD
         const date = new Date(dateString);
         if (isNaN(date.getTime())) return "";
+
         
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, "0");
         const day = String(date.getDate()).padStart(2, "0");
-        
+
         return `${year}-${month}-${day}`;
       };
-      
+
+
       const payload = {
         p1: formData.ID_Perawatan_Preventif, // Wajib ada untuk WHERE clause
         p2: formData.ID_Mesin || "",
@@ -251,7 +301,7 @@ export default function PerawatanPreventifTeknisiEdit({
         p9: formData.Status_Pemeliharaan || "",
         p10: formData.Created_By || "",
         p11: formatDateForSQL(formData.Created_Date), // Format tanggal untuk SQL
-        p12: modifiedBy, // Modified_By dari user yang sedang login
+        p12: userInfo.username, // Modified_By dari user yang sedang login
       };
 
       console.log("Form Data sebelum kirim:", formData);
@@ -270,12 +320,12 @@ export default function PerawatanPreventifTeknisiEdit({
       // Cek response dari stored procedure
       if (data && data.length > 0) {
         const result = data[0];
-        
+
         // Jika ada field 'hasil' dengan value 'ERROR'
         if (result.hasil === "ERROR") {
           throw new Error(result.pesan || "Terjadi kesalahan saat update data.");
         }
-        
+
         // Jika sukses
         if (result.hasil === "SUCCESS" || result.message) {
           await Swal.fire("Sukses", result.pesan || result.message || "Data berhasil disimpan", "success");
@@ -292,7 +342,6 @@ export default function PerawatanPreventifTeknisiEdit({
       // Default success jika tidak ada error
       await Swal.fire("Sukses", "Data berhasil disimpan", "success");
       onChangePage("index");
-      
     } catch (error) {
       console.error("Error updating data:", error);
       window.scrollTo(0, 0);
@@ -313,7 +362,7 @@ export default function PerawatanPreventifTeknisiEdit({
         if (data === "ERROR" || !Array.isArray(data) || data.length === 0) {
           setFetchDataDetailSP([]);
         } else {
-         const formattedData = data.map((item) => {
+          const formattedData = data.map((item) => {
             const { Nama_Sparepart, Jumlah, ...rest } = item;
             return {
               ...rest,
@@ -340,12 +389,14 @@ export default function PerawatanPreventifTeknisiEdit({
         );
 
         if (data === "ERROR" || !Array.isArray(data) || data.length === 0) {
-          throw new Error("Terjadi kesalahan: Gagal mengambil data jadwal preventif.");
+          throw new Error(
+            "Terjadi kesalahan: Gagal mengambil data jadwal preventif."
+          );
         }
 
         const detailData = data[0];
         setUPT(detailData.upt || "");
-        
+
         // Clean up data
         const cleanedData = { ...detailData };
         delete cleanedData.gambar_mesin;
@@ -355,7 +406,6 @@ export default function PerawatanPreventifTeknisiEdit({
 
         console.log("DATA: ", cleanedData);
         setFormData((prevFormData) => ({ ...prevFormData, ...cleanedData }));
-        
       } catch (error) {
         console.error("Error fetching main data:", error);
         window.scrollTo(0, 0);
@@ -475,8 +525,8 @@ export default function PerawatanPreventifTeknisiEdit({
               <div className="col-lg-3">
                 <DropDown
                   arrData={
-                    formData.Status_Pemeliharaan !== "Menunggu Perbaikan" 
-                      ? statusOptions2 
+                    formData.Status_Pemeliharaan !== "Menunggu Perbaikan"
+                      ? statusOptions2
                       : statusOptions
                   }
                   type="pilih"

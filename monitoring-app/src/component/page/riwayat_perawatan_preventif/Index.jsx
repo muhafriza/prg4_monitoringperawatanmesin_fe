@@ -28,7 +28,7 @@ const inisialisasiData = [
     "Nama Mesin": null,
     "Tanggal Perawatan": null,
     Tindakan: null,
-    "Dikerjakan Oleh Oleh": null,
+    "Dikerjakan Oleh": null,
     Status: null,
     Aksi: null,
     Count: 0,
@@ -973,7 +973,7 @@ export default function RiwayatPreventif({ onChangePage }) {
                       isDisabled={false}
                       isRequired
                       readOnly={true}
-                      arrData={Dataperiode}
+                      arrData={dataPeriode}
                       onChange={(e) => setPeriode(e.target.value)}
                     />
                   </div>

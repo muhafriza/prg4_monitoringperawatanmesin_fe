@@ -23,6 +23,15 @@ defaults.plugins.title.align = "start";
 defaults.plugins.title.font.size = 25;
 defaults.plugins.title.color = "black";
 
+const inisialisasiData = [
+  {
+    Key: null,
+    No: null,
+    Status: null,
+    Count: 0,
+  },
+];
+
 export default function BerandaPIC(onChangePage) {
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
@@ -45,7 +54,7 @@ export default function BerandaPIC(onChangePage) {
   const userInfo = getUserInfo();
   const upt = userInfo?.upt ?? "";
 
-  const [mesin, setMesin] = useState([]);
+  const [mesin, setMesin] = useState(inisialisasiData);
   const [dataKerusakanMesin, setDataKerusakanMesin] = useState([]);
   const [summaryData, setSummaryData] = useState([]);
   const [currentFilter, setCurrentFilter] = useState({
@@ -87,10 +96,15 @@ export default function BerandaPIC(onChangePage) {
   const fetchDataMesin = async () => {
     setIsError({ error: false, message: "" });
     try {
-      const data = await UseFetch(API_LINK + "Mesin/GetDataMesin", currentFilter);
+      const data = await UseFetch(
+        API_LINK + "Mesin/GetDataMesin",
+        currentFilter
+      );
 
-      if (data === "ERROR" || data.length === 0) {
+      if (data === "ERROR") {
         throw new Error("Terjadi kesalahan: Gagal mengambil data mesin.");
+      } else if (data.lenght === 0) {
+        setMesin(inisialisasiData);
       } else {
         const formattedData = data.map((value) => ({
           ...value,
@@ -124,7 +138,7 @@ export default function BerandaPIC(onChangePage) {
         { p1: upt }
       );
 
-      if (data === "ERROR" || data.length === 0) {
+      if (data === "ERROR") {
         throw new Error("Terjadi kesalahan: Gagal mengambil data dashboard.");
       } else {
         setDataKerusakanMesin(data);
@@ -148,8 +162,7 @@ export default function BerandaPIC(onChangePage) {
 
   // generate warna dinamis
   const colors = labels.map(
-    (_, i) =>
-      `hsl(${(i * 60) % 360}, 70%, 55%)` // beda warna tiap mesin
+    (_, i) => `hsl(${(i * 60) % 360}, 70%, 55%)` // beda warna tiap mesin
   );
 
   const chartData = {
@@ -211,19 +224,22 @@ export default function BerandaPIC(onChangePage) {
         </div>
       </div>
 
-    {/* BAR CHART */}
-    <div className="card mt-2">
-      <div className="card-body chart-container" style={{ width: "100%", height: "400px" }}>
-        <Bar 
-          data={chartData} 
-          options={{
-            ...chartOptions,
-            responsive: true,
-            maintainAspectRatio: false
-          }} 
-        />
+      {/* BAR CHART */}
+      <div className="card mt-2">
+        <div
+          className="card-body chart-container"
+          style={{ width: "100%", height: "400px" }}
+        >
+          <Bar
+            data={chartData}
+            options={{
+              ...chartOptions,
+              responsive: true,
+              maintainAspectRatio: false,
+            }}
+          />
+        </div>
       </div>
-    </div>
 
       {/* TABEL MESIN */}
       <div className="card mt-4">
@@ -231,7 +247,8 @@ export default function BerandaPIC(onChangePage) {
           Daftar Mesin yang Aktif
         </div>
         <div className="card-body p-4">
-          <Table data={mesin} />
+          <Table data={mesin && mesin.length > 0 ? mesin : inisialisasiData} />
+
           <Paging
             pageSize={PAGE_SIZE}
             pageCurrent={currentFilter.page}

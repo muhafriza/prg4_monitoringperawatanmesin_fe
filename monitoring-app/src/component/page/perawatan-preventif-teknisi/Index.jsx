@@ -226,8 +226,9 @@ export default function PerawatanKorektif({ onChangePage }) {
               ...rest
             } = value;
             let rowStyle=null;
+            console.log("Status_Pemeliharaan",Status_Pemeliharaan)
             const aksi =
-              Status_Pemeliharaan === "Selesai" && Status_Pemeliharaan === "Batal"
+              Status_Pemeliharaan === "Selesai" || Status_Pemeliharaan === "Batal"
                 ? ["Detail"]
                 : ["Detail", "Edit"];
             const today = new Date();

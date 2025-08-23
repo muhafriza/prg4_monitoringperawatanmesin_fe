@@ -331,7 +331,7 @@ export default function LaporanKerusakan({ onChangePage }) {
                   : "-",
               "Dibuat Oleh": Dibuat || "-",
               Status: Status,
-              Aksi: Status != "Selesai" ? ["Detail", "Edit"] : ["Detail"],
+              Aksi: Status === "Selesai" || Status === "Batal" ? ["Detail"] : ["Detail", "Edit"],
               rowStyle,
               Alignment: [
                 "center", "center", "center", "left", "left",

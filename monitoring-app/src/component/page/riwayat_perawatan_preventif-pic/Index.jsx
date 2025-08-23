@@ -73,9 +73,6 @@ export default function RiwayatPreventifPIC({ onChangePage }) {
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState(inisialisasiData);
   const [dataPrevetif, setDataPreventif] = useState();
-  const [DataPreventifById, setDataPreventifById] = useState();
-  const [DetailPreventifByIdExcel, setDetailPreventifByIdExcel] = useState([]);
-  const [DetailSPByIdExcel, setDetailSPByIdExcel] = useState([]);
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
